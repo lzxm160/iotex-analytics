@@ -82,11 +82,13 @@ func NewProtocol(store s.Store) *Protocol {
 // CreateTables creates tables
 func (p *Protocol) CreateTables(ctx context.Context) error {
 	// create block by action table
-	if _, err := p.Store.GetDB().Exec(fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s "+
+	c := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s "+
 		"(action_type TEXT NOT NULL, action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, block_height DECIMAL(65, 0) NOT NULL, "+
 		"`from` VARCHAR(41) NOT NULL, `to` VARCHAR(41) NOT NULL, gas_price DECIMAL(65, 0) NOT NULL, gas_consumed DECIMAL(65, 0) NOT NULL, nonce DECIMAL(65, 0) NOT NULL, "+
 		"amount DECIMAL(65, 0) NOT NULL, receipt_status TEXT NOT NULL, data TEXT, PRIMARY KEY (action_hash), FOREIGN KEY (block_height) REFERENCES %s(block_height))",
-		ActionHistoryTableName, blocks.BlockHistoryTableName)); err != nil {
+		ActionHistoryTableName, blocks.BlockHistoryTableName)
+	fmt.Println(c)
+	if _, err := p.Store.GetDB().Exec(c); err != nil {
 		return err
 	}
 	return nil
