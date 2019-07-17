@@ -147,26 +147,25 @@ func (r *queryResolver) Voting(ctx context.Context, startEpoch int, epochCount i
 }
 
 // Contract handles voting requests
-func (r *queryResolver) Contract(ctx context.Context, numPerPage int, page int) ([]Contract, error) {
-	Con, err := r.AP.GetContract(uint64(numPerPage), uint64(page))
+func (r *queryResolver) Contract(ctx context.Context, numPerPage int, page int) ([]*Contract, error) {
+	Cons, err := r.AP.GetContract(uint64(numPerPage), uint64(page))
 	switch {
 	case errors.Cause(err) == indexprotocol.ErrNotExist:
 		return nil, nil
 	case err != nil:
 		return nil, errors.Wrap(err, "failed to get contract information")
 	}
-	candidateMetaList := make([]Contract, 0)
-	for _, candidateMeta := range cl {
-		candidateMetaList = append(candidateMetaList, &CandidateMeta{
-			EpochNumber:        int(candidateMeta.EpochNumber),
-			TotalCandidates:    int(candidateMeta.NumberOfCandidates),
-			ConsensusDelegates: int(numConsensusDelegates),
-			TotalWeightedVotes: candidateMeta.TotalWeightedVotes,
-			VotedTokens:        candidateMeta.VotedTokens,
+	can := make([]*Contract, 0)
+	for _, c := range Cons {
+		can = append(can, &Contract{
+			Hash:      c.Hash,
+			Timestamp: c.Timestamp,
+			From:      c.From,
+			To:        c.To,
+			Quantity:  c.Quantity,
 		})
 	}
-	return &Voting{Exist: true, CandidateMeta: candidateMetaList}, nil
-	return Con, nil
+	return can, nil
 }
 
 func (r *queryResolver) getOperatorAddress(ctx context.Context, accountResponse *Account) error {

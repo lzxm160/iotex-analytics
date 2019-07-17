@@ -80,6 +80,42 @@ func (p *Protocol) GetActiveAccount(count int) ([]string, error) {
 }
 
 //
-func (p *Protocol) GetContract(numPerPage, page uint64) ([]Contract, error) {
+func (p *Protocol) GetContract(numPerPage, page uint64) ([]*Contract, error) {
+	//SELECT * FROM action_history WHERE `to`='io1ly28u4nn9w3qxpusfuwg4u36xxdj02s7lxncyt' ORDER BY block_height DESC LIMIT 0,10
+	// page from 1
+	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
+		return nil, errors.New("actions protocol is unregistered")
+	}
+
+	db := p.indexer.Store.GetDB()
+
+	getQuery := fmt.Sprintf("SELECT DISTINCT `from`, block_height FROM %s ORDER BY block_height desc limit %d", actions.ActionHistoryTableName, count)
+	stmt, err := db.Prepare(getQuery)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to prepare get query")
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to execute get query")
+	}
+
+	var acc activeAccout
+	parsedRows, err := s.ParseSQLRows(rows, &acc)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse results")
+	}
+	if len(parsedRows) == 0 {
+		err = indexprotocol.ErrNotExist
+		return nil, err
+	}
+
+	var addrs []string
+	for _, parsedRow := range parsedRows {
+		acc := parsedRow.(*activeAccout)
+		addrs = append(addrs, acc.From)
+	}
+	return addrs, nil
 	return nil, nil
 }

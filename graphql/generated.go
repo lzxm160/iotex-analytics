@@ -163,7 +163,7 @@ type QueryResolver interface {
 	Chain(ctx context.Context) (*Chain, error)
 	Delegate(ctx context.Context, startEpoch int, epochCount int, delegateName string) (*Delegate, error)
 	Voting(ctx context.Context, startEpoch int, epochCount int) (*Voting, error)
-	Contract(ctx context.Context, numPerPage int, page int) ([]Contract, error)
+	Contract(ctx context.Context, numPerPage int, page int) ([]*Contract, error)
 }
 
 type executableSchema struct {
@@ -720,7 +720,7 @@ var parsedSchema = gqlparser.MustLoadSchema(
     chain: Chain
     delegate(startEpoch: Int!, epochCount: Int!, delegateName: String!): Delegate
     voting(startEpoch: Int!, epochCount: Int!): Voting
-    contract(numPerPage:Int!,page:Int!):[Contract!]
+    contract(numPerPage:Int!,page:Int!):[Contract]
 }
 
 type Contract{
@@ -2337,10 +2337,10 @@ func (ec *executionContext) _Query_contract(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]Contract)
+	res := resTmp.([]*Contract)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOContract2ᚕgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐContract(ctx, field.Selections, res)
+	return ec.marshalOContract2ᚕᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐContract(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -4756,10 +4756,6 @@ func (ec *executionContext) marshalNCandidateMeta2ᚕᚖgithubᚗcomᚋiotexproj
 	return ret
 }
 
-func (ec *executionContext) marshalNContract2githubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐContract(ctx context.Context, sel ast.SelectionSet, v Contract) graphql.Marshaler {
-	return ec._Contract(ctx, sel, &v)
-}
-
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	return graphql.UnmarshalInt(v)
 }
@@ -5175,7 +5171,11 @@ func (ec *executionContext) marshalOChain2ᚖgithubᚗcomᚋiotexprojectᚋiotex
 	return ec._Chain(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOContract2ᚕgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐContract(ctx context.Context, sel ast.SelectionSet, v []Contract) graphql.Marshaler {
+func (ec *executionContext) marshalOContract2githubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐContract(ctx context.Context, sel ast.SelectionSet, v Contract) graphql.Marshaler {
+	return ec._Contract(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOContract2ᚕᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐContract(ctx context.Context, sel ast.SelectionSet, v []*Contract) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -5202,7 +5202,7 @@ func (ec *executionContext) marshalOContract2ᚕgithubᚗcomᚋiotexprojectᚋio
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNContract2githubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐContract(ctx, sel, v[i])
+			ret[i] = ec.marshalOContract2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐContract(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -5213,6 +5213,13 @@ func (ec *executionContext) marshalOContract2ᚕgithubᚗcomᚋiotexprojectᚋio
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalOContract2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐContract(ctx context.Context, sel ast.SelectionSet, v *Contract) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Contract(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalODelegate2githubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐDelegate(ctx context.Context, sel ast.SelectionSet, v Delegate) graphql.Marshaler {

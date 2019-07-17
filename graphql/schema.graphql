@@ -3,7 +3,7 @@ type Query {
     chain: Chain
     delegate(startEpoch: Int!, epochCount: Int!, delegateName: String!): Delegate
     voting(startEpoch: Int!, epochCount: Int!): Voting
-    contract(numPerPage:Int!,page:Int!):[Contract]
+    contract(address:String!,numPerPage:Int!,page:Int!):[Contract]
 }
 
 type Contract{
