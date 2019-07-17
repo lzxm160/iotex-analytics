@@ -25,10 +25,10 @@ type activeAccout struct {
 // Contract
 type Contract struct {
 	Hash      string `json:"hash"`
-	Timestamp string `json:"timestamp"`
 	From      string `json:"from"`
 	To        string `json:"to"`
 	Quantity  string `json:"quantity"`
+	Timestamp string `json:"timestamp"`
 }
 
 // Protocol defines the protocol of querying tables
