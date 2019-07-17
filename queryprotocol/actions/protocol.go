@@ -22,6 +22,15 @@ type activeAccout struct {
 	BlockHeight uint64
 }
 
+// Contract
+type Contract struct {
+	Hash      string `json:"hash"`
+	Timestamp string `json:"timestamp"`
+	From      string `json:"from"`
+	To        string `json:"to"`
+	Quantity  string `json:"quantity"`
+}
+
 // Protocol defines the protocol of querying tables
 type Protocol struct {
 	indexer *indexservice.Indexer
@@ -68,4 +77,9 @@ func (p *Protocol) GetActiveAccount(count int) ([]string, error) {
 		addrs = append(addrs, acc.From)
 	}
 	return addrs, nil
+}
+
+//
+func (p *Protocol) GetContract(numPerPage, page uint64) ([]Contract, error) {
+	return nil, nil
 }
