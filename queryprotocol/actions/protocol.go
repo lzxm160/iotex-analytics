@@ -133,6 +133,7 @@ func (p *Protocol) GetContract(address string, numPerPage, page uint64) (ret []*
 	return
 }
 func parseData(data string) (to, amount string, err error) {
+	fmt.Println(len(data))
 	if len(data) != 132 {
 		err = errors.New("data's len is wrong")
 		return
