@@ -7,14 +7,21 @@
 package actions
 
 import (
+	"encoding/hex"
 	"fmt"
+	"math/big"
 
 	"github.com/pkg/errors"
 
+	"github.com/iotexproject/iotex-address/address"
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
 	"github.com/iotexproject/iotex-analytics/indexprotocol/actions"
 	"github.com/iotexproject/iotex-analytics/indexservice"
 	s "github.com/iotexproject/iotex-analytics/sql"
+)
+
+var (
+	transferSha3 = "a9059cbb"
 )
 
 type activeAccout struct {
@@ -29,6 +36,7 @@ type Contract struct {
 	To        string `json:"to"`
 	Quantity  string `json:"quantity"`
 	Timestamp string `json:"timestamp"`
+	Data      string `json:"data"`
 }
 
 // Protocol defines the protocol of querying tables
@@ -92,7 +100,7 @@ func (p *Protocol) GetContract(address string, numPerPage, page uint64) (ret []*
 		page = 1
 	}
 	offset := (page - 1) * numPerPage
-	getQuery := fmt.Sprintf("SELECT action_hash,`from`,`to`,amount,`timestamp` FROM %s WHERE `to`='%s' ORDER BY `timestamp` desc limit %d,%d", actions.ActionHistoryTableName, address, offset, numPerPage)
+	getQuery := fmt.Sprintf("SELECT action_hash,`from`,`to`,amount,`timestamp`,`data` FROM %s WHERE `to`='%s' and left(`data`,8)='%s'`data`ORDER BY `timestamp` desc limit %d,%d", actions.ActionHistoryTableName, address, transferSha3, offset, numPerPage)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")
@@ -116,7 +124,35 @@ func (p *Protocol) GetContract(address string, numPerPage, page uint64) (ret []*
 
 	for _, parsedRow := range parsedRows {
 		con := parsedRow.(*Contract)
+		con.To, con.Quantity, err = parseData(con.Data)
+		if err != nil {
+			return
+		}
 		ret = append(ret, con)
 	}
+	return
+}
+func parseData(data string) (to, amount string, err error) {
+	if len(data) != 132 {
+		err = errors.New("data's len is wrong")
+		return
+	}
+	addr := data[32:72]
+	addrHash, err := hex.DecodeString(addr)
+	if err != nil {
+		return
+	}
+	callerAddr, err := address.FromBytes(addrHash)
+	if err != nil {
+		return
+	}
+	to = callerAddr.String()
+	amountString := data[72:]
+	amountBig, ok := new(big.Int).SetString(amountString, 16)
+	if !ok {
+		err = errors.New("amount convert error")
+		return
+	}
+	amount = amountBig.Text(10)
 	return
 }
