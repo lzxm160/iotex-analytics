@@ -12,6 +12,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/iotexproject/go-pkgs/hash"
 	"github.com/iotexproject/iotex-address/address"
@@ -59,6 +60,7 @@ type (
 		Nonce       uint64
 		Amount      string
 		Data        string
+		timestamp   time.Time
 	}
 
 	// ReceiptInfo defines a receipt's information
@@ -85,7 +87,7 @@ func (p *Protocol) CreateTables(ctx context.Context) error {
 	if _, err := p.Store.GetDB().Exec(fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s "+
 		"(action_type TEXT NOT NULL, action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, block_height DECIMAL(65, 0) NOT NULL, "+
 		"`from` VARCHAR(41) NOT NULL, `to` VARCHAR(41) NOT NULL, gas_price DECIMAL(65, 0) NOT NULL, gas_consumed DECIMAL(65, 0) NOT NULL, nonce DECIMAL(65, 0) NOT NULL, "+
-		"amount DECIMAL(65, 0) NOT NULL, receipt_status TEXT NOT NULL, data TEXT, PRIMARY KEY (action_hash), FOREIGN KEY (block_height) REFERENCES %s(block_height))",
+		"amount DECIMAL(65, 0) NOT NULL, receipt_status TEXT NOT NULL, data TEXT,, timestamp DECIMAL(65, 0) NOT NULL, PRIMARY KEY (action_hash), FOREIGN KEY (block_height) REFERENCES %s(block_height))",
 		ActionHistoryTableName, blocks.BlockHistoryTableName)); err != nil {
 		return err
 	}
@@ -142,6 +144,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			Nonce:      nonce,
 			Amount:     amount,
 			Data:       data,
+			timestamp:  blk.Timestamp(),
 		}
 	}
 
@@ -221,13 +224,13 @@ func (p *Protocol) updateActionHistory(
 		}
 		receiptInfo := hashToReceiptInfo[actionInfo.ReceiptHash]
 
-		valStrs = append(valStrs, "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+		valStrs = append(valStrs, "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 		valArgs = append(valArgs, actionInfo.ActionType, actionInfo.ActionHash, receiptInfo.ReceiptHash, block.Height(),
 			actionInfo.From, actionInfo.To, actionInfo.GasPrice, receiptInfo.GasConsumed, actionInfo.Nonce,
-			actionInfo.Amount, receiptInfo.ReceiptStatus, actionInfo.Data)
+			actionInfo.Amount, receiptInfo.ReceiptStatus, actionInfo.Data, actionInfo.timestamp.Unix())
 	}
 	insertQuery := fmt.Sprintf("INSERT INTO %s (action_type, action_hash, receipt_hash, block_height, `from`, `to`, "+
-		"gas_price, gas_consumed, nonce, amount, receipt_status, data) VALUES %s", ActionHistoryTableName, strings.Join(valStrs, ","))
+		"gas_price, gas_consumed, nonce, amount, receipt_status, data, timestamp) VALUES %s", ActionHistoryTableName, strings.Join(valStrs, ","))
 
 	if _, err := tx.Exec(insertQuery, valArgs...); err != nil {
 		return err

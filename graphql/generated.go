@@ -123,7 +123,7 @@ type ComplexityRoot struct {
 	Query struct {
 		Account  func(childComplexity int) int
 		Chain    func(childComplexity int) int
-		Contract func(childComplexity int, numPerPage int, page int) int
+		Contract func(childComplexity int, address string, numPerPage int, page int) int
 		Delegate func(childComplexity int, startEpoch int, epochCount int, delegateName string) int
 		Voting   func(childComplexity int, startEpoch int, epochCount int) int
 	}
@@ -163,7 +163,7 @@ type QueryResolver interface {
 	Chain(ctx context.Context) (*Chain, error)
 	Delegate(ctx context.Context, startEpoch int, epochCount int, delegateName string) (*Delegate, error)
 	Voting(ctx context.Context, startEpoch int, epochCount int) (*Voting, error)
-	Contract(ctx context.Context, numPerPage int, page int) ([]*Contract, error)
+	Contract(ctx context.Context, address string, numPerPage int, page int) ([]*Contract, error)
 }
 
 type executableSchema struct {
@@ -527,7 +527,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Contract(childComplexity, args["numPerPage"].(int), args["page"].(int)), true
+		return e.complexity.Query.Contract(childComplexity, args["address"].(string), args["numPerPage"].(int), args["page"].(int)), true
 
 	case "Query.Delegate":
 		if e.complexity.Query.Delegate == nil {
@@ -720,7 +720,7 @@ var parsedSchema = gqlparser.MustLoadSchema(
     chain: Chain
     delegate(startEpoch: Int!, epochCount: Int!, delegateName: String!): Delegate
     voting(startEpoch: Int!, epochCount: Int!): Voting
-    contract(numPerPage:Int!,page:Int!):[Contract]
+    contract(address:String!,numPerPage:Int!,page:Int!):[Contract]
 }
 
 type Contract{
@@ -970,22 +970,30 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_contract_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["numPerPage"]; ok {
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["address"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["numPerPage"] = arg0
+	args["address"] = arg0
 	var arg1 int
-	if tmp, ok := rawArgs["page"]; ok {
+	if tmp, ok := rawArgs["numPerPage"]; ok {
 		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["page"] = arg1
+	args["numPerPage"] = arg1
+	var arg2 int
+	if tmp, ok := rawArgs["page"]; ok {
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg2
 	return args, nil
 }
 
@@ -2332,7 +2340,7 @@ func (ec *executionContext) _Query_contract(ctx context.Context, field graphql.C
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Contract(rctx, args["numPerPage"].(int), args["page"].(int))
+		return ec.resolvers.Query().Contract(rctx, args["address"].(string), args["numPerPage"].(int), args["page"].(int))
 	})
 	if resTmp == nil {
 		return graphql.Null

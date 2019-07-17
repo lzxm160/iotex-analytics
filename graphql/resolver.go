@@ -147,8 +147,8 @@ func (r *queryResolver) Voting(ctx context.Context, startEpoch int, epochCount i
 }
 
 // Contract handles voting requests
-func (r *queryResolver) Contract(ctx context.Context, numPerPage int, page int) ([]*Contract, error) {
-	Cons, err := r.AP.GetContract(uint64(numPerPage), uint64(page))
+func (r *queryResolver) Contract(ctx context.Context, address string, numPerPage int, page int) ([]*Contract, error) {
+	Cons, err := r.AP.GetContract(address, uint64(numPerPage), uint64(page))
 	switch {
 	case errors.Cause(err) == indexprotocol.ErrNotExist:
 		return nil, nil
