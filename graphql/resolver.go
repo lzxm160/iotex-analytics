@@ -146,7 +146,7 @@ func (r *queryResolver) Voting(ctx context.Context, startEpoch int, epochCount i
 	return &Voting{Exist: true, CandidateMeta: candidateMetaList}, nil
 }
 
-// Contract handles voting requests
+// Contract handles Contract requests
 func (r *queryResolver) Contract(ctx context.Context, address string, numPerPage int, page int) ([]*Contract, error) {
 	Cons, err := r.AP.GetContract(address, uint64(numPerPage), uint64(page))
 	switch {
