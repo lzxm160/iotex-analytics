@@ -100,7 +100,7 @@ func (p *Protocol) GetContract(address string, numPerPage, page uint64) (ret []*
 		page = 1
 	}
 	offset := (page - 1) * numPerPage
-	getQuery := fmt.Sprintf("SELECT action_hash,`from`,`to`,amount,`timestamp`,`data` FROM %s WHERE `to`='%s' and left(`data`,8)='%s'`data`ORDER BY `timestamp` desc limit %d,%d", actions.ActionHistoryTableName, address, transferSha3, offset, numPerPage)
+	getQuery := fmt.Sprintf("SELECT action_hash,`from`,`to`,amount,`timestamp`,`data` FROM %s WHERE `to`='%s' and left(`data`,8)='%s' ORDER BY `timestamp` desc limit %d,%d", actions.ActionHistoryTableName, address, transferSha3, offset, numPerPage)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")
