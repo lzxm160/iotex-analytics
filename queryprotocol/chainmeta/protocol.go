@@ -109,7 +109,7 @@ func (p *Protocol) MostRecentTPS(ranges uint64) (tps float64, err error) {
 	if timeDuration < 1 {
 		timeDuration = 1
 	}
-	tps = float64(numActions) / timeDuration
+	tps = float64(numActions) / float64(timeDuration)
 	return
 }
 
