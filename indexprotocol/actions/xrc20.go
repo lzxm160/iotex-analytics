@@ -22,7 +22,7 @@ const (
 	// Xrc20HistoryTableName is the table name of xrc20 history
 	Xrc20HistoryTableName = "xrc20_history"
 	// transferSha3 is sha3 of xrc20's transfer
-	transferSha3 = "a9059cbb"
+	transferSha3 = "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 )
 
 type (
@@ -53,7 +53,7 @@ type (
 // CreateTables creates tables
 func (p *Protocol) CreateXrc20Tables(ctx context.Context) error {
 	// create block by action table
-	if _, err := p.Store.GetDB().Exec(fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, address VARCHAR(41) NOT NULL,`topics` VARCHAR(256),`data` TEXT,block_height DECIMAL(65, 0), `index` DECIMAL(65, 0),`timestamp` DECIMAL(65, 0),status VARCHAR(7) NOT NULL, PRIMARY KEY (action_hash,receipt_hash,topics))",
+	if _, err := p.Store.GetDB().Exec(fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, address VARCHAR(41) NOT NULL,`topics` VARCHAR(192),`data` TEXT,block_height DECIMAL(65, 0), `index` DECIMAL(65, 0),`timestamp` DECIMAL(65, 0),status VARCHAR(7) NOT NULL, PRIMARY KEY (action_hash,receipt_hash,topics))",
 		Xrc20HistoryTableName)); err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (p *Protocol) updateXrc20History(
 				continue
 			}
 			fmt.Println(topics)
-			//if !strings.Contains(topics,"ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef")
+			//if !strings.Contains(topics,transferSha3)
 			//{
 			//	continue
 			//}

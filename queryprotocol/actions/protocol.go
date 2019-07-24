@@ -7,10 +7,10 @@
 package actions
 
 import (
-	"encoding/hex"
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
 
 	"github.com/iotexproject/iotex-address/address"
@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	transferSha3 = "a9059cbb"
+	topicsLen = 192
 )
 
 type activeAccout struct {
@@ -36,6 +36,7 @@ type Contract struct {
 	To        string `json:"to"`
 	Quantity  string `json:"quantity"`
 	Timestamp string `json:"timestamp"`
+	Topics    string `json:"topics"`
 	Data      string `json:"data"`
 }
 
@@ -89,8 +90,6 @@ func (p *Protocol) GetActiveAccount(count int) ([]string, error) {
 
 // GetContract
 func (p *Protocol) GetContract(address string, numPerPage, page uint64) (ret []*Contract, err error) {
-	//SELECT action_hash,`from`,`to`,amount,`timestamp` FROM action_history WHERE `to`='io1ly28u4nn9w3qxpusfuwg4u36xxdj02s7lxncyt' ORDER BY `timestamp` DESC LIMIT 0,10
-
 	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
 		return nil, errors.New("actions protocol is unregistered")
 	}
@@ -100,7 +99,7 @@ func (p *Protocol) GetContract(address string, numPerPage, page uint64) (ret []*
 		page = 1
 	}
 	offset := (page - 1) * numPerPage
-	getQuery := fmt.Sprintf("SELECT action_hash,`from`,`to`,amount,`timestamp`,`data` FROM %s WHERE `to`='%s' and left(`data`,8)='%s' ORDER BY `timestamp` desc limit %d,%d", actions.ActionHistoryTableName, address, transferSha3, offset, numPerPage)
+	getQuery := fmt.Sprintf("SELECT action_hash,topics,data,`timestamp` FROM %s WHERE address='%s' ORDER BY `timestamp` desc limit %d,%d", actions.Xrc20HistoryTableName, address, offset, numPerPage)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")
@@ -124,7 +123,7 @@ func (p *Protocol) GetContract(address string, numPerPage, page uint64) (ret []*
 
 	for _, parsedRow := range parsedRows {
 		con := parsedRow.(*Contract)
-		con.To, con.Quantity, err = parseData(con.Data)
+		con.From, con.To, con.Quantity, err = parseData(con.Topics, con.Data)
 		if err != nil {
 			return
 		}
@@ -133,23 +132,28 @@ func (p *Protocol) GetContract(address string, numPerPage, page uint64) (ret []*
 	return
 }
 
-func parseData(data string) (to, amount string, err error) {
-	if len(data) != 136 {
+func parseData(topics, data string) (from, to, amount string, err error) {
+	if len(topics) != topicsLen {
 		err = errors.New("data's len is wrong")
 		return
 	}
-	addr := data[32:72]
-	addrHash, err := hex.DecodeString(addr)
+	fromEth := topics[24:64]
+	ethAddress := common.HexToAddress(fromEth)
+	ioAddress, err := address.FromBytes(ethAddress.Bytes())
 	if err != nil {
 		return
 	}
-	callerAddr, err := address.FromBytes(addrHash)
+	from = ioAddress.String()
+
+	toEth := topics[96:128]
+	ethAddress = common.HexToAddress(toEth)
+	ioAddress, err = address.FromBytes(ethAddress.Bytes())
 	if err != nil {
 		return
 	}
-	to = callerAddr.String()
-	amountString := data[72:]
-	amountBig, ok := new(big.Int).SetString(amountString, 16)
+	to = ioAddress.String()
+
+	amountBig, ok := new(big.Int).SetString(data, 16)
 	if !ok {
 		err = errors.New("amount convert error")
 		return
