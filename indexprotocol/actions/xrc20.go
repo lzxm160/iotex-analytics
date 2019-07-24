@@ -89,19 +89,22 @@ func (p *Protocol) updateXrc20History(
 				continue
 			}
 			fmt.Println(topics)
-
+			//if !strings.Contains(topics,"ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef")
+			//{
+			//	continue
+			//}
 			ah := hex.EncodeToString(l.ActionHash[:])
 			receiptHash := receipt.Hash()
 
 			rh := hex.EncodeToString(receiptHash[:])
-			valStrs = append(valStrs, "(?, ?, ?, ?, ?, ?, ?, ?)")
-			valArgs = append(valArgs, ah, rh, l.Address, data, l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus)
+			valStrs = append(valStrs, "(?, ?, ?, ?, ?, ?, ?, ?, ?)")
+			valArgs = append(valArgs, ah, rh, l.Address, topics, data, l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus)
 		}
 	}
 	if len(valArgs) == 0 {
 		return nil
 	}
-	insertQuery := fmt.Sprintf("INSERT IGNORE INTO %s (action_hash, receipt_hash, address,`data`,block_height, `index`,`timestamp`,status) VALUES %s", Xrc20HistoryTableName, strings.Join(valStrs, ","))
+	insertQuery := fmt.Sprintf("INSERT IGNORE INTO %s (action_hash, receipt_hash, address,topics,`data`,block_height, `index`,`timestamp`,status) VALUES %s", Xrc20HistoryTableName, strings.Join(valStrs, ","))
 
 	if _, err := tx.Exec(insertQuery, valArgs...); err != nil {
 		return err
