@@ -11,6 +11,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/iotexproject/go-pkgs/hash"
@@ -62,6 +63,8 @@ func (p *Protocol) updateXrc20History(
 	tx *sql.Tx,
 	blk *block.Block,
 ) error {
+	valStrs := make([]string, 0)
+	valArgs := make([]interface{}, 0)
 	for _, receipt := range blk.Receipts {
 		receiptStatus := "failure"
 		if receipt.Status == uint64(1) {
@@ -72,13 +75,11 @@ func (p *Protocol) updateXrc20History(
 			receiptHash := receipt.Hash()
 			data := hex.EncodeToString(l.Data)
 			rh := hex.EncodeToString(receiptHash[:])
-
-			insertQuery := fmt.Sprintf("INSERT INTO %s (action_hash, receipt_hash, address,`data`,block_height, `index`,`timestamp`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", Xrc20HistoryTableName)
-
-			if _, err := tx.Exec(insertQuery, ah, rh, l.Address, data, l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus); err != nil {
-				return err
-			}
+			valStrs = append(valStrs, "(?, ?, ?, ?, ?, ?, ?, ?)")
+			valArgs = append(valArgs, ah, rh, l.Address, data, l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus)
 		}
 	}
-	return nil
+	insertQuery := fmt.Sprintf("INSERT INTO %s (action_hash, receipt_hash, address,`data`,block_height, `index`,`timestamp`,status) VALUES %s", Xrc20HistoryTableName, strings.Join(valStrs, ","))
+
+	return tx.Exec(insertQuery, valArgs...)
 }
