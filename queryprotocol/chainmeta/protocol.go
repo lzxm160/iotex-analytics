@@ -94,8 +94,8 @@ func (p *Protocol) MostRecentTPS(ranges uint64) (tps float64, err error) {
 		return
 	}
 	var numActions int
-	startTime := time.Unix(int64(parsedRows[0].(*blkInfo).Timestamp), 0)
-	endTime := time.Unix(int64(parsedRows[0].(*blkInfo).Timestamp), 0)
+	startTime := parsedRows[0].(*blkInfo).Timestamp
+	endTime := parsedRows[0].(*blkInfo).Timestamp
 	for _, parsedRow := range parsedRows {
 		blk := parsedRow.(*blkInfo)
 		numActions += blk.Transfer + blk.Execution + blk.ClaimFromRewardingFund + blk.DepositToRewardingFund + blk.GrantReward + blk.PutPollResult
@@ -106,7 +106,9 @@ func (p *Protocol) MostRecentTPS(ranges uint64) (tps float64, err error) {
 			endTime = blk.Timestamp
 		}
 	}
-	timeDiff := (endTime.Sub(startTime) + 10*time.Second) / time.Millisecond
+	t1 := time.Unix(startTime, 0)
+	t2 := time.Unix(endTime, 0)
+	timeDiff := (t2.Sub(t1) + 10*time.Second) / time.Millisecond
 	tps = float64(numActions*1000) / float64(timeDiff)
 
 	return
