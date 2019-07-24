@@ -81,5 +81,8 @@ func (p *Protocol) updateXrc20History(
 	}
 	insertQuery := fmt.Sprintf("INSERT INTO %s (action_hash, receipt_hash, address,`data`,block_height, `index`,`timestamp`,status) VALUES %s", Xrc20HistoryTableName, strings.Join(valStrs, ","))
 
-	return tx.Exec(insertQuery, valArgs...)
+	if _, err := tx.Exec(insertQuery, valArgs...); err != nil {
+		return err
+	}
+	return nil
 }
