@@ -10,7 +10,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -54,7 +53,7 @@ type (
 // CreateTables creates tables
 func (p *Protocol) CreateXrc20Tables(ctx context.Context) error {
 	// create block by action table
-	if _, err := p.Store.GetDB().Exec(fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, address VARCHAR(41) NOT NULL,`logs` TEXT,block_height DECIMAL(65, 0), `timestamp` DECIMAL(65, 0),status VARCHAR(7) NOT NULL)",
+	if _, err := p.Store.GetDB().Exec(fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, address VARCHAR(41) NOT NULL,`data` TEXT,block_height DECIMAL(65, 0), `index` DECIMAL(65, 0),`timestamp` DECIMAL(65, 0),status VARCHAR(7) NOT NULL), PRIMARY KEY (action_hash,receipt_hash)",
 		Xrc20HistoryTableName)); err != nil {
 		return err
 	}
@@ -64,66 +63,35 @@ func (p *Protocol) CreateXrc20Tables(ctx context.Context) error {
 // updateXrc20History stores Xrc20 information into Xrc20 history table
 func (p *Protocol) updateXrc20History(
 	tx *sql.Tx,
-	hashToActionInfo map[hash.Hash256]*ActionInfo,
-	hashToReceiptInfo map[hash.Hash256]*ReceiptInfo,
 	blk *block.Block,
 ) error {
 	valStrs := make([]string, 0)
 	valArgs := make([]interface{}, 0)
-	//for _, receipt := range blk.Receipts {
-	//	actionInfo, ok := hashToActionInfo[receipt.ActionHash]
-	//	if !ok {
-	//		return errors.New("failed to find the corresponding action from receipt")
-	//	}
-	//	receiptHash := receipt.Hash()
-	//	actionInfo.ReceiptHash = receiptHash
-	//
-	//	receiptStatus := "failure"
-	//	if receipt.Status == uint64(1) {
-	//		receiptStatus = "success"
-	//	}
-	//
-	//	hashToReceiptInfo[receiptHash] = &ReceiptInfo{
-	//		ReceiptHash:   hex.EncodeToString(receiptHash[:]),
-	//		GasConsumed:   receipt.GasConsumed,
-	//		ReceiptStatus: receiptStatus,
-	//	}
-	//}
 	for _, receipt := range blk.Receipts {
 		receiptStatus := "failure"
 		if receipt.Status == uint64(1) {
 			receiptStatus = "success"
 		}
-		receiptHash := receipt.Hash()
-		rh := hex.EncodeToString(receiptHash[:])
-		actionInfo, ok := hashToActionInfo[receipt.ActionHash]
-		if !ok {
-			return errors.New("failed to find the corresponding action from receipt")
+		for _, l := range receipt.Logs {
+			data := string(l.Data)
+			//if !strings.EqualFold(data[:8], transferSha3) {
+			//	continue
+			//}
+			fmt.Println(data)
+			fmt.Println(hex.EncodeToString(l.Data))
+			fmt.Println(l.Index)
+			ah := hex.EncodeToString(l.ActionHash[:])
+			receiptHash := receipt.Hash()
+
+			rh := hex.EncodeToString(receiptHash[:])
+			valStrs = append(valStrs, "(?, ?, ?, ?, ?, ?, ?, ?)")
+			valArgs = append(valArgs, ah, rh, l.Address, data, l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus)
 		}
-		rpb := receipt.ConvertToReceiptPb()
-		data := rpb.String()
-		valStrs = append(valStrs, "(?, ?, ?, ?, ?, ?, ?)")
-		valArgs = append(valArgs, actionInfo.ActionHash, rh, receipt.ContractAddress, data, blk.Height(), blk.Timestamp().Unix(), receiptStatus)
-		//for _, l := range receipt.Logs {
-		//	data := string(l.Data)
-		//	//if !strings.EqualFold(data[:8], transferSha3) {
-		//	//	continue
-		//	//}
-		//	fmt.Println(data)
-		//	fmt.Println(hex.EncodeToString(l.Data))
-		//	fmt.Println(l.Index)
-		//	ah := hex.EncodeToString(l.ActionHash[:])
-		//	receiptHash := receipt.Hash()
-		//
-		//	rh := hex.EncodeToString(receiptHash[:])
-		//	valStrs = append(valStrs, "(?, ?, ?, ?, ?, ?, ?, ?)")
-		//	valArgs = append(valArgs, ah, rh, l.Address, data, l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus)
-		//}
 	}
 	if len(valArgs) == 0 {
 		return nil
 	}
-	insertQuery := fmt.Sprintf("INSERT INTO %s (action_hash, receipt_hash, address,`logs`,block_height,`timestamp`,status) VALUES %s", Xrc20HistoryTableName, strings.Join(valStrs, ","))
+	insertQuery := fmt.Sprintf("INSERT IGNORE INTO %s (action_hash, receipt_hash, address,`data`,block_height, `index`,`timestamp`,status) VALUES %s", Xrc20HistoryTableName, strings.Join(valStrs, ","))
 
 	if _, err := tx.Exec(insertQuery, valArgs...); err != nil {
 		return err
