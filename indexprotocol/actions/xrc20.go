@@ -73,9 +73,9 @@ func (p *Protocol) updateXrc20History(
 			data := hex.EncodeToString(l.Data)
 			rh := hex.EncodeToString(receiptHash[:])
 
-			insertQuery := fmt.Sprintf("INSERT INTO %s (action_hash, receipt_hash, address,`data`,block_height, `index`,`timestamp`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", Xrc20HistoryTableName, ah, rh, l.Address, data, l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus)
+			insertQuery := fmt.Sprintf("INSERT INTO %s (action_hash, receipt_hash, address,`data`,block_height, `index`,`timestamp`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", Xrc20HistoryTableName)
 
-			if _, err := tx.Exec(insertQuery); err != nil {
+			if _, err := tx.Exec(insertQuery, ah, rh, l.Address, data, l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus); err != nil {
 				return err
 			}
 		}
