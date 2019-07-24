@@ -79,6 +79,7 @@ func (p *Protocol) updateXrc20History(
 			//}
 			fmt.Println(data)
 			fmt.Println(hex.EncodeToString(l.Data))
+			fmt.Println(l.Index)
 			ah := hex.EncodeToString(l.ActionHash[:])
 			receiptHash := receipt.Hash()
 
