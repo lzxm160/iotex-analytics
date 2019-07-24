@@ -100,7 +100,6 @@ func (p *Protocol) updateXrc20History(
 		if !ok {
 			return errors.New("failed to find the corresponding action from receipt")
 		}
-		rh := hex.EncodeToString(receiptHash[:])
 		rpb := receipt.ConvertToReceiptPb()
 		data := rpb.String()
 		valStrs = append(valStrs, "(?, ?, ?, ?, ?, ?, ?)")
