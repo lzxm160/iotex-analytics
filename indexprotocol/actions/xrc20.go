@@ -21,6 +21,8 @@ import (
 const (
 	// Xrc20HistoryTableName is the table name of xrc20 history
 	Xrc20HistoryTableName = "xrc20_history"
+	// transferSha3 is sha3 of xrc20's transfer
+	transferSha3 = "a9059cbb"
 )
 
 type (
@@ -71,9 +73,13 @@ func (p *Protocol) updateXrc20History(
 			receiptStatus = "success"
 		}
 		for _, l := range receipt.Logs {
+			data := hex.EncodeToString(l.Data)
+			if !strings.EqualFold(data[:8], transferSha3) {
+				continue
+			}
 			ah := hex.EncodeToString(l.ActionHash[:])
 			receiptHash := receipt.Hash()
-			data := hex.EncodeToString(l.Data)
+
 			rh := hex.EncodeToString(receiptHash[:])
 			valStrs = append(valStrs, "(?, ?, ?, ?, ?, ?, ?, ?)")
 			valArgs = append(valArgs, ah, rh, l.Address, data, l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus)
