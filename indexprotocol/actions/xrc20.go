@@ -64,21 +64,21 @@ func (p *Protocol) updateXrc20History(
 	blk *block.Block,
 ) error {
 	for _, receipt := range blk.Receipts {
-		var valStrs,valArgs string
+		var valStrs, valArgs string
 		receiptStatus := "failure"
-		if  receipt.Status== uint64(1) {
+		if receipt.Status == uint64(1) {
 			receiptStatus = "success"
 		}
-		for _,l:=range receipt.Logs{
+		for _, l := range receipt.Logs {
 
 			valStrs = append(valStrs, "(?, ?, ?, ?, ?, ?, ?, ?)")
-			valArgs = append(valArgs, hex.EncodeToString(l.ActionHash[:]),hex.EncodeToString(receipt.Hash()[:]),l.Address,hex.EncodeToString(l.Data),l.BlockHeight,l.Index,blk.Timestamp().Unix(),receiptStatus)
-		}
-		insertQuery := fmt.Sprintf("INSERT INTO %s (action_hash, receipt_hash, address,`data`,block_height, `index`,`timestamp`) VALUES %s", Xrc20HistoryTableName, strings.Join(valStrs, ","))
+			valArgs = append(valArgs, hex.EncodeToString(l.ActionHash[:]), hex.EncodeToString(receipt.Hash()[:]), l.Address, hex.EncodeToString(l.Data), l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus)
 
-		if _, err := tx.Exec(insertQuery, valArgs...); err != nil {
-			return err
-		}
+			insertQuery := fmt.Sprintf("INSERT INTO %s (action_hash, receipt_hash, address,`data`,block_height, `index`,`timestamp`) VALUES %s", Xrc20HistoryTableName, strings.Join(valStrs, ","))
+
+			if _, err := tx.Exec(insertQuery, valArgs...); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
