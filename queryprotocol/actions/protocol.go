@@ -133,6 +133,8 @@ func (p *Protocol) GetContract(address string, numPerPage, page uint64) (cons []
 		if err != nil {
 			return
 		}
+		con.Hash = r.ActionHash
+		con.Timestamp = r.Timestamp
 		cons = append(cons, con)
 	}
 	return
