@@ -161,6 +161,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			GasConsumed:   receipt.GasConsumed,
 			ReceiptStatus: receiptStatus,
 		}
+		fmt.Println(receipt.Logs)
 	}
 
 	return p.updateActionHistory(tx, hashToActionInfo, hashToReceiptInfo, blk)
