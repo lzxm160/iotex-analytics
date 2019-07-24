@@ -80,15 +80,13 @@ func (p *Protocol) updateXrc20History(
 				topics += hex.EncodeToString(t[:])
 			}
 			fmt.Println("data:", data)
-			fmt.Println("string data:", string(l.Data))
-			fmt.Println(l.Index)
-			fmt.Println(topics)
+			fmt.Println("topics:", topics)
 			if topics == "" || len(topics) > 64*3 || len(data) > 64*3 {
 				continue
 			}
-			//if !strings.Contains(topics, transferSha3) {
-			//	continue
-			//}
+			if !strings.Contains(topics, transferSha3) {
+				continue
+			}
 			ah := hex.EncodeToString(l.ActionHash[:])
 			receiptHash := receipt.Hash()
 
