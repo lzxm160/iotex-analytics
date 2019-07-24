@@ -8,6 +8,7 @@ package chainmeta
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -93,8 +94,8 @@ func (p *Protocol) MostRecentTPS(ranges uint64) (tps float64, err error) {
 		return
 	}
 	var numActions int
-	startTime := parsedRows[0].(*blkInfo).Timestamp
-	endTime := parsedRows[0].(*blkInfo).Timestamp
+	startTime := time.Unix(int64(parsedRows[0].(*blkInfo).Timestamp), 0)
+	endTime := time.Unix(int64(parsedRows[0].(*blkInfo).Timestamp), 0)
 	for _, parsedRow := range parsedRows {
 		blk := parsedRow.(*blkInfo)
 		numActions += blk.Transfer + blk.Execution + blk.ClaimFromRewardingFund + blk.DepositToRewardingFund + blk.GrantReward + blk.PutPollResult
@@ -105,11 +106,9 @@ func (p *Protocol) MostRecentTPS(ranges uint64) (tps float64, err error) {
 			endTime = blk.Timestamp
 		}
 	}
-	timeDuration := startTime - endTime
-	if timeDuration < 1 {
-		timeDuration = 1
-	}
-	tps = float64(numActions) / float64(timeDuration)
+	timeDiff := (endTime.Sub(startTime) + 10*time.Second) / time.Millisecond
+	tps = float64(numActions*1000) / float64(timeDiff)
+
 	return
 }
 
