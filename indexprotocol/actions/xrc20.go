@@ -53,7 +53,7 @@ type (
 // CreateTables creates tables
 func (p *Protocol) CreateXrc20Tables(ctx context.Context) error {
 	// create block by action table
-	if _, err := p.Store.GetDB().Exec(fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, address VARCHAR(41) NOT NULL,`topics` VARCHAR(192),`data` TEXT,block_height DECIMAL(65, 0), `index` DECIMAL(65, 0),`timestamp` DECIMAL(65, 0),status VARCHAR(7) NOT NULL, PRIMARY KEY (action_hash,receipt_hash,topics))",
+	if _, err := p.Store.GetDB().Exec(fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, address VARCHAR(41) NOT NULL,`topics` VARCHAR(192),`data` VARCHAR(64),block_height DECIMAL(65, 0), `index` DECIMAL(65, 0),`timestamp` DECIMAL(65, 0),status VARCHAR(7) NOT NULL, PRIMARY KEY (action_hash,receipt_hash,topics))",
 		Xrc20HistoryTableName)); err != nil {
 		return err
 	}
@@ -74,12 +74,12 @@ func (p *Protocol) updateXrc20History(
 		}
 		fmt.Println(len(receipt.Logs))
 		for _, l := range receipt.Logs {
-			data := string(l.Data)
+			data := hex.EncodeToString(l.Data)
 			//if !strings.EqualFold(data[:8], transferSha3) {
 			//	continue
 			//}
-			fmt.Println(data)
-			fmt.Println(hex.EncodeToString(l.Data))
+			fmt.Println("data:", data)
+			fmt.Println("string data:", string(l.Data))
 			fmt.Println(l.Index)
 			var topics string
 			for _, t := range l.Topics {
