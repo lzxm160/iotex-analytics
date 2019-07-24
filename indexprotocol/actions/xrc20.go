@@ -77,6 +77,8 @@ func (p *Protocol) updateXrc20History(
 			//if !strings.EqualFold(data[:8], transferSha3) {
 			//	continue
 			//}
+			fmt.Println(data)
+			fmt.Println(hex.EncodeToString(l.Data))
 			ah := hex.EncodeToString(l.ActionHash[:])
 			receiptHash := receipt.Hash()
 
