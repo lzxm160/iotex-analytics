@@ -72,6 +72,7 @@ func (p *Protocol) updateXrc20History(
 		if receipt.Status == uint64(1) {
 			receiptStatus = "success"
 		}
+		fmt.Println(len(receipt.Logs))
 		for _, l := range receipt.Logs {
 			data := string(l.Data)
 			//if !strings.EqualFold(data[:8], transferSha3) {
@@ -80,6 +81,7 @@ func (p *Protocol) updateXrc20History(
 			fmt.Println(data)
 			fmt.Println(hex.EncodeToString(l.Data))
 			fmt.Println(l.Index)
+
 			ah := hex.EncodeToString(l.ActionHash[:])
 			receiptHash := receipt.Hash()
 
