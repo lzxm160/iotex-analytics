@@ -87,7 +87,7 @@ func (p *Protocol) CreateTables(ctx context.Context) error {
 		ActionHistoryTableName, blocks.BlockHistoryTableName)); err != nil {
 		return err
 	}
-	return nil
+	return p.CreateXrc20Tables(ctx)
 }
 
 // Initialize initializes actions protocol
@@ -161,15 +161,13 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			GasConsumed:   receipt.GasConsumed,
 			ReceiptStatus: receiptStatus,
 		}
-		for _, l := range receipt.Logs {
-			fmt.Println(hex.EncodeToString(l.ActionHash[:]))
-			fmt.Println(l.Address)
-			fmt.Println(hex.EncodeToString(l.Data))
-		}
-
 	}
 
-	return p.updateActionHistory(tx, hashToActionInfo, hashToReceiptInfo, blk)
+	err := p.updateActionHistory(tx, hashToActionInfo, hashToReceiptInfo, blk)
+	if err != nil {
+		return
+	}
+	return p.updateXrc20History(tx, blk)
 }
 
 // getActionHistory returns action history by action hash

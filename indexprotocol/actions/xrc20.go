@@ -9,13 +9,13 @@ package actions
 import (
 	"context"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/iotexproject/go-pkgs/hash"
 	"github.com/iotexproject/iotex-core/blockchain/block"
-
-	"github.com/iotexproject/iotex-analytics/indexprotocol/blocks"
 )
 
 const (
@@ -26,17 +26,13 @@ const (
 type (
 	// Xrc20History defines the base schema of "xrc20 history" table
 	Xrc20History struct {
-		ActionType    string
-		ActionHash    string
-		ReceiptHash   string
-		BlockHeight   uint64
-		From          string
-		To            string
-		GasPrice      string
-		GasConsumed   uint64
-		Nonce         uint64
-		Amount        string
-		ReceiptStatus string
+		ActionHash  string
+		ReceiptHash string
+		Address     string
+		Data        []byte
+		BlockHeight uint64
+		Index       uint64
+		Timestamp   uint64
 	}
 
 	// Xrc20Info defines an Xrc20's information
@@ -55,17 +51,35 @@ type (
 // CreateTables creates tables
 func (p *Protocol) CreateXrc20Tables(ctx context.Context) error {
 	// create block by action table
-	if _, err := p.Store.GetDB().Exec(fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s "+
-		"(action_type TEXT NOT NULL, action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, block_height DECIMAL(65, 0) NOT NULL, "+
-		"`from` VARCHAR(41) NOT NULL, `to` VARCHAR(41) NOT NULL, gas_price DECIMAL(65, 0) NOT NULL, gas_consumed DECIMAL(65, 0) NOT NULL, nonce DECIMAL(65, 0) NOT NULL, "+
-		"amount DECIMAL(65, 0) NOT NULL, receipt_status TEXT NOT NULL, data TEXT, timestamp DECIMAL(65, 0) NOT NULL, PRIMARY KEY (action_hash), FOREIGN KEY (block_height) REFERENCES %s(block_height))",
-		Xrc20HistoryTableName, blocks.BlockHistoryTableName)); err != nil {
+	if _, err := p.Store.GetDB().Exec(fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, address VARCHAR(41) NOT NULL,`data` TEXT,block_height DECIMAL(65, 0), `index` DECIMAL(65, 0),`timestamp` DECIMAL(65, 0),status VARCHAR(7) NOT NULL,PRIMARY KEY (action_hash))",
+		Xrc20HistoryTableName)); err != nil {
 		return err
 	}
 	return nil
 }
 
-// HandleXrc20 handles Xrc20
-func (p *Protocol) HandleXrc20(ctx context.Context, tx *sql.Tx, blk *block.Block) error {
+// updateXrc20History stores Xrc20 information into Xrc20 history table
+func (p *Protocol) updateXrc20History(
+	tx *sql.Tx,
+	blk *block.Block,
+) error {
+	for _, receipt := range blk.Receipts {
+		var valStrs,valArgs string
+		receiptStatus := "failure"
+		if  receipt.Status== uint64(1) {
+			receiptStatus = "success"
+		}
+		for _,l:=range receipt.Logs{
+
+			valStrs = append(valStrs, "(?, ?, ?, ?, ?, ?, ?, ?)")
+			valArgs = append(valArgs, hex.EncodeToString(l.ActionHash[:]),hex.EncodeToString(receipt.Hash()[:]),l.Address,hex.EncodeToString(l.Data),l.BlockHeight,l.Index,blk.Timestamp().Unix(),receiptStatus)
+		}
+		insertQuery := fmt.Sprintf("INSERT INTO %s (action_hash, receipt_hash, address,`data`,block_height, `index`,`timestamp`) VALUES %s", Xrc20HistoryTableName, strings.Join(valStrs, ","))
+
+		if _, err := tx.Exec(insertQuery, valArgs...); err != nil {
+			return err
+		}
+		}
+	}
 	return nil
 }
