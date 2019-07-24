@@ -106,8 +106,8 @@ func (p *Protocol) MostRecentTPS(ranges uint64) (tps float64, err error) {
 			endTime = blk.Timestamp
 		}
 	}
-	t1 := time.Unix(startTime, 0)
-	t2 := time.Unix(endTime, 0)
+	t1 := time.Unix(int64(startTime), 0)
+	t2 := time.Unix(int64(endTime), 0)
 	timeDiff := (t2.Sub(t1) + 10*time.Second) / time.Millisecond
 	tps = float64(numActions*1000) / float64(timeDiff)
 
