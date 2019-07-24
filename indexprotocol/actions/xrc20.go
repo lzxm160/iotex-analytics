@@ -74,9 +74,9 @@ func (p *Protocol) updateXrc20History(
 		}
 		for _, l := range receipt.Logs {
 			data := hex.EncodeToString(l.Data)
-			if !strings.EqualFold(data[:8], transferSha3) {
-				continue
-			}
+			//if !strings.EqualFold(data[:8], transferSha3) {
+			//	continue
+			//}
 			ah := hex.EncodeToString(l.ActionHash[:])
 			receiptHash := receipt.Hash()
 
