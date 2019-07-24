@@ -85,6 +85,9 @@ func (p *Protocol) updateXrc20History(
 			valArgs = append(valArgs, ah, rh, l.Address, data, l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus)
 		}
 	}
+	if len(valArgs) == 0 {
+		return nil
+	}
 	insertQuery := fmt.Sprintf("INSERT INTO %s (action_hash, receipt_hash, address,`data`,block_height, `index`,`timestamp`,status) VALUES %s", Xrc20HistoryTableName, strings.Join(valStrs, ","))
 
 	if _, err := tx.Exec(insertQuery, valArgs...); err != nil {
