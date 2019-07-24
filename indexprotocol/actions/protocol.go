@@ -161,7 +161,12 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			GasConsumed:   receipt.GasConsumed,
 			ReceiptStatus: receiptStatus,
 		}
-		fmt.Println(receipt.Logs)
+		for _, l := range receipt.Logs {
+			fmt.Println(hex.EncodeToString(l.ActionHash[:]))
+			fmt.Println(l.Address)
+			fmt.Println(hex.EncodeToString(l.Data))
+		}
+
 	}
 
 	return p.updateActionHistory(tx, hashToActionInfo, hashToReceiptInfo, blk)
