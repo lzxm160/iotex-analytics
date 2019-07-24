@@ -108,7 +108,7 @@ func (p *Protocol) MostRecentTPS(ranges uint64) (tps float64, err error) {
 	}
 	t1 := time.Unix(int64(startTime), 0)
 	t2 := time.Unix(int64(endTime), 0)
-	timeDiff := (t2.Sub(t1) + 10*time.Second) / time.Millisecond
+	timeDiff := (t1.Sub(t2) + 10*time.Second) / time.Millisecond
 	tps = float64(numActions*1000) / float64(timeDiff)
 
 	return
