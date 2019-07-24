@@ -31,13 +31,19 @@ type activeAccout struct {
 
 // Contract
 type Contract struct {
-	Hash      string `json:"hash"`
-	From      string `json:"from"`
-	To        string `json:"to"`
-	Quantity  string `json:"quantity"`
-	Timestamp string `json:"timestamp"`
-	Topics    string `json:"topics"`
-	Data      string `json:"data"`
+	Hash      string
+	From      string
+	To        string
+	Quantity  string
+	Timestamp string
+}
+
+// RetData
+type RetData struct {
+	ActionHash string
+	Topics     string
+	Data       string
+	Timestamp  string
 }
 
 // Protocol defines the protocol of querying tables
@@ -89,7 +95,7 @@ func (p *Protocol) GetActiveAccount(count int) ([]string, error) {
 }
 
 // GetContract
-func (p *Protocol) GetContract(address string, numPerPage, page uint64) (ret []*Contract, err error) {
+func (p *Protocol) GetContract(address string, numPerPage, page uint64) (cons []*Contract, err error) {
 	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
 		return nil, errors.New("actions protocol is unregistered")
 	}
@@ -111,8 +117,8 @@ func (p *Protocol) GetContract(address string, numPerPage, page uint64) (ret []*
 		return nil, errors.Wrap(err, "failed to execute get query")
 	}
 
-	var contract Contract
-	parsedRows, err := s.ParseSQLRows(rows, &contract)
+	var ret RetData
+	parsedRows, err := s.ParseSQLRows(rows, &ret)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse results")
 	}
@@ -120,14 +126,14 @@ func (p *Protocol) GetContract(address string, numPerPage, page uint64) (ret []*
 		err = indexprotocol.ErrNotExist
 		return nil, err
 	}
-
+	con := &Contract{}
 	for _, parsedRow := range parsedRows {
-		con := parsedRow.(*Contract)
-		con.From, con.To, con.Quantity, err = parseData(con.Topics, con.Data)
+		r := parsedRow.(*RetData)
+		con.From, con.To, con.Quantity, err = parseData(r.Topics, r.Data)
 		if err != nil {
 			return
 		}
-		ret = append(ret, con)
+		cons = append(cons, con)
 	}
 	return
 }
