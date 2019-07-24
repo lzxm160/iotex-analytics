@@ -167,7 +167,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 	if err != nil {
 		return err
 	}
-	return p.updateXrc20History(tx, blk)
+	return p.updateXrc20History(tx, hashToActionInfo, hashToReceiptInfo, blk)
 }
 
 // getActionHistory returns action history by action hash
