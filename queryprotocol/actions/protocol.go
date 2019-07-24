@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	topicsLen = 192
+	topicsPlusDataLen = 256
 )
 
 type activeAccout struct {
@@ -141,11 +141,13 @@ func (p *Protocol) GetContract(address string, numPerPage, page uint64) (cons []
 }
 
 func parseData(topics, data string) (from, to, amount string, err error) {
-	if len(topics) != topicsLen {
+	// This should cover indexed or not input,such as len(topics)==192 len(data)==64 or len(topics)==64 len(data)==192
+	all := topics + data
+	if len(all) != topicsPlusDataLen {
 		err = errors.New("data's len is wrong")
 		return
 	}
-	fromEth := topics[24:64]
+	fromEth := all[88:128]
 	ethAddress := common.HexToAddress(fromEth)
 	ioAddress, err := address.FromBytes(ethAddress.Bytes())
 	if err != nil {
@@ -153,7 +155,7 @@ func parseData(topics, data string) (from, to, amount string, err error) {
 	}
 	from = ioAddress.String()
 
-	toEth := topics[96:128]
+	toEth := all[152:192]
 	ethAddress = common.HexToAddress(toEth)
 	ioAddress, err = address.FromBytes(ethAddress.Bytes())
 	if err != nil {
@@ -161,7 +163,7 @@ func parseData(topics, data string) (from, to, amount string, err error) {
 	}
 	to = ioAddress.String()
 
-	amountBig, ok := new(big.Int).SetString(data, 16)
+	amountBig, ok := new(big.Int).SetString(all[192:], 16)
 	if !ok {
 		err = errors.New("amount convert error")
 		return
