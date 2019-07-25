@@ -127,9 +127,10 @@ func (p *Protocol) GetContract(address string, numPerPage, page uint64) (cons []
 		err = indexprotocol.ErrNotExist
 		return nil, err
 	}
-	con := &Contract{}
+
 	fmt.Println(len(parsedRows))
 	for _, parsedRow := range parsedRows {
+		con := &Contract{}
 		r := parsedRow.(*RetData)
 		con.From, con.To, con.Quantity, err = parseData(r.Topics, r.Data)
 		if err != nil {
