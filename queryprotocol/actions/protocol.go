@@ -106,6 +106,7 @@ func (p *Protocol) GetContract(address string, numPerPage, page uint64) (cons []
 	}
 	offset := (page - 1) * numPerPage
 	getQuery := fmt.Sprintf("SELECT action_hash,topics,data,`timestamp` FROM %s WHERE address='%s' ORDER BY `timestamp` desc limit %d,%d", actions.Xrc20HistoryTableName, address, offset, numPerPage)
+	fmt.Println(getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")
@@ -127,6 +128,7 @@ func (p *Protocol) GetContract(address string, numPerPage, page uint64) (cons []
 		return nil, err
 	}
 	con := &Contract{}
+	fmt.Println(len(parsedRows))
 	for _, parsedRow := range parsedRows {
 		r := parsedRow.(*RetData)
 		con.From, con.To, con.Quantity, err = parseData(r.Topics, r.Data)
