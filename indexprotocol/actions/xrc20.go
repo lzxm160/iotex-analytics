@@ -12,9 +12,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strings"
-	"time"
 
-	"github.com/iotexproject/go-pkgs/hash"
 	"github.com/iotexproject/iotex-core/blockchain/block"
 )
 
@@ -35,18 +33,6 @@ type (
 		BlockHeight uint64
 		Index       uint64
 		Timestamp   uint64
-	}
-
-	// Xrc20Info defines an Xrc20's information
-	Xrc20Info struct {
-		ReceiptHash hash.Hash256
-		From        string
-		To          string
-		GasPrice    string
-		Nonce       uint64
-		Amount      string
-		Data        string
-		timestamp   time.Time
 	}
 )
 
