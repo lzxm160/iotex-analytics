@@ -66,6 +66,7 @@ func (p *Protocol) updateXrc20History(
 			for _, t := range l.Topics {
 				topics += hex.EncodeToString(t[:])
 			}
+			fmt.Println(blk.Height())
 			fmt.Println(topics)
 			fmt.Println(data)
 			if topics == "" || len(topics) > 64*3 || len(data) > 64*3 {
