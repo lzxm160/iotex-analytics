@@ -124,6 +124,7 @@ func (p *Protocol) GetContract(address string, numPerPage, page uint64) (cons []
 	for _, parsedRow := range parsedRows {
 		con := &Contract{}
 		r := parsedRow.(*actions.Xrc20History)
+		fmt.Println(r)
 		con.From, con.To, con.Quantity, err = parseContractData(r.Topics, r.Data)
 		if err != nil {
 			return
