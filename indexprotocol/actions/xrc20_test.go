@@ -123,5 +123,5 @@ func TestXrc20(t *testing.T) {
 	require.Equal("0000000000000000000000006356908ace09268130dee2b7de643314bbeb3683000000000000000000000000da7e12ef57c236a06117c5e0d04a228e7181cf360000000000000000000000000000000000000000000000000de0b6b3a7640000", xrc20History[0].Data)
 	require.Equal("100000", xrc20History[0].BlockHeight)
 	require.Equal("888", xrc20History[0].Index)
-	require.Equal("success", xrc20History[0].Status)
+	require.Equal("failure", xrc20History[0].Status)
 }
