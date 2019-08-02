@@ -29,10 +29,12 @@ type (
 		ActionHash  string
 		ReceiptHash string
 		Address     string
-		Data        []byte
-		BlockHeight uint64
-		Index       uint64
-		Timestamp   uint64
+		Topics      string
+		Data        string
+		BlockHeight string
+		Index       string
+		Timestamp   string
+		Status      string
 	}
 )
 
@@ -67,6 +69,8 @@ func (p *Protocol) updateXrc20History(
 			if topics == "" || len(topics) > 64*3 || len(data) > 64*3 {
 				continue
 			}
+			fmt.Println(topics)
+			fmt.Println(data)
 			if !strings.Contains(topics, transferSha3) {
 				continue
 			}
