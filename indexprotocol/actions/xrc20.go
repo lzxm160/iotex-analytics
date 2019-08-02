@@ -103,7 +103,7 @@ func (p *Protocol) updateXrc20History(
 func (p *Protocol) getXrc20History(address string) ([]*Xrc20History, error) {
 	db := p.Store.GetDB()
 
-	getQuery := fmt.Sprintf("SELECT * FROM %s WHERE address='?'",
+	getQuery := fmt.Sprintf("SELECT * FROM %s WHERE address=?",
 		Xrc20HistoryTableName)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
