@@ -138,7 +138,9 @@ func BuildCompleteBlock(height uint64, nextEpochHeight uint64) (*block.Block, er
 				},
 				{
 					Core: &iotextypes.ActionCore{
-						Action:  &iotextypes.ActionCore_Execution{},
+						Action: &iotextypes.ActionCore_Execution{
+							Execution: &iotextypes.Execution{},
+						},
 						Version: version.ProtocolVersion,
 						Nonce:   107,
 					},
