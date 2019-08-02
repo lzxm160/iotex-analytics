@@ -13,10 +13,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/iotexproject/iotex-analytics/indexprotocol"
+	"github.com/iotexproject/iotex-core/blockchain/block"
 	"github.com/pkg/errors"
 
-	"github.com/iotexproject/iotex-core/blockchain/block"
+	"github.com/iotexproject/iotex-analytics/indexprotocol"
+	s "github.com/iotexproject/iotex-analytics/sql"
 )
 
 const (
