@@ -13,11 +13,8 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/iotexproject/iotex-core/test/mock/mock_apiserviceclient"
-	mock_election "github.com/iotexproject/iotex-election/test/mock/mock_apiserviceclient"
 	"github.com/stretchr/testify/require"
 
-	"github.com/iotexproject/iotex-analytics/indexcontext"
 	"github.com/iotexproject/iotex-analytics/indexprotocol/blocks"
 	s "github.com/iotexproject/iotex-analytics/sql"
 	"github.com/iotexproject/iotex-analytics/testutil"
@@ -46,19 +43,8 @@ func TestXrc20(t *testing.T) {
 	require.NoError(bp.CreateTables(ctx))
 	require.NoError(p.CreateTables(ctx))
 
-	chainClient := mock_apiserviceclient.NewMockServiceClient(ctrl)
-	electionClient := mock_election.NewMockAPIServiceClient(ctrl)
-	bpctx := indexcontext.WithIndexCtx(context.Background(), indexcontext.IndexCtx{
-		ChainClient:    chainClient,
-		ElectionClient: electionClient,
-	})
-
 	blk, err := testutil.BuildCompleteBlock(uint64(180), uint64(361))
 	require.NoError(err)
-
-	require.NoError(store.Transact(func(tx *sql.Tx) error {
-		return bp.HandleBlock(bpctx, tx, blk)
-	}))
 
 	require.NoError(store.Transact(func(tx *sql.Tx) error {
 		return p.HandleBlock(ctx, tx, blk)
