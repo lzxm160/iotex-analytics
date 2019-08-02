@@ -13,6 +13,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/iotexproject/iotex-analytics/indexprotocol"
+	"github.com/pkg/errors"
+
 	"github.com/iotexproject/iotex-core/blockchain/block"
 )
 
@@ -93,4 +96,39 @@ func (p *Protocol) updateXrc20History(
 		return err
 	}
 	return nil
+}
+
+// getActionHistory returns action history by action hash
+func (p *Protocol) getXrc20History(address string) ([]*Xrc20History, error) {
+	db := p.Store.GetDB()
+
+	getQuery := fmt.Sprintf("SELECT * FROM %s WHERE address='?'",
+		Xrc20HistoryTableName)
+	stmt, err := db.Prepare(getQuery)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to prepare get query")
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(address)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to execute get query")
+	}
+
+	var xrc20History Xrc20History
+	parsedRows, err := s.ParseSQLRows(rows, &xrc20History)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse results")
+	}
+
+	if len(parsedRows) == 0 {
+		return nil, indexprotocol.ErrNotExist
+	}
+	ret := make([]*Xrc20History, 0)
+	for _, parsedRow := range parsedRows {
+		r := parsedRow.(*Xrc20History)
+		ret = append(ret, r)
+	}
+
+	return ret, nil
 }

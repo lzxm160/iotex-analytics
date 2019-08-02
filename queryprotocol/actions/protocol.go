@@ -20,7 +20,7 @@ import (
 	s "github.com/iotexproject/iotex-analytics/sql"
 )
 
-var (
+const (
 	topicsPlusDataLen = 256
 	sha3Len           = 64
 	contractParamsLen = 64
