@@ -402,7 +402,9 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 	valStrs := make([]string, 0)
 	valArgs := make([]interface{}, 0)
 	for _, parsedRow := range parsedRows {
+
 		record := parsedRow.(*AggregateReward)
+		fmt.Println(record)
 		epochNumber := record.EpochNumber
 		rewardAddress := record.RewardAddress
 		candidateNames := rewardAddrToNameMapping[rewardAddress]
