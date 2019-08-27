@@ -372,7 +372,7 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 	// Get aggregate reward	records from last epoch
 	getQuery := fmt.Sprintf("SELECT epoch_number, reward_address, SUM(block_reward), SUM(epoch_reward), SUM(foundation_bonus) "+
 		"FROM %s WHERE epoch_number = ? GROUP BY epoch_number, reward_address", RewardHistoryTableName)
-	fmt.Println(getQuery)
+	fmt.Println(getQuery, ":", lastEpoch)
 
 	db := p.Store.GetDB()
 	stmt, err := db.Prepare(getQuery)
