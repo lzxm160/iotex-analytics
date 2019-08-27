@@ -408,13 +408,14 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 		epochNumber := record.EpochNumber
 		rewardAddress := record.RewardAddress
 		candidateNames := rewardAddrToNameMapping[rewardAddress]
+		fmt.Println(candidateNames)
 		if len(candidateNames) == 1 {
 			candidateName := candidateNames[0]
 			valStrs = append(valStrs, "(?, ?, CAST(? as DECIMAL(65, 0)), CAST(? as DECIMAL(65, 0)), CAST(? as DECIMAL(65, 0)))")
 			valArgs = append(valArgs, epochNumber, candidateName, record.BlockReward, record.EpochReward, record.FoundationBonus)
 			continue
 		}
-
+		fmt.Println(418)
 		// Multiple delegates share reward address
 		totalBlockReward, ok := big.NewInt(0).SetString(record.BlockReward, 10)
 		if !ok {
@@ -433,6 +434,7 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 		if err != nil {
 			return errors.Wrap(err, "failed to get candidate rewards map")
 		}
+		fmt.Println("len(candidateRewardsMap):", len(candidateRewardsMap))
 		for candidateName, rewards := range candidateRewardsMap {
 			valStrs = append(valStrs, "(?, ?, CAST(? as DECIMAL(65, 0)), CAST(? as DECIMAL(65, 0)), CAST(? as DECIMAL(65, 0)))")
 			valArgs = append(valArgs, epochNumber, candidateName, rewards[0], rewards[1], rewards[2])
