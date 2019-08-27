@@ -372,7 +372,7 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 	// Get aggregate reward	records from last epoch
 	getQuery := fmt.Sprintf("SELECT epoch_number, reward_address, SUM(block_reward), SUM(epoch_reward), SUM(foundation_bonus) "+
 		"FROM %s WHERE epoch_number = ? GROUP BY epoch_number, reward_address", RewardHistoryTableName)
-
+	fmt.Println(getQuery, ":", lastEpoch)
 	db := p.Store.GetDB()
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
@@ -436,9 +436,9 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 			valArgs = append(valArgs, epochNumber, candidateName, rewards[0], rewards[1], rewards[2])
 		}
 	}
-	if len(valStrs) == 0 || len(valArgs) == 0 {
-		return nil
-	}
+	//if len(valStrs) == 0 || len(valArgs) == 0 {
+	//	return nil
+	//}
 	insertQuery := fmt.Sprintf("INSERT IGNORE INTO %s (epoch_number,candidate_name,block_reward,epoch_reward,"+
 		"foundation_bonus) VALUES %s", AccountRewardTableName, strings.Join(valStrs, ","))
 	if _, err := tx.Exec(insertQuery, valArgs...); err != nil {
