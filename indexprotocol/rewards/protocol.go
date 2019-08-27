@@ -440,6 +440,7 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 
 	insertQuery := fmt.Sprintf("INSERT IGNORE INTO %s (epoch_number,candidate_name,block_reward,epoch_reward,"+
 		"foundation_bonus) VALUES %s", AccountRewardTableName, strings.Join(valStrs, ","))
+	fmt.Println(insertQuery, ":", valArgs)
 	if _, err := tx.Exec(insertQuery, valArgs...); err != nil {
 		return err
 	}
