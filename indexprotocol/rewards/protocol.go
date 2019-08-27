@@ -369,6 +369,8 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 	if err != nil {
 		return errors.Wrap(err, "failed to get voting info")
 	}
+	fmt.Println("len(rewardAddrToNameMapping):", len(rewardAddrToNameMapping))
+	fmt.Println("len(weightedVotesMapping):", len(weightedVotesMapping))
 	// Get aggregate reward	records from last epoch
 	getQuery := fmt.Sprintf("SELECT epoch_number, reward_address, SUM(block_reward), SUM(epoch_reward), SUM(foundation_bonus) "+
 		"FROM %s WHERE epoch_number = ? GROUP BY epoch_number, reward_address", RewardHistoryTableName)
