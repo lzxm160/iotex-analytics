@@ -221,7 +221,7 @@ func (r *queryResolver) Hermes(ctx context.Context, startEpoch int, epochCount i
 
 // Contract handles Contract requests
 func (r *queryResolver) Xrc20(ctx context.Context, address string, numPerPage int, page int) ([]*Xrc20, error) {
-	Cons, err := r.AP.GetContract(address, uint64(numPerPage), uint64(page))
+	Cons, err := r.AP.GetXrc20(address, uint64(numPerPage), uint64(page))
 	switch {
 	case errors.Cause(err) == indexprotocol.ErrNotExist:
 		return nil, nil
