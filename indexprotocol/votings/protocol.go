@@ -226,8 +226,8 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			return errors.Wrapf(err, "failed to update voting result in epoch %d", epochNumber)
 		}
 	}
-	//return errors.New("voting error for test purpose")
-	return nil
+	return errors.New("voting error for test purpose")
+	//return nil
 }
 
 // getVotingHistory gets voting history
