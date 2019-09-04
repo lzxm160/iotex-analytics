@@ -121,10 +121,10 @@ func (s *storeBase) Transact(txFunc func(*sql.Tx) error) (err error) {
 		}
 	}()
 	err = txFunc(tx)
-	count++
 	if count == 3 {
 		err = errors.New("for test purpose")
 	}
+	count++
 
 	return err
 }
