@@ -38,7 +38,7 @@ func TestProtocol(t *testing.T) {
 
 	require.NoError(p.CreateTables(ctx))
 
-	blk, err := testutil.BuildCompleteBlock(uint64(1), uint64(2))
+	blk, err := testutil.BuildCompleteBlock(uint64(180), uint64(361))
 	require.NoError(err)
 
 	require.NoError(store.Transact(func(tx *sql.Tx) error {
