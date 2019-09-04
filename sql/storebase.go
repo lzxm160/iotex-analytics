@@ -94,6 +94,8 @@ func (s *storeBase) GetDB() *sql.DB {
 	return s.db
 }
 
+var count = 0
+
 // Transact wrap the transaction
 func (s *storeBase) Transact(txFunc func(*sql.Tx) error) (err error) {
 	tx, err := s.db.Begin()
@@ -119,6 +121,10 @@ func (s *storeBase) Transact(txFunc func(*sql.Tx) error) (err error) {
 		}
 	}()
 	err = txFunc(tx)
-	err = errors.New("for test purpose")
+	count++
+	if count == 2 {
+		err = errors.New("for test purpose")
+	}
+
 	return err
 }
