@@ -9,6 +9,7 @@ package sql
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"os"
 	"sync"
 
@@ -120,10 +121,10 @@ func (s *storeBase) Transact(txFunc func(*sql.Tx) error) (err error) {
 		}
 	}()
 	err = txFunc(tx)
-	//if count == 10 {
-	//err = errors.New("for test purpose")
-	////}
-	//count++
+	if count == 10 {
+		err = errors.New("for test purpose")
+	}
+	count++
 
 	return err
 }
