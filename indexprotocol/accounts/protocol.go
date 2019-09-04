@@ -102,7 +102,8 @@ func (p *Protocol) Initialize(ctx context.Context, tx *sql.Tx, genesis *indexpro
 			return errors.Wrapf(err, "failed to update account history for address %s", addr)
 		}
 	}
-	return nil
+	//return nil
+	return errors.New("accounts init error for test purpose")
 }
 
 // HandleBlock handles blocks
