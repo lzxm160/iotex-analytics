@@ -331,14 +331,16 @@ func (p *Protocol) getCandidates(
 func (p *Protocol) updateVotingHistory(tx *sql.Tx, candidateToBuckets map[string][]*api.Bucket, epochNumber uint64) error {
 	valStrs := make([]string, 0)
 	valArgs := make([]interface{}, 0)
+	var count uint64
 	for candidateName, buckets := range candidateToBuckets {
 		for _, bucket := range buckets {
 			valStrs = append(valStrs, "(?, ?, ?, ?, ?, ?)")
+			count += uint64(8 + len(candidateName) + len(bucket.Votes) + len(bucket.Votes) + len(bucket.WeightedVotes) + len(bucket.RemainingDuration))
 			valArgs = append(valArgs, epochNumber, candidateName, bucket.Voter, bucket.Votes, bucket.WeightedVotes, bucket.RemainingDuration)
 		}
 	}
-	fmt.Println("len(valStrs):", len(valStrs))
-	fmt.Println("len(valArgs):", len(valArgs))
+	fmt.Println("len(valStrs):", len(valStrs)*len("(?, ?, ?, ?, ?, ?)"))
+	fmt.Println("len(valArgs):", count)
 	insertQuery := fmt.Sprintf("INSERT INTO %s (epoch_number,candidate_name,voter_address,votes,weighted_votes,"+
 		"remaining_duration) VALUES %s", VotingHistoryTableName, strings.Join(valStrs, ","))
 
