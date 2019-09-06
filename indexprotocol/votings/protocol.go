@@ -337,6 +337,8 @@ func (p *Protocol) updateVotingHistory(tx *sql.Tx, candidateToBuckets map[string
 			valArgs = append(valArgs, epochNumber, candidateName, bucket.Voter, bucket.Votes, bucket.WeightedVotes, bucket.RemainingDuration)
 		}
 	}
+	fmt.Println("len(valStrs):", len(valStrs))
+	fmt.Println("len(valArgs):", len(valArgs))
 	insertQuery := fmt.Sprintf("INSERT INTO %s (epoch_number,candidate_name,voter_address,votes,weighted_votes,"+
 		"remaining_duration) VALUES %s", VotingHistoryTableName, strings.Join(valStrs, ","))
 
