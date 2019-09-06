@@ -72,7 +72,7 @@ func (p *Protocol) CreateTables(ctx context.Context) error {
 func (p *Protocol) Initialize(ctx context.Context, tx *sql.Tx, genesis *indexprotocol.Genesis) error {
 	db := p.Store.GetDB()
 	// Check existence
-	exist, err := queryprotocol.RowExists(db, fmt.Sprintf("SELECT * FROM %s WHERE action_hash = ?",
+	exist, err := queryprotocol.RowExists(db, fmt.Sprintf("SELECT * FROM %s WHERE action_hash = %s",
 		BalanceHistoryTableName), hex.EncodeToString(specialActionHash[:]))
 	if err != nil {
 		return errors.Wrap(err, "failed to check if the row exists")
