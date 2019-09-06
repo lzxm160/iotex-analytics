@@ -219,6 +219,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			buckets := getBucketsResponse.Buckets
 			candidateToBuckets[candidate.Name] = buckets
 		}
+		fmt.Println("len(candidateToBuckets):", len(candidateToBuckets))
 		if err := p.updateVotingHistory(tx, candidateToBuckets, epochNumber); err != nil {
 			return errors.Wrapf(err, "failed to update voting history in epoch %d", epochNumber)
 		}
