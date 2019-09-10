@@ -173,8 +173,8 @@ func TestProtocol(t *testing.T) {
 		{
 			"0029638f5f82b1d23a4bf8f059e2a2bffe5c07733de681afea41b1cf931b1580",
 			"1565391390",
-			"io13k7t6k3excy3hkyp60zjakc5le5fvvapqcwfsg",
 			"io1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd39ym7",
+			"io13k7t6k3excy3hkyp60zjakc5le5fvvapqcwfsg",
 			"227184383802042044417",
 		},
 	}
