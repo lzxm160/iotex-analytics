@@ -528,11 +528,7 @@ func (r *queryResolver) getXrc20ByRecipientAddress(ctx context.Context, actionRe
 	return nil
 }
 func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc20) error {
-	argsMap := parseFieldArguments(ctx, "byContractAddress", "xrc20")
-	address, err := getStringArg(argsMap, "address")
-	if err != nil {
-		return errors.Wrap(err, "failed to get address")
-	}
+	argsMap := parseFieldArguments(ctx, "byPage", "xrc20")
 	numPerPage, err := getIntArg(argsMap, "numPerPage")
 	if err != nil {
 		return errors.Wrap(err, "failed to get numPerPage")
@@ -541,7 +537,7 @@ func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc2
 	if err != nil {
 		return errors.Wrap(err, "failed to get page")
 	}
-	xrc20InfoList, err := r.AP.GetXrc20(address, uint64(numPerPage), uint64(page))
+	xrc20InfoList, err := r.AP.GetXrc20ByPage(uint64(numPerPage), uint64(page))
 	switch {
 	case errors.Cause(err) == indexprotocol.ErrNotExist:
 		return nil
@@ -564,7 +560,7 @@ func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc2
 	if len(xrc20InfoRet) == 0 {
 		output.Exist = false
 	}
-	actionResponse.ByContractAddress = output
+	actionResponse.ByPage = output
 	return nil
 }
 func (r *queryResolver) getLastEpochAndHeight(chainResponse *Chain) error {
