@@ -212,11 +212,11 @@ func TestProtocol(t *testing.T) {
 		test, errXrc := p.GetXrc20(testSituation.inputA, testSituation.inputNPP, testSituation.inputP)
 		require.NoError(errXrc)
 		for k := 0; k < testSituation.listSize; k++ {
-			require.Equal(test[k].Hash, testSituation.output[k].Hash)
-			require.Equal(test[k].From, testSituation.output[k].From)
-			require.Equal(test[k].To, testSituation.output[k].To)
-			require.Equal(test[k].Quantity, testSituation.output[k].Quantity)
-			require.Equal(test[k].Timestamp, testSituation.output[k].Timestamp)
+			require.Equal(test[k].Hash, testSituation.output[testSituation.listSize-k-1].Hash)
+			require.Equal(test[k].From, testSituation.output[testSituation.listSize-k-1].From)
+			require.Equal(test[k].To, testSituation.output[testSituation.listSize-k-1].To)
+			require.Equal(test[k].Quantity, testSituation.output[testSituation.listSize-k-1].Quantity)
+			require.Equal(test[k].Timestamp, testSituation.output[testSituation.listSize-k-1].Timestamp)
 		}
 	})
 
