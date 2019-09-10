@@ -508,7 +508,7 @@ func (r *queryResolver) getXrc20ByRecipientAddress(ctx context.Context, actionRe
 	case err != nil:
 		return errors.Wrap(err, "failed to get contract information")
 	}
-
+	fmt.Println("len(xrc20InfoList)", len(xrc20InfoList))
 	xrc20InfoRet := make([]*Xrc20Info, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
 		xrc20InfoRet = append(xrc20InfoRet, &Xrc20Info{
