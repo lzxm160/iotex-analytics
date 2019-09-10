@@ -200,14 +200,14 @@ func (p *Protocol) GetXrc20ByRecipient(addr string, numPerPage, page uint64) (co
 		page = 1
 	}
 	offset := (page - 1) * numPerPage
-	getQuery := fmt.Sprintf("SELECT * FROM %s WHERE topics like '?' ORDER BY `timestamp` desc limit %d,%d", actions.Xrc20HistoryTableName, offset, numPerPage)
+	getQuery := fmt.Sprintf("SELECT * FROM %s WHERE topics like ? ORDER BY `timestamp` desc limit %d,%d", actions.Xrc20HistoryTableName, offset, numPerPage)
 	fmt.Println(getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-	like := "%" + common.BytesToAddress(a.Bytes()).String()[2:]
+	like := "'%" + common.BytesToAddress(a.Bytes()).String()[2:] + "'"
 	fmt.Println(like)
 	rows, err := stmt.Query(like)
 	if err != nil {
