@@ -44,13 +44,13 @@ type ActionInfo struct {
 	Amount    string
 }
 
-// Xrc20 defines xrc20 transfer info
-type Xrc20 struct {
+// Xrc20Info defines xrc20 transfer info
+type Xrc20Info struct {
 	Hash      string
+	Timestamp string
 	From      string
 	To        string
 	Quantity  string
-	Timestamp string
 }
 
 // Protocol defines the protocol of querying tables
@@ -140,7 +140,7 @@ func (p *Protocol) GetActiveAccount(count int) ([]string, error) {
 }
 
 // GetXrc20 get xrc20 transfer info
-func (p *Protocol) GetXrc20(address string, numPerPage, page uint64) (cons []*Xrc20, err error) {
+func (p *Protocol) GetXrc20(address string, numPerPage, page uint64) (cons []*Xrc20Info, err error) {
 	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
 		return nil, errors.New("actions protocol is unregistered")
 	}
@@ -172,7 +172,7 @@ func (p *Protocol) GetXrc20(address string, numPerPage, page uint64) (cons []*Xr
 		return nil, err
 	}
 	for _, parsedRow := range parsedRows {
-		con := &Xrc20{}
+		con := &Xrc20Info{}
 		r := parsedRow.(*actions.Xrc20History)
 		con.From, con.To, con.Quantity, err = parseContractData(r.Topics, r.Data)
 		if err != nil {
