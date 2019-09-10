@@ -524,7 +524,7 @@ func (r *queryResolver) getXrc20ByRecipientAddress(ctx context.Context, actionRe
 	if len(xrc20InfoRet) == 0 {
 		output.Exist = false
 	}
-	actionResponse.ByContractAddress = output
+	actionResponse.ByRecipientAddress = output
 	return nil
 }
 func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc20) error {
