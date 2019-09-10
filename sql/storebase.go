@@ -118,5 +118,6 @@ func (s *storeBase) Transact(txFunc func(*sql.Tx) error) (err error) {
 		}
 	}()
 	err = txFunc(tx)
+	tx.
 	return err
 }
