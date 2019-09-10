@@ -184,14 +184,14 @@ func TestProtocol(t *testing.T) {
 		3,
 		1,
 		3,
-		[]string{"0029638f5f82b1d23a4bf8f059e2a2bffe5c07733de681afea41b1cf931b1580", "0037c290ee2a21faa0ea5ebd7975b6b85088a7409715267e359625e60e399da5", "003c40bb33f7bd682ae77d8fdd7f63d719a468f6eabd3163773602f5b5ce683b"},
+		[]string{"0037c290ee2a21faa0ea5ebd7975b6b85088a7409715267e359625e60e399da5", "003c40bb33f7bd682ae77d8fdd7f63d719a468f6eabd3163773602f5b5ce683b", "0029638f5f82b1d23a4bf8f059e2a2bffe5c07733de681afea41b1cf931b1580"},
 		[]string{"4840ac38e3bb1dbcbcb69132947a536a6cc3730b329b20b72cca02e8ec7ddab0", "fd7ce9ba41b0caf8dc79e10d09a7b06fe4c28ff59ef62c224ba5bd0bd894ade5", "ae268c123a5123f7c7bcbadbea1356fc8ccea62a632598cdcc1c1d29c55a6591"},
 		[]string{"io1hp6y4eqr90j7tmul4w2wa8pm7wx462hq0mg4tw", "io1hp6y4eqr90j7tmul4w2wa8pm7wx462hq0mg4tw", "io1hp6y4eqr90j7tmul4w2wa8pm7wx462hq0mg4tw"},
 		[]string{"ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef00000000000000000000000000000000000000000000000000000000000000000000000000000000000000008dbcbd5a3936091bd881d3c52edb14fe689633a1", "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef000000000000000000000000000000000000000000000000000000000000000000000000000000000000000056fbced35085a1e318161039bb8d05de8711ff7c", "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007bc49488bef14b79070d534d90b9a36751e6f92"},
 		[]string{"00000000000000000000000000000000000000000000000c50d11164bcb95001", "000000000000000000000000000000000000000000000029a8b37761092dfa1a", "000000000000000000000000000000000000000000000d789ca5e74b7db3c473"},
 		[]uint64{941871, 985114, 975627},
 		[]uint64{0, 0, 0},
-		[]uint64{1565391390, 1565825770, 1565729760},
+		[]uint64{1565825770, 1565729760, 1565391390},
 		[]string{"success", "success", "success"},
 		contract,
 	}
@@ -212,11 +212,11 @@ func TestProtocol(t *testing.T) {
 		test, errXrc := p.GetXrc20(testSituation.inputA, testSituation.inputNPP, testSituation.inputP)
 		require.NoError(errXrc)
 		for k := 0; k < testSituation.listSize; k++ {
-			require.Equal(test[k].Hash, testSituation.output[testSituation.listSize-k-1].Hash)
-			require.Equal(test[k].From, testSituation.output[testSituation.listSize-k-1].From)
-			require.Equal(test[k].To, testSituation.output[testSituation.listSize-k-1].To)
-			require.Equal(test[k].Quantity, testSituation.output[testSituation.listSize-k-1].Quantity)
-			require.Equal(test[k].Timestamp, testSituation.output[testSituation.listSize-k-1].Timestamp)
+			require.Equal(test[k].Hash, testSituation.output[k].Hash)
+			require.Equal(test[k].From, testSituation.output[k].From)
+			require.Equal(test[k].To, testSituation.output[k].To)
+			require.Equal(test[k].Quantity, testSituation.output[k].Quantity)
+			require.Equal(test[k].Timestamp, testSituation.output[k].Timestamp)
 		}
 	})
 
