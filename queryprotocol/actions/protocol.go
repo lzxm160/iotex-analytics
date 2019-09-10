@@ -207,7 +207,7 @@ func (p *Protocol) GetXrc20ByRecipient(addr string, numPerPage, page uint64) (co
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-	like := "'%" + common.BytesToAddress(a.Bytes()).String()[2:] + "'"
+	like := "%" + common.BytesToAddress(a.Bytes()).String()[2:] + ""
 	fmt.Println(like)
 	rows, err := stmt.Query(like)
 	if err != nil {
