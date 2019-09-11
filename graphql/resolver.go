@@ -544,7 +544,7 @@ func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc2
 	}
 	output.Exist = true
 	output.Count = len(xrc20InfoList)
-	fmt.Println(output.Count)
+	fmt.Println(actionResponse.ByContractAddress.Count)
 	xrc20Output := make([]*Xrc20Info, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
 		xrc20Output = append(xrc20Output, &Xrc20Info{
