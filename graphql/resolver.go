@@ -499,7 +499,7 @@ func (r *queryResolver) getXrc20ByRecipientAddress(ctx context.Context, actionRe
 		return errors.Wrap(err, "failed to get page")
 	}
 	output := &Xrc20List{Exist: false}
-	actionResponse.ByContractAddress = output
+	actionResponse.ByRecipientAddress = output
 	xrc20InfoList, err := r.AP.GetXrc20ByRecipient(address, uint64(numPerPage), uint64(page))
 	switch {
 	case errors.Cause(err) == indexprotocol.ErrNotExist:
@@ -534,7 +534,7 @@ func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc2
 		return errors.Wrap(err, "failed to get page")
 	}
 	output := &Xrc20List{Exist: false}
-	actionResponse.ByContractAddress = output
+	actionResponse.ByPage = output
 	xrc20InfoList, err := r.AP.GetXrc20ByPage(uint64(numPerPage), uint64(page))
 	switch {
 	case errors.Cause(err) == indexprotocol.ErrNotExist:
@@ -544,7 +544,6 @@ func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc2
 	}
 	output.Exist = true
 	output.Count = len(xrc20InfoList)
-	fmt.Println(actionResponse.ByContractAddress.Count)
 	xrc20Output := make([]*Xrc20Info, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
 		xrc20Output = append(xrc20Output, &Xrc20Info{
@@ -556,7 +555,6 @@ func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc2
 		})
 	}
 	output.Xrc20 = xrc20Output
-	fmt.Println(actionResponse.ByContractAddress)
 	return nil
 }
 func (r *queryResolver) getLastEpochAndHeight(chainResponse *Chain) error {
