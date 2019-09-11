@@ -488,7 +488,7 @@ func (r *queryResolver) getXrc20ByContractAddress(ctx context.Context, actionRes
 }
 
 func (r *queryResolver) getXrc20ByAddress(ctx context.Context, actionResponse *Xrc20) error {
-	argsMap := parseFieldArguments(ctx, "byRecipientAddress", "xrc20")
+	argsMap := parseFieldArguments(ctx, "byAddress", "xrc20")
 	address, err := getStringArg(argsMap, "address")
 	if err != nil {
 		return errors.Wrap(err, "failed to get address")
