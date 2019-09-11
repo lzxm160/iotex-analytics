@@ -556,6 +556,7 @@ func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc2
 		})
 	}
 	output.Xrc20 = xrc20Output
+	fmt.Println(actionResponse.ByContractAddress)
 	return nil
 }
 func (r *queryResolver) getLastEpochAndHeight(chainResponse *Chain) error {
