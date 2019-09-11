@@ -470,6 +470,7 @@ func (r *queryResolver) getXrc20ByContractAddress(ctx context.Context, actionRes
 	}
 	output.Exist = true
 	output.Count = len(xrc20InfoList)
+	fmt.Println(output.Count)
 	xrc20Output := make([]*Xrc20Info, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
 		xrc20Output = append(xrc20Output, &Xrc20Info{
@@ -508,6 +509,7 @@ func (r *queryResolver) getXrc20ByRecipientAddress(ctx context.Context, actionRe
 	}
 	output.Exist = true
 	output.Count = len(xrc20InfoList)
+	fmt.Println(output.Count)
 	xrc20Output := make([]*Xrc20Info, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
 		xrc20Output = append(xrc20Output, &Xrc20Info{
@@ -542,6 +544,7 @@ func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc2
 	}
 	output.Exist = true
 	output.Count = len(xrc20InfoList)
+	fmt.Println(output.Count)
 	xrc20Output := make([]*Xrc20Info, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
 		xrc20Output = append(xrc20Output, &Xrc20Info{
