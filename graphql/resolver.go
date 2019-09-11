@@ -470,10 +470,9 @@ func (r *queryResolver) getXrc20ByContractAddress(ctx context.Context, actionRes
 	}
 	output.Exist = true
 	output.Count = len(xrc20InfoList)
-	fmt.Println(output.Count)
-	xrc20Output := make([]*Xrc20Info, 0, len(xrc20InfoList))
+	output.Xrc20 = make([]*Xrc20Info, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
-		xrc20Output = append(xrc20Output, &Xrc20Info{
+		output.Xrc20 = append(output.Xrc20, &Xrc20Info{
 			Hash:      c.Hash,
 			Timestamp: c.Timestamp,
 			From:      c.From,
@@ -481,7 +480,6 @@ func (r *queryResolver) getXrc20ByContractAddress(ctx context.Context, actionRes
 			Quantity:  c.Quantity,
 		})
 	}
-	output.Xrc20 = xrc20Output
 	return nil
 }
 func (r *queryResolver) getXrc20ByRecipientAddress(ctx context.Context, actionResponse *Xrc20) error {
@@ -509,10 +507,9 @@ func (r *queryResolver) getXrc20ByRecipientAddress(ctx context.Context, actionRe
 	}
 	output.Exist = true
 	output.Count = len(xrc20InfoList)
-	fmt.Println(output.Count)
-	xrc20Output := make([]*Xrc20Info, 0, len(xrc20InfoList))
+	output.Xrc20 = make([]*Xrc20Info, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
-		xrc20Output = append(xrc20Output, &Xrc20Info{
+		output.Xrc20 = append(output.Xrc20, &Xrc20Info{
 			Hash:      c.Hash,
 			Timestamp: c.Timestamp,
 			From:      c.From,
@@ -520,7 +517,6 @@ func (r *queryResolver) getXrc20ByRecipientAddress(ctx context.Context, actionRe
 			Quantity:  c.Quantity,
 		})
 	}
-	output.Xrc20 = xrc20Output
 	return nil
 }
 func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc20) error {
@@ -544,9 +540,9 @@ func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc2
 	}
 	output.Exist = true
 	output.Count = len(xrc20InfoList)
-	xrc20Output := make([]*Xrc20Info, 0, len(xrc20InfoList))
+	output.Xrc20 = make([]*Xrc20Info, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
-		xrc20Output = append(xrc20Output, &Xrc20Info{
+		output.Xrc20 = append(output.Xrc20, &Xrc20Info{
 			Hash:      c.Hash,
 			Timestamp: c.Timestamp,
 			From:      c.From,
@@ -554,7 +550,6 @@ func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc2
 			Quantity:  c.Quantity,
 		})
 	}
-	output.Xrc20 = xrc20Output
 	return nil
 }
 func (r *queryResolver) getLastEpochAndHeight(chainResponse *Chain) error {
