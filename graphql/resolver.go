@@ -468,9 +468,11 @@ func (r *queryResolver) getXrc20ByContractAddress(ctx context.Context, actionRes
 	case err != nil:
 		return errors.Wrap(err, "failed to get contract information")
 	}
-	output.Xrc20 = make([]*Xrc20Info, 0, len(xrc20InfoList))
+	output.Exist = true
+	output.Count = len(xrc20InfoList)
+	xrc20Output := make([]*Xrc20Info, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
-		output.Xrc20 = append(output.Xrc20, &Xrc20Info{
+		xrc20Output = append(xrc20Output, &Xrc20Info{
 			Hash:      c.Hash,
 			Timestamp: c.Timestamp,
 			From:      c.From,
@@ -478,8 +480,7 @@ func (r *queryResolver) getXrc20ByContractAddress(ctx context.Context, actionRes
 			Quantity:  c.Quantity,
 		})
 	}
-	output.Exist = true
-	output.Count = len(output.Xrc20)
+	output.Xrc20 = xrc20Output
 	return nil
 }
 func (r *queryResolver) getXrc20ByRecipientAddress(ctx context.Context, actionResponse *Xrc20) error {
@@ -505,9 +506,11 @@ func (r *queryResolver) getXrc20ByRecipientAddress(ctx context.Context, actionRe
 	case err != nil:
 		return errors.Wrap(err, "failed to get contract information")
 	}
-	output.Xrc20 = make([]*Xrc20Info, 0, len(xrc20InfoList))
+	output.Exist = true
+	output.Count = len(xrc20InfoList)
+	xrc20Output := make([]*Xrc20Info, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
-		output.Xrc20 = append(output.Xrc20, &Xrc20Info{
+		xrc20Output = append(xrc20Output, &Xrc20Info{
 			Hash:      c.Hash,
 			Timestamp: c.Timestamp,
 			From:      c.From,
@@ -515,8 +518,7 @@ func (r *queryResolver) getXrc20ByRecipientAddress(ctx context.Context, actionRe
 			Quantity:  c.Quantity,
 		})
 	}
-	output.Exist = true
-	output.Count = len(output.Xrc20)
+	output.Xrc20 = xrc20Output
 	return nil
 }
 func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc20) error {
@@ -538,9 +540,11 @@ func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc2
 	case err != nil:
 		return errors.Wrap(err, "failed to get contract information")
 	}
-	output.Xrc20 = make([]*Xrc20Info, 0, len(xrc20InfoList))
+	output.Exist = true
+	output.Count = len(xrc20InfoList)
+	xrc20Output := make([]*Xrc20Info, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
-		output.Xrc20 = append(output.Xrc20, &Xrc20Info{
+		xrc20Output = append(xrc20Output, &Xrc20Info{
 			Hash:      c.Hash,
 			Timestamp: c.Timestamp,
 			From:      c.From,
@@ -548,8 +552,7 @@ func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc2
 			Quantity:  c.Quantity,
 		})
 	}
-	output.Exist = true
-	output.Count = len(output.Xrc20)
+	output.Xrc20 = xrc20Output
 	return nil
 }
 func (r *queryResolver) getLastEpochAndHeight(chainResponse *Chain) error {
