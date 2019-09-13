@@ -190,7 +190,7 @@ func TestProtocol(t *testing.T) {
 		"io1hp6y4eqr90j7tmul4w2wa8pm7wx462hq0mg4tw",
 		3,
 		1,
-		3,
+		4,
 		[]string{"0029638f5f82b1d23a4bf8f059e2a2bffe5c07733de681afea41b1cf931b1580", "0037c290ee2a21faa0ea5ebd7975b6b85088a7409715267e359625e60e399da5", "003c40bb33f7bd682ae77d8fdd7f63d719a468f6eabd3163773602f5b5ce683b",
 			"e740ce8ee6f5419497461453d4613fbaa676f493791026dc60417f489222959a"},
 		[]string{"4840ac38e3bb1dbcbcb69132947a536a6cc3730b329b20b72cca02e8ec7ddab0", "fd7ce9ba41b0caf8dc79e10d09a7b06fe4c28ff59ef62c224ba5bd0bd894ade5", "ae268c123a5123f7c7bcbadbea1356fc8ccea62a632598cdcc1c1d29c55a6591", "e740ce8ee6f5419497461453d4613fbaa676f493791026dc60417f489222959a"},
@@ -219,7 +219,7 @@ func TestProtocol(t *testing.T) {
 	t.Run("Testing GetXrc20 by contract address", func(t *testing.T) {
 		test, errXrc := p.GetXrc20(testSituation.inputA, testSituation.inputNPP, testSituation.inputP)
 		require.NoError(errXrc)
-		for k := 0; k < testSituation.listSize; k++ {
+		for k := 0; k < 3; k++ {
 			require.Equal(test[k].Hash, testSituation.output[k].Hash)
 			require.Equal(test[k].From, testSituation.output[k].From)
 			require.Equal(test[k].To, testSituation.output[k].To)
