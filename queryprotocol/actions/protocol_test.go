@@ -243,12 +243,12 @@ func TestProtocol(t *testing.T) {
 	t.Run("Testing GetXrc20 by sender or receiptor address", func(t *testing.T) {
 		test, errXrc := p.GetXrc20ByAddress("io13k7t6k3excy3hkyp60zjakc5le5fvvapqcwfsg", 4, 1)
 		require.NoError(errXrc)
-		for k := 2; k < 4; k++ {
-			require.Equal(test[k].Hash, testSituation.output[k].Hash)
-			require.Equal(test[k].From, testSituation.output[k].From)
-			require.Equal(test[k].To, testSituation.output[k].To)
-			require.Equal(test[k].Quantity, testSituation.output[k].Quantity)
-			require.Equal(test[k].Timestamp, testSituation.output[k].Timestamp)
+		for k := 0; k < 2; k++ {
+			require.Equal(test[k].Hash, testSituation.output[k+2].Hash)
+			require.Equal(test[k].From, testSituation.output[k+2].From)
+			require.Equal(test[k].To, testSituation.output[k+2].To)
+			require.Equal(test[k].Quantity, testSituation.output[k+2].Quantity)
+			require.Equal(test[k].Timestamp, testSituation.output[k+2].Timestamp)
 		}
 	})
 	// test case for get xrc20 info by page
