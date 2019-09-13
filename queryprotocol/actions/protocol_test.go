@@ -244,6 +244,8 @@ func TestProtocol(t *testing.T) {
 		test, errXrc := p.GetXrc20ByAddress("io13k7t6k3excy3hkyp60zjakc5le5fvvapqcwfsg", 4, 1)
 		require.NoError(errXrc)
 		fmt.Println(len(test))
+		fmt.Println(test[0])
+		fmt.Println(test[1])
 		for k := 0; k < 2; k++ {
 			require.Equal(test[k].Hash, testSituation.output[k+2].Hash)
 			require.Equal(test[k].From, testSituation.output[k+2].From)
