@@ -382,7 +382,7 @@ func (p *Protocol) GetTopHolders(endEpochNumber, numberOfHolders uint64) (holder
 	if numberOfHolders < 1 {
 		numberOfHolders = 1
 	}
-	getQuery := fmt.Sprintf("SELECT address,SUM(income) AS Balance FROM %s WHERE epoch_number<%d GROUP BY address ORDER BY Balance DESC LIMIT %d", accounts.AccountIncomeTableName, endEpochNumber, numberOfHolders)
+	getQuery := fmt.Sprintf("SELECT address,SUM(income) AS balance FROM %s WHERE epoch_number<%d GROUP BY address ORDER BY balance DESC LIMIT %d", accounts.AccountIncomeTableName, endEpochNumber, numberOfHolders)
 	fmt.Println(getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
@@ -395,7 +395,7 @@ func (p *Protocol) GetTopHolders(endEpochNumber, numberOfHolders uint64) (holder
 		return nil, errors.Wrap(err, "failed to execute get query")
 	}
 
-	var ret actions.Xrc20History
+	var ret TopHolders
 	parsedRows, err := s.ParseSQLRows(rows, &ret)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse results")
