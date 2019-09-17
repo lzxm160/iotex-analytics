@@ -373,11 +373,9 @@ func (p *Protocol) GetXrc20ByPage(numPerPage, page uint64) (cons []*Xrc20Info, e
 }
 
 func (p *Protocol) GetTopHolders(endEpochNumber, numberOfHolders uint64) (holders []*TopHolders, err error) {
-	//SELECT address,SUM(income) AS total FROM account_income WHERE epoch_number<10 GROUP BY address ORDER BY total DESC LIMIT 10
 	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
 		return nil, errors.New("actions protocol is unregistered")
 	}
-
 	db := p.indexer.Store.GetDB()
 	if numberOfHolders < 1 {
 		numberOfHolders = 1
