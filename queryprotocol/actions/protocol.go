@@ -68,6 +68,12 @@ type Xrc20Info struct {
 	Contract  string
 }
 
+// TopHolders defines top holders
+type TopHolders struct {
+	Address string
+	Balance string
+}
+
 // Protocol defines the protocol of querying tables
 type Protocol struct {
 	indexer *indexservice.Indexer
@@ -366,6 +372,9 @@ func (p *Protocol) GetXrc20ByPage(numPerPage, page uint64) (cons []*Xrc20Info, e
 	return
 }
 
+func (p *Protocol) GetTopHolders(endEpochNumber, numberOfHolders uint64) (holders []*TopHolders, err error) {
+
+}
 func parseContractData(topics, data string) (from, to, amount string, err error) {
 	// This should cover input of indexed or not indexed ,i.e., len(topics)==192 len(data)==64 or len(topics)==64 len(data)==192
 	all := topics + data
