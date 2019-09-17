@@ -412,6 +412,7 @@ func (p *Protocol) GetTopHolders(endEpochNumber, numberOfHolders uint64) (holder
 		}
 		holders = append(holders, holder)
 	}
+	return
 }
 func parseContractData(topics, data string) (from, to, amount string, err error) {
 	// This should cover input of indexed or not indexed ,i.e., len(topics)==192 len(data)==64 or len(topics)==64 len(data)==192
