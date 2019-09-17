@@ -241,14 +241,20 @@ func (r *queryResolver) Xrc20(ctx context.Context) (*Xrc20, error) {
 }
 
 // TopHolders handles top holders requests
-func (r *queryResolver) TopHolders(ctx context.Context, endEpochNumber int, numberOfHolders int) ([]TopHolders, error) {
-	holders, err := r.AP.GetTopHolders(uint(endEpochNumber), uint64(numberOfHolders))
+func (r *queryResolver) TopHolders(ctx context.Context, endEpochNumber int, numberOfHolders int) ([]*TopHolders, error) {
+	holders, err := r.AP.GetTopHolders(uint64(endEpochNumber), uint64(numberOfHolders))
 	if err != nil {
-		return nil ,err
+		return nil, err
 	}
-	ret:=make(TopHolders,0)
-	for
-	return
+	ret := make([]*TopHolders, 0)
+	for _, h := range holders {
+		t := &TopHolders{
+			Address: h.Address,
+			Balance: h.Balance,
+		}
+		ret = append(ret, t)
+	}
+	return ret, nil
 }
 func (r *queryResolver) getOperatorAddress(ctx context.Context, accountResponse *Account) error {
 	argsMap := parseFieldArguments(ctx, "operatorAddress", "")

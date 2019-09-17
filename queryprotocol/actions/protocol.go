@@ -373,7 +373,45 @@ func (p *Protocol) GetXrc20ByPage(numPerPage, page uint64) (cons []*Xrc20Info, e
 }
 
 func (p *Protocol) GetTopHolders(endEpochNumber, numberOfHolders uint64) (holders []*TopHolders, err error) {
+	//SELECT address,SUM(income) AS total FROM account_income WHERE epoch_number<10 GROUP BY address ORDER BY total DESC LIMIT 10
+	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
+		return nil, errors.New("actions protocol is unregistered")
+	}
 
+	db := p.indexer.Store.GetDB()
+	if numberOfHolders < 1 {
+		numberOfHolders = 1
+	}
+	getQuery := fmt.Sprintf("SELECT address,SUM(income) AS Balance FROM account_income WHERE epoch_number<%d GROUP BY address ORDER BY total DESC LIMIT %d", accounts.AccountIncomeTableName, endEpochNumber, numberOfHolders)
+	fmt.Println(getQuery)
+	stmt, err := db.Prepare(getQuery)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to prepare get query")
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to execute get query")
+	}
+
+	var ret actions.Xrc20History
+	parsedRows, err := s.ParseSQLRows(rows, &ret)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse results")
+	}
+	if len(parsedRows) == 0 {
+		err = indexprotocol.ErrNotExist
+		return nil, err
+	}
+	for _, parsedRow := range parsedRows {
+		r := parsedRow.(*TopHolders)
+		holder := &TopHolders{
+			Address: r.Address,
+			Balance: r.Balance,
+		}
+		holders = append(holders, holder)
+	}
 }
 func parseContractData(topics, data string) (from, to, amount string, err error) {
 	// This should cover input of indexed or not indexed ,i.e., len(topics)==192 len(data)==64 or len(topics)==64 len(data)==192
