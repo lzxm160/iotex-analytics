@@ -267,6 +267,8 @@ func (p *Protocol) updateBalanceHistory(
 }
 
 func (p *Protocol) rebuildAccountIncomeTable(tx *sql.Tx) error {
+	fmt.Println(fmt.Sprintf("INSERT IGNORE INTO %s SELECT epoch_number, `to` AS address, "+
+		"SUM(amount) AS inflow FROM %s GROUP BY epoch_number, `to`", AccountInflowTableName, BalanceHistoryTableName))
 	if _, err := tx.Exec(fmt.Sprintf("INSERT IGNORE INTO %s SELECT epoch_number, `to` AS address, "+
 		"SUM(amount) AS inflow FROM %s GROUP BY epoch_number, `to`", AccountInflowTableName, BalanceHistoryTableName)); err != nil {
 		return err
