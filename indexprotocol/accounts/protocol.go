@@ -276,16 +276,11 @@ func (p *Protocol) rebuildAccountIncomeTable(tx *sql.Tx) error {
 		"SUM(amount) AS outflow FROM %s GROUP BY epoch_number, `from`", AccountOutflowTableName, BalanceHistoryTableName)); err != nil {
 		return err
 	}
-	fmt.Println(fmt.Sprintf("INSERT IGNORE INTO %s SELECT t1.epoch_number, t1.address, "+
-		"CAST(IFNULL(inflow, 0) AS DECIMAL(65, 0)) - CAST(IFNULL(outflow, 0) AS DECIMAL(65, 0)) AS income "+
-		"FROM %s AS t1 LEFT JOIN %s AS t2 ON t1.epoch_number = t2.epoch_number AND t1.address=t2.address UNION "+
-		"SELECT t1.epoch_number, t1.address, CAST(IFNULL(inflow, 0) AS DECIMAL(65, 0)) - CAST(IFNULL(outflow, 0) AS DECIMAL(65, 0)) AS income "+
-		"FROM %s AS t1 RIGHT JOIN %s AS t2 ON t1.epoch_number = t2.epoch_number AND t1.address=t2.address", AccountIncomeTableName,
-		AccountInflowTableName, AccountOutflowTableName, AccountInflowTableName, AccountOutflowTableName))
+
 	if _, err := tx.Exec(fmt.Sprintf("INSERT IGNORE INTO %s SELECT t1.epoch_number, t1.address, "+
 		"CAST(IFNULL(inflow, 0) AS DECIMAL(65, 0)) - CAST(IFNULL(outflow, 0) AS DECIMAL(65, 0)) AS income "+
 		"FROM %s AS t1 LEFT JOIN %s AS t2 ON t1.epoch_number = t2.epoch_number AND t1.address=t2.address UNION "+
-		"SELECT t1.epoch_number, t1.address, CAST(IFNULL(inflow, 0) AS DECIMAL(65, 0)) - CAST(IFNULL(outflow, 0) AS DECIMAL(65, 0)) AS income "+
+		"SELECT t2.epoch_number, t2.address, CAST(IFNULL(inflow, 0) AS DECIMAL(65, 0)) - CAST(IFNULL(outflow, 0) AS DECIMAL(65, 0)) AS income "+
 		"FROM %s AS t1 RIGHT JOIN %s AS t2 ON t1.epoch_number = t2.epoch_number AND t1.address=t2.address", AccountIncomeTableName,
 		AccountInflowTableName, AccountOutflowTableName, AccountInflowTableName, AccountOutflowTableName)); err != nil {
 		return err
