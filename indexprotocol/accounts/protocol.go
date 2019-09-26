@@ -31,9 +31,17 @@ const (
 	AccountIncomeTableName = "account_income"
 	// EpochAddressIndexName is the index name of epoch number and account address
 	EpochAddressIndexName = "epoch_address_index"
+
+	createBalanceHistory = "CREATE TABLE IF NOT EXISTS balance_history " +
+		"(epoch_number DECIMAL(65, 0) NOT NULL, block_height DECIMAL(65, 0) NOT NULL, action_hash VARCHAR(64) NOT NULL, " +
+		"action_type TEXT NOT NULL, `from` VARCHAR(41) NOT NULL, `to` VARCHAR(41) NOT NULL, amount DECIMAL(65, 0) NOT NULL)"
+	createAccountInflow = "CREATE TABLE IF NOT EXISTS account_inflow (epoch_number DECIMAL(65, 0) NOT NULL, " +
+		"address VARCHAR(41) NOT NULL, inflow DECIMAL(65, 0) NOT NULL, UNIQUE KEY epoch_address_index (epoch_number, address))"
 )
 
-var specialActionHash = hash.ZeroHash256
+var (
+	specialActionHash = hash.ZeroHash256
+)
 
 type (
 	// BalanceHistory defines the base schema of "balance history" table
@@ -74,13 +82,10 @@ func NewProtocol(store s.Store, numDelegates uint64, numSubEpochs uint64) *Proto
 // CreateTables creates tables
 func (p *Protocol) CreateTables(ctx context.Context) error {
 	// create block by action table
-	if _, err := p.Store.GetDB().Exec(fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s "+
-		"(epoch_number DECIMAL(65, 0) NOT NULL, block_height DECIMAL(65, 0) NOT NULL, action_hash VARCHAR(64) NOT NULL, "+
-		"action_type TEXT NOT NULL, `from` VARCHAR(41) NOT NULL, `to` VARCHAR(41) NOT NULL, amount DECIMAL(65, 0) NOT NULL)", BalanceHistoryTableName)); err != nil {
+	if _, err := p.Store.GetDB().Exec(createBalanceHistory); err != nil {
 		return err
 	}
-	if _, err := p.Store.GetDB().Exec(fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (epoch_number DECIMAL(65, 0) NOT NULL, "+
-		"address VARCHAR(41) NOT NULL, inflow DECIMAL(65, 0) NOT NULL, UNIQUE KEY %s (epoch_number, address))", AccountInflowTableName, EpochAddressIndexName)); err != nil {
+	if _, err := p.Store.GetDB().Exec(createAccountInflow); err != nil {
 		return err
 	}
 	if _, err := p.Store.GetDB().Exec(fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (epoch_number DECIMAL(65, 0) NOT NULL, "+
