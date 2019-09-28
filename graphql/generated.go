@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"sync"
 
@@ -1697,6 +1698,7 @@ func (ec *executionContext) field_Xrc20_byAddress_args(ctx context.Context, rawA
 		}
 	}
 	args["page"] = arg2
+	fmt.Println(args)
 	return args, nil
 }
 
