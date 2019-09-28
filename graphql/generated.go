@@ -1698,7 +1698,7 @@ func (ec *executionContext) field_Xrc20_byAddress_args(ctx context.Context, rawA
 		}
 	}
 	args["page"] = arg2
-	fmt.Println(args)
+	fmt.Println("xxxx:", args)
 	return args, nil
 }
 
