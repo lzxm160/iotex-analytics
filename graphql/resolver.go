@@ -227,7 +227,7 @@ func (r *queryResolver) Xrc20(ctx context.Context) (*Xrc20, error) {
 	fmt.Println("Xrc20(")
 	requestedFields := graphql.CollectAllFields(ctx)
 	actionResponse := &Xrc20{}
-
+	fmt.Println(requestedFields)
 	g, ctx := errgroup.WithContext(ctx)
 	if containField(requestedFields, "byContractAddress") {
 		g.Go(func() error { return r.getXrc20ByContractAddress(ctx, actionResponse) })
