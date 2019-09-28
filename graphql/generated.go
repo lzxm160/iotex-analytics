@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"sync"
 
@@ -4379,6 +4380,10 @@ func (ec *executionContext) _Xrc20_byAddress(ctx context.Context, field graphql.
 		IsMethod: false,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
+	for k, v := range ec.Variables {
+		fmt.Println(k, ":", v)
+	}
+
 	rawArgs := field.ArgumentMap(ec.Variables)
 	args, err := ec.field_Xrc20_byAddress_args(ctx, rawArgs)
 	if err != nil {
