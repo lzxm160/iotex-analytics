@@ -805,7 +805,8 @@ func containField(requestedFields []string, field string) bool {
 func parseFieldArguments(ctx context.Context, fieldName string, selectedFieldName string) map[string]*ast.Value {
 	fields := graphql.CollectFieldsCtx(ctx, nil)
 	var field graphql.CollectedField
-	for _, f := range fields {
+	for i, f := range fields {
+		fmt.Println(i, ":", f)
 		if f.Name == fieldName {
 			field = f
 		}
@@ -832,7 +833,6 @@ func getIntArg(argsMap map[string]*ast.Value, argName string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	fmt.Println(getStr)
 	intVal, err := strconv.Atoi(getStr)
 	if err != nil {
 		return 0, fmt.Errorf("%s must be an integer", argName)
@@ -842,7 +842,7 @@ func getIntArg(argsMap map[string]*ast.Value, argName string) (int, error) {
 
 func getStringArg(argsMap map[string]*ast.Value, argName string) (string, error) {
 	for k, v := range argsMap {
-		fmt.Println(k, ":", v)
+		fmt.Println(k, " getStringArg:", v)
 	}
 	val, ok := argsMap[argName]
 	if !ok {
