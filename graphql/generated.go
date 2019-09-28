@@ -1698,7 +1698,6 @@ func (ec *executionContext) field_Xrc20_byAddress_args(ctx context.Context, rawA
 		}
 	}
 	args["page"] = arg2
-	fmt.Println("xxxx:", args)
 	return args, nil
 }
 
@@ -4382,6 +4381,8 @@ func (ec *executionContext) _Xrc20_byAddress(ctx context.Context, field graphql.
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	rawArgs := field.ArgumentMap(ec.Variables)
+
+	fmt.Println("xxxx:", rawArgs)
 	args, err := ec.field_Xrc20_byAddress_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
