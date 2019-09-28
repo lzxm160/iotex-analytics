@@ -513,7 +513,7 @@ func (r *queryResolver) getXrc20ByAddress(ctx context.Context, actionResponse *X
 	//for k, v := range variablesMap {
 	//	fmt.Println(k, " variablesMap:", v)
 	//}
-	k := ctx.Value("Variables")
+	k := ctx.Value("request_context")
 	fmt.Println(k)
 	address, err := getStringArg(argsMap, "address")
 	if err != nil {
