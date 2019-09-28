@@ -841,6 +841,9 @@ func getIntArg(argsMap map[string]*ast.Value, argName string) (int, error) {
 }
 
 func getStringArg(argsMap map[string]*ast.Value, argName string) (string, error) {
+	for k, v := range argsMap {
+		fmt.Println(k, ":", v)
+	}
 	val, ok := argsMap[argName]
 	if !ok {
 		return "", fmt.Errorf("%s is required", argName)
