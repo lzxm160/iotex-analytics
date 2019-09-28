@@ -509,7 +509,7 @@ func (r *queryResolver) getXrc20ByContractAddress(ctx context.Context, actionRes
 func (r *queryResolver) getXrc20ByAddress(ctx context.Context, actionResponse *Xrc20) error {
 	argsMap := parseFieldArguments(ctx, "byAddress", "xrc20")
 	fmt.Println(ctx)
-	variablesMap := parseFieldArguments(ctx, "byAddress", "variables")
+	variablesMap := parseFieldArguments(ctx, "byAddress", "Variables")
 	for k, v := range variablesMap {
 		fmt.Println(k, " variablesMap:", v)
 	}
