@@ -3662,6 +3662,7 @@ func (ec *executionContext) _Query_hermes(ctx context.Context, field graphql.Col
 }
 
 func (ec *executionContext) _Query_xrc20(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	fmt.Println("3665")
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
 	rctx := &graphql.ResolverContext{
