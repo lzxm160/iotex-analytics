@@ -3,7 +3,7 @@ module github.com/iotexproject/iotex-analytics
 go 1.12
 
 require (
-	github.com/99designs/gqlgen v0.8.3
+	github.com/99designs/gqlgen v0.10.1
 	github.com/agnivade/levenshtein v1.0.2 // indirect
 	github.com/ethereum/go-ethereum v1.8.27
 	github.com/go-sql-driver/mysql v1.4.1
