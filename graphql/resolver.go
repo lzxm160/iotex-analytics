@@ -227,7 +227,7 @@ func (r *queryResolver) Xrc20(ctx context.Context) (*Xrc20, error) {
 	fmt.Println("Xrc20(")
 	requestedFields := graphql.CollectAllFields(ctx)
 	actionResponse := &Xrc20{}
-	fmt.Println(ctx)
+
 	g, ctx := errgroup.WithContext(ctx)
 	if containField(requestedFields, "byContractAddress") {
 		g.Go(func() error { return r.getXrc20ByContractAddress(ctx, actionResponse) })
@@ -508,10 +508,10 @@ func (r *queryResolver) getXrc20ByContractAddress(ctx context.Context, actionRes
 
 func (r *queryResolver) getXrc20ByAddress(ctx context.Context, actionResponse *Xrc20) error {
 	argsMap := parseFieldArguments(ctx, "byAddress", "xrc20")
-	for k, v := range argsMap {
+	variablesMap := parseFieldArguments(ctx, "byAddress", "variables")
+	for k, v := range variablesMap {
 		fmt.Println(k, ":", v)
 	}
-
 	address, err := getStringArg(argsMap, "address")
 	if err != nil {
 		return errors.Wrap(err, "failed to get address")
