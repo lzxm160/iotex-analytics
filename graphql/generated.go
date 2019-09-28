@@ -6686,6 +6686,7 @@ func (ec *executionContext) _VotingMeta(ctx context.Context, sel ast.SelectionSe
 var xrc20Implementors = []string{"Xrc20"}
 
 func (ec *executionContext) _Xrc20(ctx context.Context, sel ast.SelectionSet, obj *Xrc20) graphql.Marshaler {
+	fmt.Println("_Xrc20")
 	fields := graphql.CollectFields(ctx, sel, xrc20Implementors)
 
 	out := graphql.NewFieldSet(fields)
