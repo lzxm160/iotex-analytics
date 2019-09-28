@@ -225,6 +225,7 @@ func (r *queryResolver) Hermes(ctx context.Context, startEpoch int, epochCount i
 // Xrc20 handles Xrc20 requests
 func (r *queryResolver) Xrc20(ctx context.Context) (*Xrc20, error) {
 	requestedFields := graphql.CollectAllFields(ctx)
+	fmt.Println(requestedFields)
 	actionResponse := &Xrc20{}
 
 	g, ctx := errgroup.WithContext(ctx)
