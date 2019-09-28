@@ -832,6 +832,7 @@ func getIntArg(argsMap map[string]*ast.Value, argName string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	fmt.Println(getStr)
 	intVal, err := strconv.Atoi(getStr)
 	if err != nil {
 		return 0, fmt.Errorf("%s must be an integer", argName)
