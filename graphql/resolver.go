@@ -846,6 +846,9 @@ func parseFieldArguments(ctx context.Context, fieldName string, selectedFieldNam
 		argsMap[arg.Name] = arg.Value
 	}
 	parseVariables(ctx, argsMap, arguments)
+	for k, v := range argsMap {
+		fmt.Println(k, ":", v.Raw)
+	}
 	return argsMap
 }
 func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, arguments ast.ArgumentList) {
