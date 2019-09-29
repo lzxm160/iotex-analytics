@@ -854,29 +854,22 @@ func parseFieldArguments(ctx context.Context, fieldName string, selectedFieldNam
 func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, arguments ast.ArgumentList) {
 	val := graphql.GetRequestContext(ctx)
 	if val != nil {
-		fmt.Println("xxxx:", val.Variables)
 		for _, arg := range arguments {
-			//argsMap[arg.Name].Value(val.Variables)
-			//fmt.Println(argsMap[arg.Name].Kind)
-			//fmt.Println(arg.Name, ":", arg.Value.ExpectedType.Name())
 			fmt.Println(arg.Value.Raw)
 			switch arg.Value.ExpectedType.Name() {
 			case "String":
-				fmt.Println("string")
 				value, ok := val.Variables[arg.Name].(string)
 				if ok {
-					fmt.Println(value)
 					argsMap[arg.Name].Raw = value
 				}
 			case "Int":
 				value, err := val.Variables[arg.Name].(json.Number).Int64()
 				if err != nil {
-					fmt.Println(err)
+					return
 				}
-				fmt.Println(value)
 				argsMap[arg.Name].Raw = fmt.Sprintf("%d", value)
 			default:
-				fmt.Println(arg.Value.ExpectedType.Name())
+				return
 			}
 		}
 	}
