@@ -99,6 +99,7 @@ func main() {
 				}}),
 				handler.ResolverMiddleware(
 					func(ctx context.Context, next gqlgen.Resolver) (res interface{}, err error) {
+						fmt.Println(ctx)
 						rc := gqlgen.GetResolverContext(ctx)
 						fmt.Println("Entered", rc.Object, rc.Field.Name)
 						fmt.Println(rc.Field.Field)
