@@ -99,14 +99,17 @@ func main() {
 				}}),
 				handler.ResolverMiddleware(
 					func(ctx context.Context, next gqlgen.Resolver) (res interface{}, err error) {
-						fmt.Println(ctx)
+						//fmt.Println(ctx)
 						rc := gqlgen.GetResolverContext(ctx)
 						fmt.Println("Entered", rc.Object, rc.Field.Name)
 						//fmt.Println("Definition", rc.Field.Field.Definition)
 						//fmt.Println("Arguments", rc.Field.Field.Arguments)
 						//fmt.Println("Alias", rc.Field.Field.Alias)
 						//fmt.Println("Directives", rc.Field.Field.Directives)
-						fmt.Println("ODefinition", rc.Field.Field.ObjectDefinition.Fields)
+						for _, v := range rc.Field.Field.ObjectDefinition.Fields {
+							fmt.Println("ODefinition", v.Arguments)
+						}
+
 						//fmt.Println("Position", rc.Field.Field.Position)
 						//fmt.Println("SelectionSet", rc.Field.Field.SelectionSet)
 
