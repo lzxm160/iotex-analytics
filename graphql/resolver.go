@@ -518,7 +518,7 @@ func (r *queryResolver) getXrc20ByAddress(ctx context.Context, actionResponse *X
 	//if ok {
 	//	fmt.Println("filter:", filter)
 	//}
-	for k, v := range rctx.Parent.Args {
+	for k, v := range rctx.Parent.Field.Arguments {
 		fmt.Println(k, " resolver_context:", v)
 	}
 
