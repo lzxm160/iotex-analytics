@@ -856,7 +856,7 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 			//argsMap[arg.Name].Value(val.Variables)
 			//fmt.Println(argsMap[arg.Name].Kind)
 			//fmt.Println(arg.Name, ":", arg.Value.ExpectedType.Name())
-
+			fmt.Println(arg.Value.Raw)
 			switch arg.Value.ExpectedType.Name() {
 			case "String":
 				fmt.Println("string")
