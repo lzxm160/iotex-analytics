@@ -816,6 +816,7 @@ func parseFieldArguments(ctx context.Context, fieldName string, selectedFieldNam
 	var field graphql.CollectedField
 	for _, f := range fields {
 		if f.Name == fieldName {
+			fmt.Println(f.Name)
 			field = f
 		}
 	}
