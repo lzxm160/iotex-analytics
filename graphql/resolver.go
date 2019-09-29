@@ -10,6 +10,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -864,7 +865,8 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 					fmt.Println(value)
 				}
 			case "Int":
-				fmt.Println("int")
+
+				fmt.Println("int:", reflect.TypeOf(val.Variables[arg.Name]))
 				value, ok := val.Variables[arg.Name].(int)
 				if ok {
 					fmt.Println(value)
