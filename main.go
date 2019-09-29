@@ -24,7 +24,7 @@ import (
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	yaml"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/iotexproject/iotex-analytics/graphql"
 	"github.com/iotexproject/iotex-analytics/indexcontext"
@@ -99,9 +99,10 @@ func main() {
 				}}),
 				handler.ResolverMiddleware(
 					func(ctx context.Context, next gqlgen.Resolver) (res interface{}, err error) {
-						if val, ok := ctx.Value("resolver_context").(*gqlgen.ResolverContext); ok {
-							fmt.Println("resolver_context:", val)
-						}
+						rc := gqlgen.GetResolverContext(ctx)
+						fmt.Println("Entered", rc.Object, rc.Field.Name)
+						res, err = next(ctx)
+						fmt.Println("Left", rc.Object, rc.Field.Name, "=>", res, err)
 						return next(ctx)
 					}),
 				//func(ctx context.Context, next graphql.Resolver) (res interface{}, err error) {
