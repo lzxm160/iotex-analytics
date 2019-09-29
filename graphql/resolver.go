@@ -812,7 +812,12 @@ func containField(requestedFields []string, field string) bool {
 
 func parseFieldArguments(ctx context.Context, fieldName string, selectedFieldName string) map[string]*ast.Value {
 	fmt.Println(ctx)
+	allfields := graphql.CollectAllFields(ctx)
+	for _, f := range allfields {
+		fmt.Println(f)
+	}
 	fields := graphql.CollectFieldsCtx(ctx, nil)
+
 	var field graphql.CollectedField
 	for _, f := range fields {
 		if f.Name == fieldName {
