@@ -863,6 +863,7 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 				value, ok := val.Variables[arg.Name].(string)
 				if ok {
 					fmt.Println(value)
+					argsMap[arg.Name].Raw = value
 				}
 			case "Int":
 				value, err := val.Variables[arg.Name].(json.Number).Int64()
@@ -870,6 +871,7 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 					fmt.Println(err)
 				}
 				fmt.Println(value)
+				argsMap[arg.Name].Raw = fmt.Sprintf("%s", value)
 			default:
 				fmt.Println(arg.Value.ExpectedType.Name())
 			}
