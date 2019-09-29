@@ -11,18 +11,19 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
 
+	gqlgen "github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/handler"
 	"github.com/iotexproject/iotex-core/pkg/log"
 	"github.com/iotexproject/iotex-election/pb/api"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"gopkg.in/yaml.v2"
 
 	"github.com/iotexproject/iotex-analytics/graphql"
 	"github.com/iotexproject/iotex-analytics/indexcontext"
@@ -85,13 +86,35 @@ func main() {
 	}
 
 	http.Handle("/", graphqlHandler(handler.Playground("GraphQL playground", "/query")))
-	http.Handle("/query", graphqlHandler(handler.GraphQL(graphql.NewExecutableSchema(graphql.Config{Resolvers: &graphql.Resolver{
-		PP: productivity.NewProtocol(idx),
-		RP: rewards.NewProtocol(idx),
-		VP: votings.NewProtocol(idx),
-		AP: actions.NewProtocol(idx),
-		CP: chainmeta.NewProtocol(idx),
-	}}))))
+	http.Handle("/query",
+		graphqlHandler(
+			handler.GraphQL(
+				graphql.NewExecutableSchema(graphql.Config{Resolvers: &graphql.Resolver{
+					PP: productivity.NewProtocol(idx),
+					RP: rewards.NewProtocol(idx),
+					VP: votings.NewProtocol(idx),
+					AP: actions.NewProtocol(idx),
+					CP: chainmeta.NewProtocol(idx),
+				}}),
+				handler.ResolverMiddleware(
+					func(ctx context.Context, next gqlgen.Resolver) (res interface{}, err error) {
+						if val, ok := ctx.Value("resolver_context").(*gqlgen.ResolverContext); ok {
+							fmt.Println("resolver_context:", val)
+						}
+						return next(ctx)
+					}),
+				//func(ctx context.Context, next graphql.Resolver) (res interface{}, err error) {
+				//	return next(ctx)
+				//}),
+				//handler.RequestMiddleware(func(ctx context.Context, next graphql.Resolver) (res interface{}, err error) {
+				//	//path, _ := ctx.Value("path").([]int)
+				//	//return next(context.WithValue(ctx, "path", append(path, 1)))
+				//	if val, ok := ctx.Value("resolver_context").(*graphql.ResolverContext); ok {
+				//		fmt.Println("resolver_context:", val)
+				//	}
+				//	return next(ctx)
+				//})
+			)))
 
 	log.S().Infof("connect to http://localhost:%s/ for GraphQL playground", port)
 
