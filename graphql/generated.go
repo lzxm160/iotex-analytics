@@ -3678,6 +3678,7 @@ func (ec *executionContext) _Query_xrc20(ctx context.Context, field graphql.Coll
 		return ec.resolvers.Query().Xrc20(rctx)
 	})
 	if resTmp == nil {
+		fmt.Println("3682:graphql.Null")
 		return graphql.Null
 	}
 	res := resTmp.(*Xrc20)
