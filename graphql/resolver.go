@@ -844,20 +844,31 @@ func parseFieldArguments(ctx context.Context, fieldName string, selectedFieldNam
 	for _, arg := range arguments {
 		argsMap[arg.Name] = arg.Value
 	}
+	parseVariables(ctx, argsMap, arguments)
+	return argsMap
+}
+func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, arguments ast.ArgumentList) {
 	val := graphql.GetRequestContext(ctx)
 	if val != nil {
 		fmt.Println("xxxx:", val.Variables)
 		for _, arg := range arguments {
 			//argsMap[arg.Name].Value(val.Variables)
 			//fmt.Println(argsMap[arg.Name].Kind)
-			fmt.Println(arg.Name, ":", arg.Value.VariableDefinition.Type)
-			fmt.Println(argsMap[arg.Name].Kind)
+			fmt.Println(arg.Name, ":", arg.Value.Kind)
+
+			switch arg.Value.Kind {
+			case ast.StringValue, ast.BlockValue:
+				fallthrough
+			case ast.ListValue:
+				fallthrough
+			case ast.IntValue:
+				fallthrough
+			default:
+				fmt.Println(arg.Value.VariableDefinition.Type.Position)
+			}
 		}
 	}
-
-	return argsMap
 }
-
 func getIntArg(argsMap map[string]*ast.Value, argName string) (int, error) {
 	getStr, err := getStringArg(argsMap, argName)
 	if err != nil {
