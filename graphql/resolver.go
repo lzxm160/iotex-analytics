@@ -513,8 +513,8 @@ func (r *queryResolver) getXrc20ByAddress(ctx context.Context, actionResponse *X
 	//for k, v := range variablesMap {
 	//	fmt.Println(k, " variablesMap:", v)
 	//}
-	k := ctx.Value("request_context")
-	fmt.Println(k)
+	k := ctx.Value("http-server")
+	fmt.Println("517:", k)
 	address, err := getStringArg(argsMap, "address")
 	if err != nil {
 		return errors.Wrap(err, "failed to get address")
@@ -812,10 +812,6 @@ func containField(requestedFields []string, field string) bool {
 
 func parseFieldArguments(ctx context.Context, fieldName string, selectedFieldName string) map[string]*ast.Value {
 	fmt.Println(ctx)
-	allfields := graphql.CollectAllFields(ctx)
-	for _, f := range allfields {
-		fmt.Println(f)
-	}
 	fields := graphql.CollectFieldsCtx(ctx, nil)
 
 	var field graphql.CollectedField
