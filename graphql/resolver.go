@@ -863,7 +863,7 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 					fmt.Println(value)
 				}
 			case "Int":
-				value, ok := val.Variables[arg.Name].(int64)
+				value, ok := val.Variables[arg.Name].(int)
 				if ok {
 					fmt.Println(value)
 				}
