@@ -9,8 +9,8 @@ package graphql
 import (
 	"context"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -865,10 +865,9 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 					fmt.Println(value)
 				}
 			case "Int":
+				value, err := val.Variables[arg.Name].(json.Number).Int64()
 
-				fmt.Println("int:", reflect.TypeOf(val.Variables[arg.Name]))
-				value, ok := val.Variables[arg.Name].(int)
-				if ok {
+				if err != nil {
 					fmt.Println(value)
 				}
 			default:
