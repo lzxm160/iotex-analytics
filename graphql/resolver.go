@@ -854,18 +854,18 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 		for _, arg := range arguments {
 			//argsMap[arg.Name].Value(val.Variables)
 			//fmt.Println(argsMap[arg.Name].Kind)
-			fmt.Println(arg.Name, ":", arg.Value.VariableDefinition.Definition.Kind)
+			fmt.Println(arg.Name, ":", arg.Value.ExpectedType.Name())
 
-			switch arg.Value.VariableDefinition.DefaultValue.Kind {
-			case ast.StringValue, ast.BlockValue:
-				fallthrough
-			case ast.ListValue:
-				fallthrough
-			case ast.IntValue:
-				fallthrough
-			default:
-				fmt.Println(arg.Value.VariableDefinition.Type.Position)
-			}
+			//switch arg.Value.VariableDefinition.DefaultValue.Kind {
+			//case ast.StringValue, ast.BlockValue:
+			//	fallthrough
+			//case ast.ListValue:
+			//	fallthrough
+			//case ast.IntValue:
+			//	fallthrough
+			//default:
+			//	fmt.Println(arg.Value.VariableDefinition.Type.Position)
+			//}
 		}
 	}
 }
