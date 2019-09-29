@@ -1088,6 +1088,9 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 }
 
 func (e *executableSchema) Query(ctx context.Context, op *ast.OperationDefinition) *graphql.Response {
+	if val, ok := ctx.Value("request_context").(*graphql.RequestContext); ok {
+		fmt.Println("xxxx:", val.Variables)
+	}
 	ec := executionContext{graphql.GetRequestContext(ctx), e}
 
 	buf := ec.RequestMiddleware(ctx, func(ctx context.Context) []byte {
@@ -6298,9 +6301,7 @@ var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
 	fields := graphql.CollectFields(ctx, sel, queryImplementors)
-	if val, ok := ctx.Value("request_context").(*graphql.RequestContext); ok {
-		fmt.Println("xxxx:", val.Variables)
-	}
+
 	ctx = graphql.WithResolverContext(ctx, &graphql.ResolverContext{
 		Object: "Query",
 	})
