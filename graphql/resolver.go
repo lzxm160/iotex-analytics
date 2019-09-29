@@ -509,17 +509,14 @@ func (r *queryResolver) getXrc20ByContractAddress(ctx context.Context, actionRes
 func (r *queryResolver) getXrc20ByAddress(ctx context.Context, actionResponse *Xrc20) error {
 	argsMap := parseFieldArguments(ctx, "byAddress", "xrc20")
 
-	variablesMap := parseFieldArguments(ctx, "Variables", "address")
-	for k, v := range variablesMap {
-		fmt.Println(k, " variablesMap:", v)
-	}
-	//k := ctx.Value("request_context")
-	//kk, ok := k.(*graphql.RequestContext)
-	//if !ok {
-	//	fmt.Println("517:not ok")
-	//} else {
-	//	fmt.Println("517:", kk.Variables)
+	//variablesMap := parseFieldArguments(ctx, "Variables", "address")
+	//for k, v := range variablesMap {
+	//	fmt.Println(k, " variablesMap:", v)
 	//}
+
+	if val, ok := ctx.Value("request_context").(*graphql.RequestContext); ok {
+		fmt.Println("request_context:", val)
+	}
 
 	address, err := getStringArg(argsMap, "address")
 	if err != nil {
