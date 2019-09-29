@@ -11,13 +11,11 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
 
-	gqlgen "github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/handler"
 	"github.com/iotexproject/iotex-core/pkg/log"
 	"github.com/iotexproject/iotex-election/pb/api"
@@ -97,24 +95,24 @@ func main() {
 					AP: actions.NewProtocol(idx),
 					CP: chainmeta.NewProtocol(idx),
 				}}),
-				handler.ResolverMiddleware(
-					func(ctx context.Context, next gqlgen.Resolver) (res interface{}, err error) {
-						//fmt.Println(ctx)
-						rc := gqlgen.GetResolverContext(ctx)
-						fmt.Println("Entered", rc.Object, rc.Field.Name)
-						//fmt.Println("Definition", rc.Field.Field.Definition)
-						//fmt.Println("Arguments", rc.Field.Field.Arguments)
-						//fmt.Println("Alias", rc.Field.Field.Alias)
-						//fmt.Println("Directives", rc.Field.Field.Directives)
-						for _, v := range rc.Field.Field.ObjectDefinition.Fields {
-							fmt.Println("name:", v.Name, ":", v.Arguments, ":", v.Directives)
-						}
-
-						//fmt.Println("Position", rc.Field.Field.Position)
-						//fmt.Println("SelectionSet", rc.Field.Field.SelectionSet)
-
-						return next(ctx)
-					}),
+				//handler.ResolverMiddleware(
+				//	func(ctx context.Context, next gqlgen.Resolver) (res interface{}, err error) {
+				//		//fmt.Println(ctx)
+				//		rc := gqlgen.GetResolverContext(ctx)
+				//		fmt.Println("Entered", rc.Object, rc.Field.Name)
+				//		//fmt.Println("Definition", rc.Field.Field.Definition)
+				//		//fmt.Println("Arguments", rc.Field.Field.Arguments)
+				//		//fmt.Println("Alias", rc.Field.Field.Alias)
+				//		//fmt.Println("Directives", rc.Field.Field.Directives)
+				//		for _, v := range rc.Field.Field.ObjectDefinition.Fields {
+				//			fmt.Println("name:", v.Name, ":", v.Arguments, ":", v.Directives)
+				//		}
+				//
+				//		//fmt.Println("Position", rc.Field.Field.Position)
+				//		//fmt.Println("SelectionSet", rc.Field.Field.SelectionSet)
+				//
+				//		return next(ctx)
+				//	}),
 				//func(ctx context.Context, next graphql.Resolver) (res interface{}, err error) {
 				//	return next(ctx)
 				//}),
