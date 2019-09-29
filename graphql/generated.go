@@ -6298,7 +6298,9 @@ var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
 	fields := graphql.CollectFields(ctx, sel, queryImplementors)
-
+	if val, ok := ctx.Value(request).(*graphql.RequestContext); ok {
+		fmt.Println(val.Variables)
+	}
 	ctx = graphql.WithResolverContext(ctx, &graphql.ResolverContext{
 		Object: "Query",
 	})
