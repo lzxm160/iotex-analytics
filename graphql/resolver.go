@@ -513,15 +513,15 @@ func (r *queryResolver) getXrc20ByAddress(ctx context.Context, actionResponse *X
 	//for k, v := range variablesMap {
 	//	fmt.Println(k, " variablesMap:", v)
 	//}
-	rctx := graphql.GetResolverContext(ctx)
+	//rctx := graphql.GetResolverContext(ctx)
 	//filter, ok := rctx.Parent.Args["Variables"].(*graphql.ResolverContext)
 	//if ok {
 	//	fmt.Println("filter:", filter)
 	//}
-	fmt.Println("resolver_context:", rctx.Field.GetPosition())
-	for k, v := range rctx.Parent.Field.Arguments {
-		fmt.Println(k, " resolver_context:", v)
-	}
+//	fmt.Println("resolver_context:", rctx.Field.GetPosition())
+	//for k, v := range rctx.Parent.Field.Arguments {
+	//	fmt.Println(k, " resolver_context:", v)
+//	}
 
 	address, err := getStringArg(argsMap, "address")
 	if err != nil {
