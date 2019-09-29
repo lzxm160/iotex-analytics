@@ -6365,7 +6365,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				return res
 			})
 		case "xrc20":
-			fmt.Println("6366:", field)
+			fmt.Println("6366:", field.Arguments, ":", field.Name)
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
