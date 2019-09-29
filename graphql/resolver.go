@@ -866,10 +866,10 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 				}
 			case "Int":
 				value, err := val.Variables[arg.Name].(json.Number).Int64()
-
 				if err != nil {
 					fmt.Println(value)
 				}
+				fmt.Println(err)
 			default:
 				fmt.Println(arg.Value.ExpectedType.Name())
 			}
