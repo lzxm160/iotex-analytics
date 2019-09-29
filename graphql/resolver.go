@@ -518,10 +518,10 @@ func (r *queryResolver) getXrc20ByAddress(ctx context.Context, actionResponse *X
 	//if ok {
 	//	fmt.Println("filter:", filter)
 	//}
-//	fmt.Println("resolver_context:", rctx.Field.GetPosition())
+	//	fmt.Println("resolver_context:", rctx.Field.GetPosition())
 	//for k, v := range rctx.Parent.Field.Arguments {
 	//	fmt.Println(k, " resolver_context:", v)
-//	}
+	//	}
 
 	address, err := getStringArg(argsMap, "address")
 	if err != nil {
@@ -819,7 +819,11 @@ func containField(requestedFields []string, field string) bool {
 }
 
 func parseFieldArguments(ctx context.Context, fieldName string, selectedFieldName string) map[string]*ast.Value {
-	fmt.Println(ctx)
+	//fmt.Println(ctx)
+	val := graphql.GetRequestContext(ctx)
+	if val != nil {
+		fmt.Println("xxxx:", val.Variables)
+	}
 	fields := graphql.CollectFieldsCtx(ctx, nil)
 
 	var field graphql.CollectedField
