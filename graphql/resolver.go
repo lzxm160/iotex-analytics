@@ -820,10 +820,7 @@ func containField(requestedFields []string, field string) bool {
 
 func parseFieldArguments(ctx context.Context, fieldName string, selectedFieldName string) map[string]*ast.Value {
 	//fmt.Println(ctx)
-	val := graphql.GetRequestContext(ctx)
-	if val != nil {
-		fmt.Println("xxxx:", val.Variables)
-	}
+
 	fields := graphql.CollectFieldsCtx(ctx, nil)
 
 	var field graphql.CollectedField
@@ -847,6 +844,14 @@ func parseFieldArguments(ctx context.Context, fieldName string, selectedFieldNam
 	for _, arg := range arguments {
 		argsMap[arg.Name] = arg.Value
 	}
+	val := graphql.GetRequestContext(ctx)
+	if val != nil {
+		fmt.Println("xxxx:", val.Variables)
+		for _, arg := range arguments {
+			argsMap[arg.Name].Value(val.Variables)
+		}
+	}
+
 	return argsMap
 }
 
