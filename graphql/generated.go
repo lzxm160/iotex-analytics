@@ -6306,6 +6306,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	out := graphql.NewFieldSet(fields)
 	invalid := false
 	for i, field := range fields {
+		fmt.Println(field.Name)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
