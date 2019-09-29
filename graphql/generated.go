@@ -1088,7 +1088,11 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 }
 
 func (e *executableSchema) Query(ctx context.Context, op *ast.OperationDefinition) *graphql.Response {
-	if val, ok := ctx.Value("request_context").(*graphql.RequestContext); ok {
+	//if val, ok := ctx.Value("request_context").(*graphql.RequestContext); ok {
+	//	fmt.Println("xxxx:", val.Variables)
+	//}
+	val := graphql.GetRequestContext(ctx)
+	if val != nil {
 		fmt.Println("xxxx:", val.Variables)
 	}
 	ec := executionContext{graphql.GetRequestContext(ctx), e}
