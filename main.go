@@ -24,6 +24,7 @@ import (
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	yaml"gopkg.in/yaml.v2"
 
 	"github.com/iotexproject/iotex-analytics/graphql"
 	"github.com/iotexproject/iotex-analytics/indexcontext"
