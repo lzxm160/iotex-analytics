@@ -107,7 +107,7 @@ func main() {
 						//fmt.Println("Alias", rc.Field.Field.Alias)
 						//fmt.Println("Directives", rc.Field.Field.Directives)
 						for _, v := range rc.Field.Field.ObjectDefinition.Fields {
-							fmt.Println("ODefinition", v.Arguments)
+							fmt.Println("name:", v.Name, ":", v.Arguments, ":", v.Directives)
 						}
 
 						//fmt.Println("Position", rc.Field.Field.Position)
