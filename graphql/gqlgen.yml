@@ -14,4 +14,4 @@ resolver:
   type: Resolver
 models:
   Account:
-    model: github.com/lzxm160/iotex-analytics/graphql.Account
+    model: github.com/lzxm160/iotex-analytics@testyml/graphql.Account
