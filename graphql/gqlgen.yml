@@ -14,5 +14,4 @@ resolver:
   type: Resolver
 models:
     Account:
-      activeAccounts:
         resolver: true
