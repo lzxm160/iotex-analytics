@@ -93,7 +93,7 @@ func (p *Protocol) GetActionsByDates(startDate, endDate uint64) ([]*ActionInfo, 
 
 	db := p.indexer.Store.GetDB()
 
-	getQuery := fmt.Sprintf("SELECT action_hash, block_hash, timestamp, action_type, `from`, `to`, amount,gas_price*gas_consumed FROM %s "+
+	getQuery := fmt.Sprintf("SELECT action_hash, block_hash, timestamp, action_type, `from`, `to`, amount, t1.gas_price*t1.gas_consumed FROM %s "+
 		"AS t1 LEFT JOIN %s AS t2 ON t1.block_height=t2.block_height WHERE timestamp >= ? AND timestamp <= ?", actions.ActionHistoryTableName, blocks.BlockHistoryTableName)
 	fmt.Println(getQuery)
 	stmt, err := db.Prepare(getQuery)
@@ -135,7 +135,7 @@ func (p *Protocol) GetActionDetailByHash(actHash string) (*ActionDetail, error) 
 
 	db := p.indexer.Store.GetDB()
 
-	getQuery := fmt.Sprintf("SELECT action_hash, block_hash, timestamp, action_type, `from`, `to`, amount,gas_price*gas_consumed FROM %s "+
+	getQuery := fmt.Sprintf("SELECT action_hash, block_hash, timestamp, action_type, `from`, `to`, amount, t1.gas_price*t1.gas_consumed FROM %s "+
 		"AS t1 LEFT JOIN %s AS t2 ON t1.block_height=t2.block_height WHERE action_hash = ?", actions.ActionHistoryTableName, blocks.BlockHistoryTableName)
 	fmt.Println(getQuery)
 	stmt, err := db.Prepare(getQuery)
