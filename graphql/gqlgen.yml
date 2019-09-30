@@ -13,5 +13,5 @@ resolver:
   filename: resolver.go
   type: Resolver
 models:
-    Account:
-        resolver: true
+  Account:
+    model: model.Account
