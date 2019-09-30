@@ -12,3 +12,7 @@ model:
 resolver:
   filename: resolver.go
   type: Resolver
+models:
+    Account:
+      activeAccounts:
+        resolver: true
