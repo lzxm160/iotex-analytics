@@ -835,6 +835,9 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 	val := graphql.GetRequestContext(ctx)
 	if val != nil {
 		for _, arg := range arguments {
+			if arg == nil {
+				continue
+			}
 			switch arg.Value.ExpectedType.Name() {
 			case "String":
 				value, ok := val.Variables[arg.Name].(string)
