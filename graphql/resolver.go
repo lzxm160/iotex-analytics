@@ -899,14 +899,17 @@ func parseFieldArguments(ctx context.Context, fieldName string, selectedFieldNam
 	for _, arg := range arguments {
 		argsMap[arg.Name] = arg.Value
 	}
-	// TODO: Temporarily disable parsing variables
-	//parseVariables(ctx, argsMap, arguments)
+	parseVariables(ctx, argsMap, arguments)
 	return argsMap
 }
+
 func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, arguments ast.ArgumentList) {
 	val := graphql.GetRequestContext(ctx)
 	if val != nil {
 		for _, arg := range arguments {
+			if arg == nil {
+				continue
+			}
 			switch arg.Value.ExpectedType.Name() {
 			case "String":
 				value, ok := val.Variables[arg.Name].(string)
@@ -914,17 +917,21 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 					argsMap[arg.Name].Raw = value
 				}
 			case "Int":
-				value, err := val.Variables[arg.Name].(json.Number).Int64()
-				if err != nil {
-					return
+				valueJson, ok := val.Variables[arg.Name].(json.Number)
+				if ok {
+					value, err := valueJson.Int64()
+					if err != nil {
+						return
+					}
+					argsMap[arg.Name].Raw = fmt.Sprintf("%d", value)
 				}
-				argsMap[arg.Name].Raw = fmt.Sprintf("%d", value)
 			default:
 				return
 			}
 		}
 	}
 }
+
 func getIntArg(argsMap map[string]*ast.Value, argName string) (int, error) {
 	getStr, err := getStringArg(argsMap, argName)
 	if err != nil {
