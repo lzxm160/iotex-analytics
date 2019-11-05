@@ -879,6 +879,7 @@ func (r *queryResolver) getBucketInfo(ctx context.Context, delegateResponse *Del
 	}
 	sort.Slice(bucketInfoLists, func(i, j int) bool { return bucketInfoLists[i].EpochNumber < bucketInfoLists[j].EpochNumber })
 	delegateResponse.BucketInfo = &BucketInfoOutput{Exist: true, BucketInfoList: bucketInfoLists}
+	fmt.Println("len(delegateResponse.BucketInfo)", len(delegateResponse.BucketInfo.BucketInfoList))
 	return nil
 }
 
