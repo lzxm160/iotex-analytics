@@ -865,6 +865,8 @@ func (r *queryResolver) getBucketInfo(ctx context.Context, delegateResponse *Del
 		default:
 			skip := paginationMap["skip"]
 			first := paginationMap["first"]
+			fmt.Println("skip", skip)
+			fmt.Println("first", first)
 			if skip < 0 || skip >= len(bucketInfo) {
 				return errors.New("invalid pagination skip number for bucket info")
 			}
