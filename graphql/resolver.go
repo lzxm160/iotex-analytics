@@ -949,10 +949,13 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 				//for k, v := range val.Variables[arg.Name] {
 				//	argsMap[k].Raw = v
 				//}
-				_, ok := val.Variables[arg.Name].(map[string]interface{})
+				value, ok := val.Variables[arg.Name].(map[string]interface{})
 				fmt.Println(":", ok)
 				if ok {
-					//argsMap[arg.Name] = value
+					for k, v := range value {
+						child := &ast.ChildValue{Name: k, Value: &ast.Value{Raw: fmt.Sprintf("%d", v)}}
+						argsMap[arg.Name].Children = append(argsMap[arg.Name].Children, child)
+					}
 				}
 			default:
 				return
