@@ -944,6 +944,7 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 					argsMap[arg.Name].Raw = fmt.Sprintf("%d", value)
 				}
 			default:
+				fmt.Println("arg.Value.ExpectedType.Name()", arg.Value.ExpectedType.Name())
 				return
 			}
 		}
