@@ -944,26 +944,18 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 					argsMap[arg.Name].Raw = fmt.Sprintf("%d", value)
 				}
 			case "Pagination":
-				fmt.Println(":", val.Variables[arg.Name])
-				//argsMap[arg.Name].Value(val.Variables[arg.Name].map())
-				//for k, v := range val.Variables[arg.Name] {
-				//	argsMap[k].Raw = v
-				//}
 				value, ok := val.Variables[arg.Name].(map[string]interface{})
-				fmt.Println(":", ok)
 				if ok {
 					for k, v := range value {
 						valueJSON, ok := v.(json.Number)
 						if ok {
 							valueInt64, err := valueJSON.Int64()
 							if err != nil {
-								return
+								continue
 							}
-							//argsMap[arg.Name].Raw =
 							child := &ast.ChildValue{Name: k, Value: &ast.Value{Raw: fmt.Sprintf("%d", valueInt64)}}
 							argsMap[arg.Name].Children = append(argsMap[arg.Name].Children, child)
 						}
-
 					}
 				}
 			default:
@@ -1009,11 +1001,9 @@ func getPaginationArgs(argsMap map[string]*ast.Value) (map[string]int, error) {
 	if !ok {
 		return nil, ErrPaginationNotFound
 	}
-	fmt.Println("pagination", pagination)
 	childValueList := pagination.Children
 	paginationMap := make(map[string]int)
 	for _, childValue := range childValueList {
-		fmt.Println("childValue.Value", childValue.Value)
 		intVal, err := strconv.Atoi(childValue.Value.Raw)
 		if err != nil {
 			return nil, errors.Wrap(err, "pagination value must be an integer")
