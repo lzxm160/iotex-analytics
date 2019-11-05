@@ -945,11 +945,11 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 				}
 			case "Pagination":
 				fmt.Println(":", val.Variables[arg.Name])
-
+				//argsMap[arg.Name].Value(val.Variables[arg.Name].map())
 				//for k, v := range val.Variables[arg.Name] {
 				//	argsMap[k].Raw = v
 				//}
-				_, ok := val.Variables[arg.Name].(Pagination)
+				_, ok := val.Variables[arg.Name].(map[string]interface{})
 				fmt.Println(":", ok)
 				if ok {
 					//argsMap[arg.Name] = value
