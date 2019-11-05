@@ -943,8 +943,13 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 					}
 					argsMap[arg.Name].Raw = fmt.Sprintf("%d", value)
 				}
+			case "Pagination":
+				value, ok := val.Variables[arg.Name].(Pagination)
+				if ok {
+					fmt.Println(value)
+					//argsMap[arg.Name] = value
+				}
 			default:
-				fmt.Println("arg.Value.ExpectedType.Name()", arg.Value.ExpectedType.Name())
 				return
 			}
 		}
