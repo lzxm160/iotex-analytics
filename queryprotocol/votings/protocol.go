@@ -9,6 +9,7 @@ package votings
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -84,6 +85,7 @@ func (p *Protocol) GetBucketInformation(startEpoch uint64, epochCount uint64, de
 	}
 
 	bucketInfoMap := make(map[uint64][]*votings.VotingInfo)
+	start := time.Now()
 	for i := startEpoch; i <= endEpoch; i++ {
 		voteInfoList, err := votingProtocol.GetBucketInfoByEpoch(i, delegateName)
 		if err != nil {
@@ -91,6 +93,7 @@ func (p *Protocol) GetBucketInformation(startEpoch uint64, epochCount uint64, de
 		}
 		bucketInfoMap[i] = voteInfoList
 	}
+	fmt.Println("GetBucketInfoByEpoch called ", epochCount, ":", time.Since(start))
 	return bucketInfoMap, nil
 }
 
