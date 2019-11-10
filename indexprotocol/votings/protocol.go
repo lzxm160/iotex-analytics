@@ -420,6 +420,65 @@ func (p *Protocol) GetBucketInfoByEpoch(epochNum uint64, delegateName string) ([
 	fmt.Println("GetBucketInfoByEpoch called once:", time.Since(start))
 	return votinginfoList, nil
 }
+func (p *Protocol) GetBucketInfosByEpoch(startEpoch uint64, endEpoch uint64, delegateName string) (map[uint64][]*VotingInfo, error) {
+	start := time.Now()
+	heights := make([]uint64, 0)
+	epochToHeight := make(map[uint64]uint64)
+	votesMap := make(map[uint64][]*types.Vote)
+	voteFlagMap := make(map[uint64][]bool)
+	ethMintTimeMap := make(map[uint64]time.Time)
+	nativeMintTimeMap := make(map[uint64]time.Time)
+	for i := startEpoch; i <= endEpoch; i++ {
+		height := p.epochCtx.GetEpochHeight(i)
+		epochToHeight[i] = height
+		heights = append(heights, height)
+		votes, voteFlag, _, err := p.resultByHeight(height, nil)
+		if err != nil {
+			return nil, err
+		}
+		votesMap[height] = votes
+		voteFlagMap[height] = voteFlag
+		valueOfTime, err := p.timeTableOperator.Get(height, p.Store.GetDB(), nil)
+		if err != nil {
+			return nil, err
+		}
+		ethMintTime, ok := valueOfTime.(time.Time)
+		if !ok {
+			return nil, errors.Errorf("Unexpected type %s", reflect.TypeOf(valueOfTime))
+		}
+		ethMintTimeMap[height] = ethMintTime
+
+		nativeMintTime, err := p.getLatestNativeMintTime(height)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get latest native mint time")
+		}
+		nativeMintTimeMap[height] = nativeMintTime
+	}
+	var votinginfoListMap = make(map[uint64][]*VotingInfo)
+	for epochNumber := startEpoch; epochNumber <= endEpoch; epochNumber++ {
+		height := epochToHeight[epochNumber]
+		for i, vote := range votesMap[epochNumber] {
+			candName := hex.EncodeToString(vote.Candidate())
+			if candName == delegateName {
+				mintTime := nativeMintTimeMap[height]
+				if !voteFlagMap[height][i] {
+					mintTime = ethMintTimeMap[height]
+				}
+				votinginfo := &VotingInfo{
+					EpochNumber:       epochNumber,
+					VoterAddress:      hex.EncodeToString(vote.Voter()),
+					Votes:             vote.Amount().Text(10),
+					WeightedVotes:     vote.WeightedAmount().Text(10),
+					RemainingDuration: vote.RemainingTime(mintTime).String(),
+				}
+				votinginfoListMap[epochNumber] = append(votinginfoListMap[epochNumber], votinginfo)
+			}
+		}
+	}
+
+	fmt.Println("GetBucketInfosByEpoch called once:", time.Since(start))
+	return votinginfoListMap, nil
+}
 
 // getVotingResult gets voting result
 func (p *Protocol) getVotingResult(epochNumber uint64, delegateName string) (*VotingResult, error) {

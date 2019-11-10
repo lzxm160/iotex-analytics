@@ -94,6 +94,14 @@ func (p *Protocol) GetBucketInformation(startEpoch uint64, epochCount uint64, de
 		bucketInfoMap[i] = voteInfoList
 	}
 	fmt.Println("GetBucketInfoByEpoch called ", epochCount, ":", time.Since(start))
+
+	start = time.Now()
+	bucketInfoMap, err = votingProtocol.GetBucketInfosByEpoch(startEpoch, endEpoch, delegateName)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("GetBucketInfosByEpoch called once:", time.Since(start))
+
 	return bucketInfoMap, nil
 }
 
