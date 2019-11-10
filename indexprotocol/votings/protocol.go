@@ -434,6 +434,8 @@ func (p *Protocol) GetBucketInfosByEpoch(startEpoch uint64, endEpoch uint64, del
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println("GetBucketInfosByEpoch called resultByHeight:", time.Since(start))
+		start = time.Now()
 		votesMap[height] = votes
 		voteFlagMap[height] = voteFlag
 		valueOfTime, err := p.timeTableOperator.Get(height, p.Store.GetDB(), nil)
@@ -445,14 +447,16 @@ func (p *Protocol) GetBucketInfosByEpoch(startEpoch uint64, endEpoch uint64, del
 			return nil, errors.Errorf("Unexpected type %s", reflect.TypeOf(valueOfTime))
 		}
 		ethMintTimeMap[height] = ethMintTime
-
+		fmt.Println("GetBucketInfosByEpoch called valueOfTime:", time.Since(start))
+		start = time.Now()
 		nativeMintTime, err := p.getLatestNativeMintTime(height)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get latest native mint time")
 		}
+		fmt.Println("GetBucketInfosByEpoch called getLatestNativeMintTime:", time.Since(start))
 		nativeMintTimeMap[height] = nativeMintTime
 	}
-	fmt.Println("GetBucketInfosByEpoch called once:", time.Since(start))
+
 	var votinginfoListMap = make(map[uint64][]*VotingInfo)
 	for epochNumber := startEpoch; epochNumber <= endEpoch; epochNumber++ {
 		height := epochToHeight[epochNumber]
