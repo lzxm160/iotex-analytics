@@ -358,10 +358,13 @@ func (p *Protocol) calculateEthereumStaking(height uint64, tx *sql.Tx) (*types.E
 
 //[TODO] Wrap vote with flag which tells whether the bucket is from ethereum or native staking
 func (p *Protocol) resultByHeight(height uint64, tx *sql.Tx) ([]*types.Vote, []bool, []*types.Candidate, error) {
+	start := time.Now()
 	result, err := p.calculateEthereumStaking(height, tx)
 	if err != nil {
 		return nil, nil, nil, errors.Wrap(err, "failed to calculate ethereum staking")
 	}
+	fmt.Println("resultByHeight called calculateEthereumStaking:", time.Since(start))
+	start = time.Now()
 	bucketFlag := make([]bool, len(result.Votes())) // false stands for Ethereum
 	valueOfNativeBuckets, err := p.nativeBucketTableOperator.Get(height, p.Store.GetDB(), tx)
 	switch err {
@@ -375,6 +378,7 @@ func (p *Protocol) resultByHeight(height uint64, tx *sql.Tx) ([]*types.Vote, []b
 	default:
 		return nil, nil, nil, err
 	}
+	fmt.Println("resultByHeight called nativeBucketTableOperator:", time.Since(start))
 	return result.Votes(), bucketFlag, result.Delegates(), nil
 }
 
@@ -425,7 +429,6 @@ func (p *Protocol) GetBucketInfosByEpoch(startEpoch uint64, endEpoch uint64, del
 	voteFlagMap := make(map[uint64][]bool)
 	ethMintTimeMap := make(map[uint64]time.Time)
 	nativeMintTimeMap := make(map[uint64]time.Time)
-	start := time.Now()
 	for i := startEpoch; i <= endEpoch; i++ {
 		height := p.epochCtx.GetEpochHeight(i)
 		epochToHeight[i] = height
@@ -434,8 +437,7 @@ func (p *Protocol) GetBucketInfosByEpoch(startEpoch uint64, endEpoch uint64, del
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("GetBucketInfosByEpoch called resultByHeight:", time.Since(start))
-		start = time.Now()
+
 		votesMap[height] = votes
 		voteFlagMap[height] = voteFlag
 		valueOfTime, err := p.timeTableOperator.Get(height, p.Store.GetDB(), nil)
@@ -447,13 +449,10 @@ func (p *Protocol) GetBucketInfosByEpoch(startEpoch uint64, endEpoch uint64, del
 			return nil, errors.Errorf("Unexpected type %s", reflect.TypeOf(valueOfTime))
 		}
 		ethMintTimeMap[height] = ethMintTime
-		fmt.Println("GetBucketInfosByEpoch called valueOfTime:", time.Since(start))
-		start = time.Now()
 		nativeMintTime, err := p.getLatestNativeMintTime(height)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get latest native mint time")
 		}
-		fmt.Println("GetBucketInfosByEpoch called getLatestNativeMintTime:", time.Since(start))
 		nativeMintTimeMap[height] = nativeMintTime
 	}
 
