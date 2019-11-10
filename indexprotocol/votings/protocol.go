@@ -350,6 +350,8 @@ func (p *Protocol) calculateEthereumStaking(height uint64, tx *sql.Tx) (*types.E
 	if err := calculator.AddRegistrations(regs); err != nil {
 		return nil, err
 	}
+	fmt.Println("AddRegistrations called once:", time.Since(start))
+	start = time.Now()
 	valueOfBuckets, err := p.bucketTableOperator.Get(height, p.Store.GetDB(), tx)
 	if err != nil {
 		return nil, err
