@@ -380,7 +380,6 @@ func (p *Protocol) resultByHeight(height uint64, tx *sql.Tx) ([]*types.Vote, []b
 
 // GetBucketInfoByEpoch gets bucket information by epoch
 func (p *Protocol) GetBucketInfoByEpoch(epochNum uint64, delegateName string) ([]*VotingInfo, error) {
-	start := time.Now()
 	height := p.epochCtx.GetEpochHeight(epochNum)
 	votes, voteFlag, _, err := p.resultByHeight(height, nil)
 	if err != nil {
@@ -417,17 +416,16 @@ func (p *Protocol) GetBucketInfoByEpoch(epochNum uint64, delegateName string) ([
 			votinginfoList = append(votinginfoList, votinginfo)
 		}
 	}
-	fmt.Println("GetBucketInfoByEpoch called once:", time.Since(start))
 	return votinginfoList, nil
 }
 func (p *Protocol) GetBucketInfosByEpoch(startEpoch uint64, endEpoch uint64, delegateName string) (map[uint64][]*VotingInfo, error) {
-	start := time.Now()
 	heights := make([]uint64, 0)
 	epochToHeight := make(map[uint64]uint64)
 	votesMap := make(map[uint64][]*types.Vote)
 	voteFlagMap := make(map[uint64][]bool)
 	ethMintTimeMap := make(map[uint64]time.Time)
 	nativeMintTimeMap := make(map[uint64]time.Time)
+	start := time.Now()
 	for i := startEpoch; i <= endEpoch; i++ {
 		height := p.epochCtx.GetEpochHeight(i)
 		epochToHeight[i] = height
@@ -454,6 +452,7 @@ func (p *Protocol) GetBucketInfosByEpoch(startEpoch uint64, endEpoch uint64, del
 		}
 		nativeMintTimeMap[height] = nativeMintTime
 	}
+	fmt.Println("GetBucketInfosByEpoch called once:", time.Since(start))
 	var votinginfoListMap = make(map[uint64][]*VotingInfo)
 	for epochNumber := startEpoch; epochNumber <= endEpoch; epochNumber++ {
 		height := epochToHeight[epochNumber]
@@ -476,7 +475,6 @@ func (p *Protocol) GetBucketInfosByEpoch(startEpoch uint64, endEpoch uint64, del
 		}
 	}
 
-	fmt.Println("GetBucketInfosByEpoch called once:", time.Since(start))
 	return votinginfoListMap, nil
 }
 
