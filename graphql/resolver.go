@@ -11,11 +11,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/iotexproject/iotex-address/address"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/iotexproject/iotex-address/address"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/pkg/errors"
@@ -566,6 +567,7 @@ func (r *queryResolver) getActionsByAddress(ctx context.Context, actionResponse 
 		}
 		actDetailList = append(actDetailList, actionDetail)
 	}
+	fmt.Println("len(actDetailList)", len(actDetailList))
 	sort.Slice(actDetailList,
 		func(i, j int) bool {
 			return actDetailList[i].ActionInfo.TimeStamp < actDetailList[j].ActionInfo.TimeStamp
