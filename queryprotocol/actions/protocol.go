@@ -219,6 +219,7 @@ func (p *Protocol) GetActionsByAddress(address string, withEvmTransfer bool) ([]
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 
+	fmt.Println("address:", address)
 	rows, err := stmt.Query(address)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
