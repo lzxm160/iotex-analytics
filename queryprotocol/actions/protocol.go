@@ -238,8 +238,14 @@ func (p *Protocol) GetActionsByAddress(address string, withEvmTransfer bool) ([]
 	}
 
 	actionDetailList := make([]*ActionDetail, 0)
+	fmt.Println("len(parsedRows) ", len(parsedRows))
 	for _, parsedRow := range parsedRows {
-		actionDetail := &ActionDetail{ActionInfo: parsedRow.(*ActionInfo)}
+		ai, ok := parsedRow.(*ActionInfo)
+		if !ok {
+			fmt.Println("not ok")
+			continue
+		}
+		actionDetail := &ActionDetail{ActionInfo: ai}
 		actionDetailList = append(actionDetailList, actionDetail)
 	}
 
