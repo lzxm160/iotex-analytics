@@ -213,7 +213,7 @@ func (p *Protocol) GetActionsByAddress(address string, withEvmTransfer bool) ([]
 	db := p.indexer.Store.GetDB()
 
 	getQuery := fmt.Sprintf(selectActionHistoryByAddress, actions.ActionHistoryTableName, blocks.BlockHistoryTableName)
-
+	fmt.Println("getquery:", getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")
