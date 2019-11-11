@@ -227,8 +227,8 @@ func (p *Protocol) GetActionsByAddress(address string, withEvmTransfer bool) ([]
 	if err := stmt.Close(); err != nil {
 		return nil, errors.Wrap(err, "failed to close stmt")
 	}
-
-	parsedRows, err := s.ParseSQLRows(rows, &ActionInfo{})
+	var ai ActionInfo
+	parsedRows, err := s.ParseSQLRows(rows, &ai)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse results")
 	}
