@@ -547,6 +547,7 @@ func (r *queryResolver) getActionsByAddress(ctx context.Context, actionResponse 
 
 	actDetailList := make([]*ActionDetail, 0, len(actionDetailList))
 	for _, act := range actionDetailList {
+		fmt.Println("act.ActionInfo.ActHash", act.ActionInfo.ActHash)
 		actionDetail := &ActionDetail{
 			ActionInfo: &ActionInfo{
 				ActHash:   act.ActionInfo.ActHash,
@@ -591,6 +592,7 @@ func (r *queryResolver) getActionsByAddress(ctx context.Context, actionResponse 
 		}
 		actionOutput.Actions = actDetailList[skip : skip+first]
 	}
+	fmt.Println("len(actionOutput.Actions)", len(actionOutput.Actions))
 	actionResponse.ByAddress = actionOutput
 	return nil
 }
