@@ -33,7 +33,7 @@ const (
 	selectActionHistoryByHash = "SELECT action_hash, block_hash, timestamp, action_type, `from`, `to`, amount, t1.gas_price*t1.gas_consumed FROM %s " +
 		"AS t1 LEFT JOIN %s AS t2 ON t1.block_height=t2.block_height WHERE action_hash = ?"
 	selectActionHistoryByAddress = "SELECT action_hash, block_hash, timestamp, action_type, `from`, `to`, amount, t1.gas_price*t1.gas_consumed FROM %s " +
-		"AS t1 LEFT JOIN %s AS t2 ON t1.block_height=t2.block_height WHERE `from` = \\'?\\'"
+		"AS t1 LEFT JOIN %s AS t2 ON t1.block_height=t2.block_height WHERE `from` = '%s'"
 	selectEvmTransferHistory   = "SELECT `from`, `to`, amount FROM %s WHERE action_type = 'execution' AND action_hash = ?"
 	selectActionHistory        = "SELECT DISTINCT `from`, block_height FROM %s ORDER BY block_height desc limit %d"
 	selectXrc20History         = "SELECT * FROM %s WHERE address='%s' ORDER BY `timestamp` desc limit %d,%d"
@@ -212,15 +212,14 @@ func (p *Protocol) GetActionsByAddress(address string, withEvmTransfer bool) ([]
 
 	db := p.indexer.Store.GetDB()
 
-	getQuery := fmt.Sprintf(selectActionHistoryByAddress, actions.ActionHistoryTableName, blocks.BlockHistoryTableName)
+	getQuery := fmt.Sprintf(selectActionHistoryByAddress, actions.ActionHistoryTableName, blocks.BlockHistoryTableName, address)
 	fmt.Println("getquery:", getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 
-	fmt.Println("address:", address)
-	rows, err := stmt.Query(address)
+	rows, err := stmt.Query()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
 	}
