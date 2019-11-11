@@ -248,7 +248,7 @@ func (p *Protocol) GetActionsByAddress(address string, withEvmTransfer bool) ([]
 		actionDetail := &ActionDetail{ActionInfo: ai}
 		actionDetailList = append(actionDetailList, actionDetail)
 	}
-
+	fmt.Println("len(actionDetailList)", len(actionDetailList))
 	if withEvmTransfer {
 		getQuery = fmt.Sprintf(selectEvmTransferHistory, accounts.BalanceHistoryTableName)
 
