@@ -35,7 +35,7 @@ const (
 	createActionHistory    = "CREATE TABLE IF NOT EXISTS %s " +
 		"(action_type TEXT NOT NULL, action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, block_height DECIMAL(65, 0) NOT NULL, " +
 		"`from` VARCHAR(41) NOT NULL, `to` VARCHAR(41) NOT NULL, gas_price DECIMAL(65, 0) NOT NULL, gas_consumed DECIMAL(65, 0) NOT NULL, nonce DECIMAL(65, 0) NOT NULL, " +
-		"amount DECIMAL(65, 0) NOT NULL, receipt_status TEXT NOT NULL, Normal KEY %s (`from`), Normal KEY %s (`to`), PRIMARY KEY (action_hash), FOREIGN KEY (block_height) REFERENCES %s(block_height))"
+		"amount DECIMAL(65, 0) NOT NULL, receipt_status TEXT NOT NULL, NORMAL KEY %s (`from`), NORMAL KEY %s (`to`), PRIMARY KEY (action_hash), FOREIGN KEY (block_height) REFERENCES %s(block_height))"
 	selectActionHistory = "SELECT * FROM %s WHERE action_hash=?"
 	insertActionHistory = "INSERT INTO %s (action_type, action_hash, receipt_hash, block_height, `from`, `to`, " +
 		"gas_price, gas_consumed, nonce, amount, receipt_status) VALUES %s"
