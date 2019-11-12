@@ -136,6 +136,7 @@ func (p *Protocol) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if exist == 0 {
+		fmt.Println(fmt.Sprintf(createIndex, EpochProducerIndexName, BlockHistoryTableName))
 		if _, err := p.Store.GetDB().Exec(fmt.Sprintf(createIndex, EpochProducerIndexName, BlockHistoryTableName)); err != nil {
 			return err
 		}
