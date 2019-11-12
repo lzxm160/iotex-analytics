@@ -127,7 +127,7 @@ func NewProtocol(store s.Store, epochctx *epochctx.EpochCtx) *Protocol {
 // CreateTables creates tables
 func (p *Protocol) CreateTables(ctx context.Context) error {
 	// create block history table
-	if _, err := p.Store.GetDB().Exec(fmt.Sprintf(createBlockHistory, BlockHistoryTableName, TimestampIndexName)); err != nil {
+	if _, err := p.Store.GetDB().Exec(fmt.Sprintf(createBlockHistory, BlockHistoryTableName)); err != nil {
 		return err
 	}
 

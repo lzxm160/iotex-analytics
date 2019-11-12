@@ -95,7 +95,7 @@ func NewProtocol(store s.Store) *Protocol {
 func (p *Protocol) CreateTables(ctx context.Context) error {
 	// create block by action table
 	if _, err := p.Store.GetDB().Exec(fmt.Sprintf(createActionHistory,
-		ActionHistoryTableName, FromIndexName, ToIndexName, blocks.BlockHistoryTableName)); err != nil {
+		ActionHistoryTableName, blocks.BlockHistoryTableName)); err != nil {
 		return err
 	}
 	if _, err := p.Store.GetDB().Exec(fmt.Sprintf(createActionHistoryFromIndex, FromIndexName, ActionHistoryTableName)); err != nil {
