@@ -90,6 +90,8 @@ func NewProtocol(store s.Store) *Protocol {
 // CreateTables creates tables
 func (p *Protocol) CreateTables(ctx context.Context) error {
 	// create block by action table
+	fmt.Println(fmt.Sprintf(createActionHistory,
+		ActionHistoryTableName, FromIndexName, ToIndexName, blocks.BlockHistoryTableName))
 	if _, err := p.Store.GetDB().Exec(fmt.Sprintf(createActionHistory,
 		ActionHistoryTableName, FromIndexName, ToIndexName, blocks.BlockHistoryTableName)); err != nil {
 		return err
