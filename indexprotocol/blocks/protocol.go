@@ -139,6 +139,7 @@ func (p *Protocol) CreateTables(ctx context.Context) error {
 		if _, err := p.Store.GetDB().Exec(fmt.Sprintf(createIndex, EpochProducerIndexName, BlockHistoryTableName)); err != nil {
 			return err
 		}
+		fmt.Println(fmt.Sprintf(createBlockHistoryIndex, TimestampIndexName, BlockHistoryTableName))
 		if _, err := p.Store.GetDB().Exec(fmt.Sprintf(createBlockHistoryIndex, TimestampIndexName, BlockHistoryTableName)); err != nil {
 			return err
 		}
