@@ -589,7 +589,7 @@ func (r *queryResolver) getEvmTransfersByAddress(ctx context.Context, actionResp
 	if err != nil {
 		return errors.Wrap(err, "failed to get address")
 	}
-
+	fmt.Println("xxxxxxxxxx")
 	evmTransferDetailList, err := r.AP.GetEvmTransferDetailListByAddress(addr)
 
 	switch {
@@ -611,6 +611,7 @@ func (r *queryResolver) getEvmTransfersByAddress(ctx context.Context, actionResp
 			TimeStamp: int(etf.TimeStamp),
 		})
 	}
+	fmt.Println("yyyyyyyyyyyyyyyy")
 	for k, v := range argsMap {
 		fmt.Println(k, ":", v.Raw)
 	}
