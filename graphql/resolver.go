@@ -590,6 +590,10 @@ func (r *queryResolver) getEvmTransfersByAddress(ctx context.Context, actionResp
 		return errors.Wrap(err, "failed to get address")
 	}
 	fmt.Println("xxxxxxxxxx")
+
+	_, err = getPaginationArgs(argsMap)
+	fmt.Println("xxxxxx:", err)
+
 	evmTransferDetailList, err := r.AP.GetEvmTransferDetailListByAddress(addr)
 
 	switch {
@@ -599,7 +603,7 @@ func (r *queryResolver) getEvmTransfersByAddress(ctx context.Context, actionResp
 	case err != nil:
 		return errors.Wrap(err, "failed to get evm transfers")
 	}
-
+	fmt.Println("zzzzzzzzzzzzzzzzzzzz")
 	evmTransfers := make([]*EvmTransferDetail, 0, len(evmTransferDetailList))
 	for _, etf := range evmTransferDetailList {
 		evmTransfers = append(evmTransfers, &EvmTransferDetail{
