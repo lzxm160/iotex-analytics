@@ -611,6 +611,9 @@ func (r *queryResolver) getEvmTransfersByAddress(ctx context.Context, actionResp
 			TimeStamp: int(etf.TimeStamp),
 		})
 	}
+	for k, v := range argsMap {
+		fmt.Println(k, ":", v.Raw)
+	}
 
 	actionOutput := &EvmTransferList{Exist: true, Count: len(evmTransfers)}
 	paginationMap, err := getPaginationArgs(argsMap)
