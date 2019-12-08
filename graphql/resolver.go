@@ -258,6 +258,23 @@ func (r *queryResolver) Xrc20(ctx context.Context) (*Xrc20, error) {
 
 // TopHolders handles top holders requests
 func (r *queryResolver) TopHolders(ctx context.Context, endEpochNumber, numberOfHolders int) ([]*TopHolder, error) {
+	//paginationMap, err := getPaginationArgs(argsMap)
+	//switch {
+	//case err == ErrPaginationNotFound:
+	//	actionOutput.EvmTransfers = evmTransfers
+	//case err != nil:
+	//	return errors.Wrap(err, "failed to get pagination arguments for evm transfers")
+	//default:
+	//	skip := paginationMap["skip"]
+	//	first := paginationMap["first"]
+	//	if skip < 0 || skip >= len(evmTransfers) {
+	//		return errors.New("invalid pagination skip number for evm transfers")
+	//	}
+	//	if len(evmTransfers)-skip < first {
+	//		first = len(evmTransfers) - skip
+	//	}
+	//	actionOutput.EvmTransfers = evmTransfers[skip : skip+first]
+	//}
 	holders, err := r.AP.GetTopHolders(uint64(endEpochNumber), uint64(numberOfHolders))
 	if err != nil {
 		return nil, err
