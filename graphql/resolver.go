@@ -739,7 +739,6 @@ func (r *queryResolver) getXrc20ByAddress(ctx context.Context, actionResponse *X
 }
 
 func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc20) error {
-	fmt.Println("getXrc20ByPage",ctx)
 	argsMap := parseFieldArguments(ctx, "byPage", "xrc20")
 	var skip,first int
 	paginationMap, err := getPaginationArgs(argsMap)
@@ -760,7 +759,6 @@ func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc2
 	}
 	output := &Xrc20List{Exist: false}
 	actionResponse.ByPage = output
-	fmt.Println("offset:",skip,",","limit:",first)
 	xrc20InfoList, err := r.AP.GetXrc20ByPage(uint64(skip), uint64(first))
 	switch {
 	case errors.Cause(err) == indexprotocol.ErrNotExist:
@@ -1055,7 +1053,6 @@ func parseFieldArguments(ctx context.Context, fieldName string, selectedFieldNam
 	}
 	argsMap := make(map[string]*ast.Value)
 	for _, arg := range arguments {
-		fmt.Println(arg)
 		argsMap[arg.Name] = arg.Value
 	}
 	parseVariables(ctx, argsMap, arguments)
@@ -1068,7 +1065,6 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 			if arg == nil {
 				continue
 			}
-			fmt.Println(arg)
 			switch arg.Value.ExpectedType.Name() {
 			case "String":
 				value, ok := val.Variables[arg.Name].(string)
