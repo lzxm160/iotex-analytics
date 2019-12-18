@@ -759,6 +759,7 @@ func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc2
 	}
 	output := &Xrc20List{Exist: false}
 	actionResponse.ByPage = output
+	fmt.Println("offset:",skip,",","limit:",first)
 	xrc20InfoList, err := r.AP.GetXrc20ByPage(uint64(first), uint64(skip))
 	switch {
 	case errors.Cause(err) == indexprotocol.ErrNotExist:
