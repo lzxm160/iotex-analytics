@@ -266,7 +266,7 @@ func TestProtocol(t *testing.T) {
 	})
 	// test case for get xrc20 info by page
 	t.Run("Testing GetXrc20 by page", func(t *testing.T) {
-		test, errXrc := p.GetXrc20ByPage(1, 4)
+		test, errXrc := p.GetXrc20ByPage(0, 4)
 		require.NoError(errXrc)
 		for k := 0; k < 4; k++ {
 			require.Equal(test[k].Hash, testSituation.output[k].Hash)
@@ -278,7 +278,7 @@ func TestProtocol(t *testing.T) {
 		}
 	})
 	t.Run("Testing GetXrc20 by page", func(t *testing.T) {
-		test, errXrc := p.GetXrc20ByPage(1, 2)
+		test, errXrc := p.GetXrc20ByPage(0, 2)
 		require.NoError(errXrc)
 		for k := 0; k < 2; k++ {
 			require.Equal(test[k].Hash, testSituation.output[k].Hash)
@@ -290,7 +290,7 @@ func TestProtocol(t *testing.T) {
 		}
 	})
 	t.Run("Testing GetXrc20 by page", func(t *testing.T) {
-		test, errXrc := p.GetXrc20ByPage(2, 2)
+		test, errXrc := p.GetXrc20ByPage(1, 2)
 		require.NoError(errXrc)
 		for k := 0; k < 2; k++ {
 			require.Equal(test[k].Hash, testSituation.output[k+2].Hash)
