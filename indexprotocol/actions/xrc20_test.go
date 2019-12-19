@@ -57,14 +57,15 @@ func TestXrc20(t *testing.T) {
 	chainClient := mock_apiserviceclient.NewMockServiceClient(ctrl)
 	electionClient := mock_election.NewMockAPIServiceClient(ctrl)
 	bpctx := indexcontext.WithIndexCtx(context.Background(), indexcontext.IndexCtx{
-		ChainClient:    chainClient,
-		ElectionClient: electionClient,
+		ChainClient:     chainClient,
+		ElectionClient:  electionClient,
+		ConsensusScheme: "ROLLDPOS",
 	})
 
-	chainClient.EXPECT().ReadState(gomock.Any(), gomock.Any()).AnyTimes().Return(&iotexapi.ReadStateResponse{
+	chainClient.EXPECT().ReadState(gomock.Any(), gomock.Any()).Times(1).Return(&iotexapi.ReadStateResponse{
 		Data: byteutil.Uint64ToBytes(uint64(1000)),
 	}, nil)
-	electionClient.EXPECT().GetCandidates(gomock.Any(), gomock.Any()).AnyTimes().Return(
+	electionClient.EXPECT().GetCandidates(gomock.Any(), gomock.Any()).Times(1).Return(
 		&api.CandidateResponse{
 			Candidates: []*api.Candidate{
 				{
@@ -97,7 +98,7 @@ func TestXrc20(t *testing.T) {
 	}
 	data, err := candidateList.Serialize()
 	require.NoError(err)
-	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).AnyTimes().Return(&iotexapi.ReadStateResponse{
+	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
 		Data: data,
 	}, nil)
 
