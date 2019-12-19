@@ -96,9 +96,9 @@ func TestXrc20(t *testing.T) {
 	}
 	data, err := candidateList.Serialize()
 	require.NoError(err)
-	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
-		Data: data,
-	}, nil)
+	//chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
+	//	Data: data,
+	//}, nil)
 
 	blk, err := testutil.BuildCompleteBlock(uint64(180), uint64(361))
 	require.NoError(err)

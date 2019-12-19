@@ -100,11 +100,11 @@ func TestProtocol(t *testing.T) {
 			Votes:         big.NewInt(10),
 		},
 	}
-	data, err := candidateList.Serialize()
-	require.NoError(err)
-	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
-		Data: data,
-	}, nil)
+	//data, err := candidateList.Serialize()
+	//require.NoError(err)
+	//chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
+	//	Data: data,
+	//}, nil)
 
 	blk, err := testutil.BuildCompleteBlock(uint64(180), uint64(361))
 	require.NoError(err)
