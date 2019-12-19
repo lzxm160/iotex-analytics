@@ -147,7 +147,7 @@ func TestProtocol(t *testing.T) {
 	require.Equal(uint64(1), blockHistory.EpochNumber)
 	require.Equal(hex.EncodeToString(blk1Hash[:]), blockHistory.BlockHash)
 	require.Equal("", blockHistory.ProducerName)
-	require.Equal("627261766f", blockHistory.ExpectedProducerName)
+	require.Equal("", blockHistory.ExpectedProducerName)
 
 	productivityHistory, err := p.getProductivityHistory(uint64(1), "627261766f")
 	require.NoError(err)
