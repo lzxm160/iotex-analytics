@@ -71,7 +71,7 @@ func TestProtocol(t *testing.T) {
 		MethodName: []byte("GetGravityChainStartHeight"),
 		Arguments:  [][]byte{byteutil.Uint64ToBytes(blk1.Height())},
 	}
-	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
+	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).AnyTimes().Return(&iotexapi.ReadStateResponse{
 		Data: byteutil.Uint64ToBytes(uint64(1000)),
 	}, nil)
 	electionClient.EXPECT().GetCandidates(gomock.Any(), gomock.Any()).Times(2).Return(
@@ -107,7 +107,7 @@ func TestProtocol(t *testing.T) {
 	}
 	data, err := candidateList.Serialize()
 	require.NoError(err)
-	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
+	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).AnyTimes().Return(&iotexapi.ReadStateResponse{
 		Data: data,
 	}, nil)
 
@@ -123,7 +123,7 @@ func TestProtocol(t *testing.T) {
 		MethodName: []byte("GetGravityChainStartHeight"),
 		Arguments:  [][]byte{byteutil.Uint64ToBytes(blk2.Height())},
 	}
-	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
+	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).AnyTimes().Return(&iotexapi.ReadStateResponse{
 		Data: byteutil.Uint64ToBytes(uint64(1100)),
 	}, nil)
 
@@ -132,7 +132,7 @@ func TestProtocol(t *testing.T) {
 		MethodName: []byte("ActiveBlockProducersByEpoch"),
 		Arguments:  [][]byte{byteutil.Uint64ToBytes(uint64(2))},
 	}
-	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
+	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).AnyTimes().Return(&iotexapi.ReadStateResponse{
 		Data: data,
 	}, nil)
 
