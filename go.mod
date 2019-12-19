@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/99designs/gqlgen v0.8.3
 	github.com/agnivade/levenshtein v1.0.2 // indirect
-	github.com/cenkalti/backoff v2.1.1+incompatible
+	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/ethereum/go-ethereum v1.8.27
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/mock v1.3.1
@@ -13,7 +13,7 @@ require (
 	github.com/iotexproject/go-pkgs v0.1.1
 	github.com/iotexproject/iotex-address v0.2.1
 	github.com/iotexproject/iotex-core v0.8.1-0.20191007232750-b79fb5c7ebaa
-	github.com/iotexproject/iotex-election v0.2.5
+	github.com/iotexproject/iotex-election v0.2.9
 	github.com/iotexproject/iotex-proto v0.2.5
 	github.com/pkg/errors v0.8.1
 	github.com/rs/zerolog v1.14.3
