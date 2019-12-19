@@ -20,6 +20,7 @@ import (
 	"github.com/iotexproject/iotex-core/pkg/util/byteutil"
 	"github.com/iotexproject/iotex-core/state"
 	"github.com/iotexproject/iotex-core/test/mock/mock_apiserviceclient"
+	"github.com/iotexproject/iotex-election/pb/api"
 	mock_election "github.com/iotexproject/iotex-election/test/mock/mock_apiserviceclient"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 
@@ -66,23 +67,23 @@ func TestProtocol(t *testing.T) {
 		ElectionClient: electionClient,
 	})
 
-	//chainClient.EXPECT().ReadState(gomock.Any(), gomock.Any()).Times(1).Return(&iotexapi.ReadStateResponse{
-	//	Data: byteutil.Uint64ToBytes(uint64(1000)),
-	//}, nil)
-	//electionClient.EXPECT().GetCandidates(gomock.Any(), gomock.Any()).Times(1).Return(
-	//	&api.CandidateResponse{
-	//		Candidates: []*api.Candidate{
-	//			{
-	//				Name:            "616c6661",
-	//				OperatorAddress: testutil.Addr1,
-	//			},
-	//			{
-	//				Name:            "627261766f",
-	//				OperatorAddress: testutil.Addr2,
-	//			},
-	//		},
-	//	}, nil,
-	//)
+	chainClient.EXPECT().ReadState(gomock.Any(), gomock.Any()).Times(1).Return(&iotexapi.ReadStateResponse{
+		Data: byteutil.Uint64ToBytes(uint64(1000)),
+	}, nil)
+	electionClient.EXPECT().GetCandidates(gomock.Any(), gomock.Any()).Times(1).Return(
+		&api.CandidateResponse{
+			Candidates: []*api.Candidate{
+				{
+					Name:            "616c6661",
+					OperatorAddress: testutil.Addr1,
+				},
+				{
+					Name:            "627261766f",
+					OperatorAddress: testutil.Addr2,
+				},
+			},
+		}, nil,
+	)
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(poll.ProtocolID),
 		MethodName: []byte("ActiveBlockProducersByEpoch"),
@@ -100,11 +101,11 @@ func TestProtocol(t *testing.T) {
 			Votes:         big.NewInt(10),
 		},
 	}
-	//data, err := candidateList.Serialize()
-	//require.NoError(err)
-	//chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
-	//	Data: data,
-	//}, nil)
+	data, err := candidateList.Serialize()
+	require.NoError(err)
+	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
+		Data: data,
+	}, nil)
 
 	blk, err := testutil.BuildCompleteBlock(uint64(180), uint64(361))
 	require.NoError(err)
