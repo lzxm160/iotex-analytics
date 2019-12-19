@@ -74,7 +74,7 @@ func TestProtocol(t *testing.T) {
 	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).AnyTimes().Return(&iotexapi.ReadStateResponse{
 		Data: byteutil.Uint64ToBytes(uint64(1000)),
 	}, nil)
-	electionClient.EXPECT().GetCandidates(gomock.Any(), gomock.Any()).Times(2).Return(
+	electionClient.EXPECT().GetCandidates(gomock.Any(), gomock.Any()).AnyTimes().Return(
 		&api.CandidateResponse{
 			Candidates: []*api.Candidate{
 				{
