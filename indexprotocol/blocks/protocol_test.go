@@ -149,8 +149,9 @@ func TestProtocol(t *testing.T) {
 	require.Equal("", blockHistory.ProducerName)
 	require.Equal("", blockHistory.ExpectedProducerName)
 
-	productivityHistory, err := p.getProductivityHistory(uint64(1), "627261766f")
-	require.NoError(err)
-	require.Equal(uint64(0), productivityHistory.Production)
-	require.Equal(uint64(1), productivityHistory.ExpectedProduction)
+	_, err = p.getProductivityHistory(uint64(1), "627261766f")
+	require.Error(err)
+	//require.NoError(err)
+	//require.Equal(uint64(0), productivityHistory.Production)
+	//require.Equal(uint64(1), productivityHistory.ExpectedProduction)
 }
