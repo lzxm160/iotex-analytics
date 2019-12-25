@@ -27,6 +27,10 @@ type Xrc20 {
     byContractAddress(address:String!,numPerPage:Int!,page:Int!): Xrc20List
     byAddress(address:String!,numPerPage:Int!,page:Int!): Xrc20List
     byPage(pagination: Pagination!): Xrc20List
+    xrc20Addresses(pagination: Pagination!): XRC20AddressList
+}
+type XRC20Address {
+    address: String!
 }
 
 type Account {
@@ -115,6 +119,12 @@ type ActionList {
 type Xrc20List {
     exist: Boolean!
     xrc20(pagination: Pagination): [Xrc20Info]!
+    count: Int!
+}
+
+type XRC20AddressList {
+    exist: Boolean!
+    addresses(pagination: Pagination): [XRC20Address]!
     count: Int!
 }
 
