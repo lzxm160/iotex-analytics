@@ -479,6 +479,51 @@ func (p *Protocol) GetXrc20ByPage(offset, limit uint64) (cons []*Xrc20Info, err 
 	return
 }
 
+// GetXrc20Addresses gets xrc20 addresses by page
+func (p *Protocol) GetXrc20Addresses(offset, limit uint64) (addresses []*string, err error) {
+	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
+		return nil, errors.New("actions protocol is unregistered")
+	}
+	test := "test"
+	addresses = append(addresses, &test)
+	//
+	//db := p.indexer.Store.GetDB()
+	//getQuery := fmt.Sprintf(selectXrc20HistoryByPage, actions.Xrc20HistoryTableName, offset, limit)
+	//stmt, err := db.Prepare(getQuery)
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "failed to prepare get query")
+	//}
+	//defer stmt.Close()
+	//
+	//rows, err := stmt.Query()
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "failed to execute get query")
+	//}
+	//
+	//var ret actions.Xrc20History
+	//parsedRows, err := s.ParseSQLRows(rows, &ret)
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "failed to parse results")
+	//}
+	//if len(parsedRows) == 0 {
+	//	err = indexprotocol.ErrNotExist
+	//	return nil, err
+	//}
+	//for _, parsedRow := range parsedRows {
+	//	con := &Xrc20Info{}
+	//	r := parsedRow.(*actions.Xrc20History)
+	//	con.From, con.To, con.Quantity, err = parseContractData(r.Topics, r.Data)
+	//	if err != nil {
+	//		return
+	//	}
+	//	con.Hash = r.ActionHash
+	//	con.Timestamp = r.Timestamp
+	//	con.Contract = r.Address
+	//	cons = append(cons, con)
+	//}
+	return
+}
+
 // GetTopHolders gets top holders
 func (p *Protocol) GetTopHolders(endEpochNumber, skip, first uint64) (holders []*TopHolder, err error) {
 	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {

@@ -264,10 +264,21 @@ type ComplexityRoot struct {
 		VotedTokens        func(childComplexity int) int
 	}
 
+	XRC20Address struct {
+		Address func(childComplexity int) int
+	}
+
+	XRC20AddressList struct {
+		Addresses func(childComplexity int, pagination *Pagination) int
+		Count     func(childComplexity int) int
+		Exist     func(childComplexity int) int
+	}
+
 	Xrc20 struct {
 		ByAddress         func(childComplexity int, address string, numPerPage int, page int) int
 		ByContractAddress func(childComplexity int, address string, numPerPage int, page int) int
 		ByPage            func(childComplexity int, pagination Pagination) int
+		Xrc20Addresses    func(childComplexity int, pagination Pagination) int
 	}
 
 	Xrc20Info struct {
@@ -1261,6 +1272,39 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.VotingResultMeta.VotedTokens(childComplexity), true
 
+	case "XRC20Address.Address":
+		if e.complexity.XRC20Address.Address == nil {
+			break
+		}
+
+		return e.complexity.XRC20Address.Address(childComplexity), true
+
+	case "XRC20AddressList.Addresses":
+		if e.complexity.XRC20AddressList.Addresses == nil {
+			break
+		}
+
+		args, err := ec.field_XRC20AddressList_addresses_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.XRC20AddressList.Addresses(childComplexity, args["pagination"].(*Pagination)), true
+
+	case "XRC20AddressList.Count":
+		if e.complexity.XRC20AddressList.Count == nil {
+			break
+		}
+
+		return e.complexity.XRC20AddressList.Count(childComplexity), true
+
+	case "XRC20AddressList.Exist":
+		if e.complexity.XRC20AddressList.Exist == nil {
+			break
+		}
+
+		return e.complexity.XRC20AddressList.Exist(childComplexity), true
+
 	case "Xrc20.ByAddress":
 		if e.complexity.Xrc20.ByAddress == nil {
 			break
@@ -1296,6 +1340,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Xrc20.ByPage(childComplexity, args["pagination"].(Pagination)), true
+
+	case "Xrc20.Xrc20Addresses":
+		if e.complexity.Xrc20.Xrc20Addresses == nil {
+			break
+		}
+
+		args, err := ec.field_Xrc20_xrc20Addresses_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Xrc20.Xrc20Addresses(childComplexity, args["pagination"].(Pagination)), true
 
 	case "Xrc20Info.Contract":
 		if e.complexity.Xrc20Info.Contract == nil {
@@ -1458,6 +1514,10 @@ type Xrc20 {
     byContractAddress(address:String!,numPerPage:Int!,page:Int!): Xrc20List
     byAddress(address:String!,numPerPage:Int!,page:Int!): Xrc20List
     byPage(pagination: Pagination!): Xrc20List
+    xrc20Addresses(pagination: Pagination!): XRC20AddressList
+}
+type XRC20Address {
+    address: String!
 }
 
 type Account {
@@ -1546,6 +1606,12 @@ type ActionList {
 type Xrc20List {
     exist: Boolean!
     xrc20(pagination: Pagination): [Xrc20Info]!
+    count: Int!
+}
+
+type XRC20AddressList {
+    exist: Boolean!
+    addresses(pagination: Pagination): [XRC20Address]!
     count: Int!
 }
 
@@ -2043,6 +2109,20 @@ func (ec *executionContext) field_Voting_rewardSources_args(ctx context.Context,
 	return args, nil
 }
 
+func (ec *executionContext) field_XRC20AddressList_addresses_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *Pagination
+	if tmp, ok := rawArgs["pagination"]; ok {
+		arg0, err = ec.unmarshalOPagination2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐPagination(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["pagination"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Xrc20List_xrc20_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2118,6 +2198,20 @@ func (ec *executionContext) field_Xrc20_byContractAddress_args(ctx context.Conte
 }
 
 func (ec *executionContext) field_Xrc20_byPage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 Pagination
+	if tmp, ok := rawArgs["pagination"]; ok {
+		arg0, err = ec.unmarshalNPagination2githubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐPagination(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["pagination"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Xrc20_xrc20Addresses_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 Pagination
@@ -5573,6 +5667,121 @@ func (ec *executionContext) _VotingResultMeta_votedTokens(ctx context.Context, f
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _XRC20Address_address(ctx context.Context, field graphql.CollectedField, obj *XRC20Address) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "XRC20Address",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Address, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _XRC20AddressList_exist(ctx context.Context, field graphql.CollectedField, obj *XRC20AddressList) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "XRC20AddressList",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Exist, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _XRC20AddressList_addresses(ctx context.Context, field graphql.CollectedField, obj *XRC20AddressList) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "XRC20AddressList",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_XRC20AddressList_addresses_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Addresses, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*XRC20Address)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNXRC20Address2ᚕᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐXRC20Address(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _XRC20AddressList_count(ctx context.Context, field graphql.CollectedField, obj *XRC20AddressList) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "XRC20AddressList",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Count, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Xrc20_byContractAddress(ctx context.Context, field graphql.CollectedField, obj *Xrc20) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
@@ -5664,6 +5873,37 @@ func (ec *executionContext) _Xrc20_byPage(ctx context.Context, field graphql.Col
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOXrc20List2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐXrc20List(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Xrc20_xrc20Addresses(ctx context.Context, field graphql.CollectedField, obj *Xrc20) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Xrc20",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Xrc20_xrc20Addresses_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Xrc20Addresses, nil
+	})
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*XRC20AddressList)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOXRC20AddressList2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐXRC20AddressList(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Xrc20Info_contract(ctx context.Context, field graphql.CollectedField, obj *Xrc20Info) graphql.Marshaler {
@@ -8169,6 +8409,70 @@ func (ec *executionContext) _VotingResultMeta(ctx context.Context, sel ast.Selec
 	return out
 }
 
+var xRC20AddressImplementors = []string{"XRC20Address"}
+
+func (ec *executionContext) _XRC20Address(ctx context.Context, sel ast.SelectionSet, obj *XRC20Address) graphql.Marshaler {
+	fields := graphql.CollectFields(ctx, sel, xRC20AddressImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	invalid := false
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("XRC20Address")
+		case "address":
+			out.Values[i] = ec._XRC20Address_address(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalid {
+		return graphql.Null
+	}
+	return out
+}
+
+var xRC20AddressListImplementors = []string{"XRC20AddressList"}
+
+func (ec *executionContext) _XRC20AddressList(ctx context.Context, sel ast.SelectionSet, obj *XRC20AddressList) graphql.Marshaler {
+	fields := graphql.CollectFields(ctx, sel, xRC20AddressListImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	invalid := false
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("XRC20AddressList")
+		case "exist":
+			out.Values[i] = ec._XRC20AddressList_exist(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		case "addresses":
+			out.Values[i] = ec._XRC20AddressList_addresses(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		case "count":
+			out.Values[i] = ec._XRC20AddressList_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalid {
+		return graphql.Null
+	}
+	return out
+}
+
 var xrc20Implementors = []string{"Xrc20"}
 
 func (ec *executionContext) _Xrc20(ctx context.Context, sel ast.SelectionSet, obj *Xrc20) graphql.Marshaler {
@@ -8186,6 +8490,8 @@ func (ec *executionContext) _Xrc20(ctx context.Context, sel ast.SelectionSet, ob
 			out.Values[i] = ec._Xrc20_byAddress(ctx, field, obj)
 		case "byPage":
 			out.Values[i] = ec._Xrc20_byPage(ctx, field, obj)
+		case "xrc20Addresses":
+			out.Values[i] = ec._Xrc20_xrc20Addresses(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9048,6 +9354,43 @@ func (ec *executionContext) marshalNTopHolder2ᚕᚖgithubᚗcomᚋiotexproject�
 	return ret
 }
 
+func (ec *executionContext) marshalNXRC20Address2ᚕᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐXRC20Address(ctx context.Context, sel ast.SelectionSet, v []*XRC20Address) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		rctx := &graphql.ResolverContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithResolverContext(ctx, rctx)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOXRC20Address2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐXRC20Address(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
 func (ec *executionContext) marshalNXrc20Info2ᚕᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐXrc20Info(ctx context.Context, sel ast.SelectionSet, v []*Xrc20Info) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -9762,6 +10105,28 @@ func (ec *executionContext) marshalOVotingResultMeta2ᚖgithubᚗcomᚋiotexproj
 		return graphql.Null
 	}
 	return ec._VotingResultMeta(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOXRC20Address2githubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐXRC20Address(ctx context.Context, sel ast.SelectionSet, v XRC20Address) graphql.Marshaler {
+	return ec._XRC20Address(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOXRC20Address2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐXRC20Address(ctx context.Context, sel ast.SelectionSet, v *XRC20Address) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._XRC20Address(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOXRC20AddressList2githubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐXRC20AddressList(ctx context.Context, sel ast.SelectionSet, v XRC20AddressList) graphql.Marshaler {
+	return ec._XRC20AddressList(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOXRC20AddressList2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐXRC20AddressList(ctx context.Context, sel ast.SelectionSet, v *XRC20AddressList) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._XRC20AddressList(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOXrc202githubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐXrc20(ctx context.Context, sel ast.SelectionSet, v Xrc20) graphql.Marshaler {
