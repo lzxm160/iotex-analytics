@@ -10,10 +10,10 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/iotexproject/iotex-address/address"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
-
-	"github.com/iotexproject/iotex-address/address"
 
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
 	"github.com/iotexproject/iotex-analytics/indexprotocol/accounts"
@@ -106,6 +106,11 @@ type TopHolder struct {
 // Protocol defines the protocol of querying tables
 type Protocol struct {
 	indexer *indexservice.Indexer
+}
+
+// address defines the address struct
+type Address struct {
+	address string
 }
 
 // NewProtocol creates a new protocol
@@ -500,7 +505,7 @@ func (p *Protocol) GetXrc20Addresses(offset, limit uint64) (addresses []*string,
 		return nil, errors.Wrap(err, "failed to execute get query")
 	}
 
-	var ret string
+	var ret Address
 	parsedRows, err := s.ParseSQLRows(rows, &ret)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse results")
@@ -511,8 +516,8 @@ func (p *Protocol) GetXrc20Addresses(offset, limit uint64) (addresses []*string,
 	}
 	for _, parsedRow := range parsedRows {
 		fmt.Println(parsedRows)
-		r := parsedRow.(*string)
-		addresses = append(addresses, r)
+		r := parsedRow.(*Address)
+		addresses = append(addresses, &r.address)
 	}
 	return
 }
