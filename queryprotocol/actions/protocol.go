@@ -486,9 +486,6 @@ func (p *Protocol) GetXrc20Addresses(offset, limit uint64) (addresses []*string,
 	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
 		return nil, errors.New("actions protocol is unregistered")
 	}
-	test := "test"
-	addresses = append(addresses, &test)
-
 	db := p.indexer.Store.GetDB()
 	getQuery := fmt.Sprintf(selectXrc20AddressesByPage, actions.Xrc20HistoryTableName, offset, limit)
 	fmt.Println(getQuery)
@@ -513,8 +510,8 @@ func (p *Protocol) GetXrc20Addresses(offset, limit uint64) (addresses []*string,
 		return nil, err
 	}
 	for _, parsedRow := range parsedRows {
-		r := parsedRow.(string)
-		addresses = append(addresses, &r)
+		r := parsedRow.(*string)
+		addresses = append(addresses, r)
 	}
 	return
 }
