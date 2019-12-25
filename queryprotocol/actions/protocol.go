@@ -42,7 +42,7 @@ const (
 	selectActionHistory        = "SELECT DISTINCT `from`, block_height FROM %s ORDER BY block_height desc limit %d"
 	selectXrc20History         = "SELECT * FROM %s WHERE address='%s' ORDER BY `timestamp` desc limit %d,%d"
 	selectXrc20HistoryByTopics = "SELECT * FROM %s WHERE topics like ? ORDER BY `timestamp` desc limit %d,%d"
-	selectXrc20AddressesByPage = "SELECT distinct address FROM %s ORDER BY `timestamp` desc limit %d,%d"
+	selectXrc20AddressesByPage = "SELECT distinct address FROM %s limit %d,%d"
 	selectXrc20HistoryByPage   = "SELECT * FROM %s ORDER BY `timestamp` desc limit %d,%d"
 	selectAccountIncome        = "SELECT address,SUM(income) AS balance FROM %s WHERE epoch_number<=%d and address<>'' GROUP BY address ORDER BY balance DESC LIMIT %d,%d"
 )
