@@ -225,14 +225,10 @@ type VotingResultMeta struct {
 	VotedTokens        string `json:"votedTokens"`
 }
 
-type XRC20Address struct {
-	Address string `json:"address"`
-}
-
 type XRC20AddressList struct {
-	Exist     bool            `json:"exist"`
-	Addresses []*XRC20Address `json:"addresses"`
-	Count     int             `json:"count"`
+	Exist     bool      `json:"exist"`
+	Addresses []*string `json:"addresses"`
+	Count     int       `json:"count"`
 }
 
 type Xrc20 struct {

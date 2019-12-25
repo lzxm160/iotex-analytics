@@ -807,9 +807,7 @@ func (r *queryResolver) getXrc20Addresses(ctx context.Context, actionResponse *X
 	output.Exist = true
 	output.Count = len(addresses)
 	for _, c := range addresses {
-		output.Addresses = append(output.Addresses, &XRC20Address{
-			*c,
-		})
+		output.Addresses = append(output.Addresses, c)
 	}
 	return nil
 }
