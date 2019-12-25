@@ -108,9 +108,9 @@ type Protocol struct {
 	indexer *indexservice.Indexer
 }
 
-// address defines the address struct
+// Address defines the address struct
 type Address struct {
-	address string
+	Address string
 }
 
 // NewProtocol creates a new protocol
@@ -517,7 +517,7 @@ func (p *Protocol) GetXrc20Addresses(offset, limit uint64) (addresses []*string,
 	for _, parsedRow := range parsedRows {
 		fmt.Println(parsedRows)
 		r := parsedRow.(*Address)
-		addresses = append(addresses, &r.address)
+		addresses = append(addresses, &r.Address)
 	}
 	return
 }
