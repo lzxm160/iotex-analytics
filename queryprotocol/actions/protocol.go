@@ -510,6 +510,7 @@ func (p *Protocol) GetXrc20Addresses(offset, limit uint64) (addresses []*string,
 		return nil, err
 	}
 	for _, parsedRow := range parsedRows {
+		fmt.Println(parsedRows)
 		r := parsedRow.(*string)
 		addresses = append(addresses, r)
 	}
