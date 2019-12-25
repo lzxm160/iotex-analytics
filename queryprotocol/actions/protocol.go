@@ -481,6 +481,7 @@ func (p *Protocol) GetXrc20ByPage(offset, limit uint64) (cons []*Xrc20Info, err 
 
 // GetXrc20Addresses gets xrc20 addresses by page
 func (p *Protocol) GetXrc20Addresses(offset, limit uint64) (addresses []*string, err error) {
+	fmt.Println(offset, ":", limit)
 	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
 		return nil, errors.New("actions protocol is unregistered")
 	}

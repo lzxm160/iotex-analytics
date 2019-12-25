@@ -781,6 +781,7 @@ func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc2
 }
 
 func (r *queryResolver) getXrc20Addresses(ctx context.Context, actionResponse *Xrc20) error {
+	fmt.Println("getXrc20Addresses")
 	argsMap := parseFieldArguments(ctx, "xrc20Addresses", "xrc20")
 	paginationMap, err := getPaginationArgs(argsMap)
 	if err != nil {

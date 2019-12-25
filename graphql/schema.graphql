@@ -29,9 +29,6 @@ type Xrc20 {
     byPage(pagination: Pagination!): Xrc20List
     xrc20Addresses(pagination: Pagination!): XRC20AddressList
 }
-type XRC20Address {
-    address: String!
-}
 
 type Account {
     activeAccounts(count: Int!): [String!]
@@ -124,7 +121,7 @@ type Xrc20List {
 
 type XRC20AddressList {
     exist: Boolean!
-    addresses(pagination: Pagination): [XRC20Address]!
+    addresses(pagination: Pagination): [String]!
     count: Int!
 }
 
