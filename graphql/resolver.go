@@ -264,7 +264,7 @@ func (r *queryResolver) Xrc20(ctx context.Context) (*Xrc20, error) {
 	if containField(requestedFields, "byPage") {
 		g.Go(func() error { return r.getXrc20ByPage(ctx, actionResponse) })
 	}
-	if containField(requestedFields, "Xrc20Addresses") {
+	if containField(requestedFields, "xrc20Addresses") {
 		g.Go(func() error { return r.getXrc20Addresses(ctx, actionResponse) })
 	}
 	return actionResponse, g.Wait()
