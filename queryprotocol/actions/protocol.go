@@ -42,6 +42,7 @@ const (
 	selectActionHistory        = "SELECT DISTINCT `from`, block_height FROM %s ORDER BY block_height desc limit %d"
 	selectXrc20History         = "SELECT * FROM %s WHERE address='%s' ORDER BY `timestamp` desc limit %d,%d"
 	selectXrc20HistoryByTopics = "SELECT * FROM %s WHERE topics like ? ORDER BY `timestamp` desc limit %d,%d"
+	selectXrc20AddressesByPage = "SELECT distinct address FROM %s ORDER BY `timestamp` desc limit %d,%d"
 	selectXrc20HistoryByPage   = "SELECT * FROM %s ORDER BY `timestamp` desc limit %d,%d"
 	selectAccountIncome        = "SELECT address,SUM(income) AS balance FROM %s WHERE epoch_number<=%d and address<>'' GROUP BY address ORDER BY balance DESC LIMIT %d,%d"
 )
@@ -487,41 +488,33 @@ func (p *Protocol) GetXrc20Addresses(offset, limit uint64) (addresses []*string,
 	}
 	test := "test"
 	addresses = append(addresses, &test)
-	//
-	//db := p.indexer.Store.GetDB()
-	//getQuery := fmt.Sprintf(selectXrc20HistoryByPage, actions.Xrc20HistoryTableName, offset, limit)
-	//stmt, err := db.Prepare(getQuery)
-	//if err != nil {
-	//	return nil, errors.Wrap(err, "failed to prepare get query")
-	//}
-	//defer stmt.Close()
-	//
-	//rows, err := stmt.Query()
-	//if err != nil {
-	//	return nil, errors.Wrap(err, "failed to execute get query")
-	//}
-	//
-	//var ret actions.Xrc20History
-	//parsedRows, err := s.ParseSQLRows(rows, &ret)
-	//if err != nil {
-	//	return nil, errors.Wrap(err, "failed to parse results")
-	//}
-	//if len(parsedRows) == 0 {
-	//	err = indexprotocol.ErrNotExist
-	//	return nil, err
-	//}
-	//for _, parsedRow := range parsedRows {
-	//	con := &Xrc20Info{}
-	//	r := parsedRow.(*actions.Xrc20History)
-	//	con.From, con.To, con.Quantity, err = parseContractData(r.Topics, r.Data)
-	//	if err != nil {
-	//		return
-	//	}
-	//	con.Hash = r.ActionHash
-	//	con.Timestamp = r.Timestamp
-	//	con.Contract = r.Address
-	//	cons = append(cons, con)
-	//}
+
+	db := p.indexer.Store.GetDB()
+	getQuery := fmt.Sprintf(selectXrc20AddressesByPage, actions.Xrc20HistoryTableName, offset, limit)
+	stmt, err := db.Prepare(getQuery)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to prepare get query")
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to execute get query")
+	}
+
+	var ret string
+	parsedRows, err := s.ParseSQLRows(rows, &ret)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse results")
+	}
+	if len(parsedRows) == 0 {
+		err = indexprotocol.ErrNotExist
+		return nil, err
+	}
+	for _, parsedRow := range parsedRows {
+		r := parsedRow.(string)
+		addresses = append(addresses, &r)
+	}
 	return
 }
 
