@@ -491,6 +491,7 @@ func (p *Protocol) GetXrc20Addresses(offset, limit uint64) (addresses []*string,
 
 	db := p.indexer.Store.GetDB()
 	getQuery := fmt.Sprintf(selectXrc20AddressesByPage, actions.Xrc20HistoryTableName, offset, limit)
+	fmt.Println(getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")
