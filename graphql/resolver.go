@@ -1139,7 +1139,7 @@ func getPaginationArgs(argsMap map[string]*ast.Value) (map[string]uint64, error)
 	childValueList := pagination.Children
 	paginationMap := make(map[string]int)
 	for _, childValue := range childValueList {
-		fmt.Println(childValue.Name, ":", childValue.Value.Raw)
+		// cannot parse uint64 here,there's a bug when using positive num after negetive number,e.g. "skip" using 0 after -1,its value still -1
 		intVal, err := strconv.Atoi(childValue.Value.Raw)
 		if err != nil {
 			return nil, errors.Wrap(err, "pagination value must be an integer")
