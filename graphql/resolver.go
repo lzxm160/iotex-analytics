@@ -46,6 +46,8 @@ var (
 	ErrPaginationInvalidOffset = errors.New("invalid pagination offset number")
 	// ErrPaginationInvalidSize is the error indicating that pagination's size parameter is invalid
 	ErrPaginationInvalidSize = errors.New("invalid pagination size number")
+	// ErrInvalidParameter is the error indicating that invalid size
+	ErrInvalidParameter = errors.New("invalid parameter number")
 )
 
 // EncodeDelegateName converts a delegate name input to an internal format
@@ -1135,25 +1137,31 @@ func getPaginationArgs(argsMap map[string]*ast.Value) (map[string]uint64, error)
 		return nil, ErrPaginationNotFound
 	}
 	childValueList := pagination.Children
-	paginationMap := make(map[string]uint64)
-	for i, childValue := range childValueList {
+	paginationMap := make(map[string]int)
+	for _, childValue := range childValueList {
 		fmt.Println(childValue.Name, ":", childValue.Value.Raw)
-		intVal, err := strconv.ParseUint(childValue.Value.Raw, 10, 64)
+		intVal, err := strconv.Atoi(childValue.Value.Raw)
 		if err != nil {
-			childValueList[i] = nil
 			return nil, errors.Wrap(err, "pagination value must be an integer")
 		}
 		paginationMap[childValue.Name] = intVal
 	}
 	offset, ok := paginationMap["skip"]
 	if ok && offset < 0 {
-		return paginationMap, ErrPaginationInvalidOffset
+		return nil, ErrPaginationInvalidOffset
 	}
 	size, ok := paginationMap["first"]
 	if ok && (size <= 0 || size > MaximumPageSize) {
-		return paginationMap, ErrPaginationInvalidSize
+		return nil, ErrPaginationInvalidSize
 	}
-	return paginationMap, nil
+	ret := make(map[string]uint64)
+	for k, v := range paginationMap {
+		if v < 0 {
+			return nil, ErrInvalidParameter
+		}
+		ret[k] = uint64(v)
+	}
+	return ret, nil
 }
 
 func ethAddrToIoAddr(ethAddr string) (string, error) {
