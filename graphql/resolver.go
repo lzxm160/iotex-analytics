@@ -1136,10 +1136,11 @@ func getPaginationArgs(argsMap map[string]*ast.Value) (map[string]uint64, error)
 	}
 	childValueList := pagination.Children
 	paginationMap := make(map[string]uint64)
-	for _, childValue := range childValueList {
+	for i, childValue := range childValueList {
 		fmt.Println(childValue.Name, ":", childValue.Value.Raw)
 		intVal, err := strconv.ParseUint(childValue.Value.Raw, 10, 64)
 		if err != nil {
+			childValueList[i] = nil
 			return nil, errors.Wrap(err, "pagination value must be an integer")
 		}
 		paginationMap[childValue.Name] = intVal
