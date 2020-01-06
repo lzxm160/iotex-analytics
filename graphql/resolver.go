@@ -269,6 +269,12 @@ func (r *queryResolver) Xrc20(ctx context.Context) (*Xrc20, error) {
 	if containField(requestedFields, "xrc20Addresses") {
 		g.Go(func() error { return r.getXrc20Addresses(ctx, actionResponse) })
 	}
+	if containField(requestedFields, "holdersCount") {
+		g.Go(func() error { return r.xrc20HoldersCount(ctx, actionResponse) })
+	}
+	if containField(requestedFields, "byTokenAddress") {
+		g.Go(func() error { return r.xrc20ByTokenAddress(ctx, actionResponse) })
+	}
 	return actionResponse, g.Wait()
 }
 
@@ -724,7 +730,42 @@ func (r *queryResolver) getXrc20ByAddress(ctx context.Context, actionResponse *X
 	}
 	return nil
 }
+func (r *queryResolver) xrc20HoldersCount(ctx context.Context, actionResponse *Xrc20) error {
+	argsMap := parseFieldArguments(ctx, "holdersCount", "xrc20")
+	addr, err := getStringArg(argsMap, "tokenAddress")
+	if err != nil {
+		return errors.Wrap(err, "failed to get address")
+	}
+	fmt.Println(addr)
+	//actionInfoList, err := r.AP.GetActionsByAddress(addr, offset, size)
+	return nil
+}
+func (r *queryResolver) xrc20ByTokenAddress(ctx context.Context, actionResponse *Xrc20) error {
+	argsMap := parseFieldArguments(ctx, "byTokenAddress", "xrc20")
+	addr, err := getStringArg(argsMap, "tokenAddress")
+	if err != nil {
+		return errors.Wrap(err, "failed to get address")
+	}
 
+	var offset, size uint64
+
+	paginationMap, err := getPaginationArgs(argsMap)
+	switch {
+	default:
+		offset = paginationMap["skip"]
+		size = paginationMap["first"]
+	case err == ErrPaginationNotFound:
+		offset = 0
+		size = DefaultPageSize
+	case err != nil:
+		return errors.Wrap(err, "failed to get pagination arguments for xrc20 ByTokenAddress")
+	}
+	fmt.Println(addr)
+	fmt.Println(offset)
+	fmt.Println(size)
+	//actionInfoList, err := r.AP.GetActionsByAddress(addr, offset, size)
+	return nil
+}
 func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc20) error {
 	argsMap := parseFieldArguments(ctx, "byPage", "xrc20")
 	paginationMap, err := getPaginationArgs(argsMap)
