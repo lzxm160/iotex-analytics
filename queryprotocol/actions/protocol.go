@@ -452,6 +452,7 @@ func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
 
 	db := p.indexer.Store.GetDB()
 	getQuery := fmt.Sprintf(selectXrc20AllHistory, actions.Xrc20HistoryTableName, addr)
+	fmt.Println(getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to prepare get query")
