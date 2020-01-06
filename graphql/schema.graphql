@@ -29,7 +29,7 @@ type Xrc20 {
     byPage(pagination: Pagination!): Xrc20List
     xrc20Addresses(pagination: Pagination!): XRC20AddressList
     holdersCount (tokenAddress:String!): Int!
-    byTokenAddress(tokenAddress:String!, pagination:Pagination!): Xrc20List
+    byTokenAddress(tokenAddress:String!, pagination:Pagination!): XRC20AddressList
 }
 
 type Account {
