@@ -1531,7 +1531,7 @@ type Xrc20 {
     byPage(pagination: Pagination!): Xrc20List
     xrc20Addresses(pagination: Pagination!): XRC20AddressList
     holdersCount (tokenAddress:String!): Int!
-    byTokenAddress(tokenAddress:String!, pagination:Pagination!): Xrc20List
+    byTokenAddress(tokenAddress:String!, pagination:Pagination!): XRC20AddressList
 }
 
 type Account {
@@ -5988,10 +5988,10 @@ func (ec *executionContext) _Xrc20_byTokenAddress(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*Xrc20List)
+	res := resTmp.(*XRC20AddressList)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOXrc20List2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐXrc20List(ctx, field.Selections, res)
+	return ec.marshalOXRC20AddressList2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐXRC20AddressList(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Xrc20Info_contract(ctx context.Context, field graphql.CollectedField, obj *Xrc20Info) graphql.Marshaler {
