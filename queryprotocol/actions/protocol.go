@@ -491,6 +491,7 @@ func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
 			allHolder[con.To] = true
 		}
 	}
+	fmt.Println(count)
 	return
 }
 
