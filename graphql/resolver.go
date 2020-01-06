@@ -737,10 +737,11 @@ func (r *queryResolver) xrc20HoldersCount(ctx context.Context, actionResponse *X
 		return errors.Wrap(err, "failed to get address")
 	}
 	fmt.Println(addr)
-	output := &Xrc20List{Exist: false}
 	count, err := r.AP.GetXrc20HolderCount(addr)
-	output.Count = count
-	actionResponse.HoldersCount = output
+	if err != nil {
+		return err
+	}
+	actionResponse.HoldersCount = count
 	return nil
 }
 func (r *queryResolver) xrc20ByTokenAddress(ctx context.Context, actionResponse *Xrc20) error {
