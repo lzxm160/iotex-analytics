@@ -767,7 +767,15 @@ func (r *queryResolver) xrc20ByTokenAddress(ctx context.Context, actionResponse 
 	fmt.Println(addr)
 	fmt.Println(offset)
 	fmt.Println(size)
-	//actionInfoList, err := r.AP.GetActionsByAddress(addr, offset, size)
+	holders, err := r.AP.GetXrc20Holders(addr, offset, size)
+	if err != nil {
+		return err
+	}
+	output := &XRC20AddressList{Exist: false}
+	actionResponse.ByTokenAddress = output
+	output.Exist = true
+	output.Count = len(holders)
+	output.Addresses = holders
 	return nil
 }
 func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc20) error {

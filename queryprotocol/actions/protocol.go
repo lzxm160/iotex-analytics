@@ -495,8 +495,8 @@ func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
 	return
 }
 
-// GetXrc20ByAddress gets xrc20 transfer info by sender or recipient address
-func (p *Protocol) GetXrc20Holders(addr string, numPerPage, page uint64) (cons []*Xrc20Info, err error) {
+// GetXrc20Holders gets xrc20 holders
+func (p *Protocol) GetXrc20Holders(addr string, offset, size uint64) (rets []*string, err error) {
 	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
 		return nil, errors.New("actions protocol is unregistered")
 	}
@@ -506,18 +506,18 @@ func (p *Protocol) GetXrc20Holders(addr string, numPerPage, page uint64) (cons [
 	}
 
 	db := p.indexer.Store.GetDB()
-	if page < 1 {
-		page = 1
+	if size < 1 {
+		size = 1
 	}
-	offset := (page - 1) * numPerPage
-	getQuery := fmt.Sprintf(selectXrc20HistoryByTopics, actions.Xrc20HistoryTableName, offset, numPerPage)
+	getQuery := fmt.Sprintf(selectXrc20AllHistory, actions.Xrc20HistoryTableName, a)
+	fmt.Println(getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-	like := "%" + common.BytesToAddress(a.Bytes()).String()[2:] + "%"
-	rows, err := stmt.Query(like)
+
+	rows, err := stmt.Query()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
 	}
@@ -531,18 +531,33 @@ func (p *Protocol) GetXrc20Holders(addr string, numPerPage, page uint64) (cons [
 		err = indexprotocol.ErrNotExist
 		return nil, err
 	}
+	allHolder := make(map[string]bool, 0)
+	holders := make([]*string, 0)
 	for _, parsedRow := range parsedRows {
 		con := &Xrc20Info{}
 		r := parsedRow.(*actions.Xrc20History)
-		con.From, con.To, con.Quantity, err = parseContractData(r.Topics, r.Data)
+		con.From, con.To, _, err = parseContractData(r.Topics, r.Data)
 		if err != nil {
-			return
+			continue
 		}
-		con.Hash = r.ActionHash
-		con.Timestamp = r.Timestamp
-		con.Contract = r.Address
-		cons = append(cons, con)
+		fmt.Println(con.From, ":", con.To)
+		if _, ok := allHolder[con.From]; !ok {
+			holders = append(holders, &con.From)
+			allHolder[con.From] = true
+		}
+		if _, ok := allHolder[con.To]; !ok {
+			holders = append(holders, &con.To)
+			allHolder[con.To] = true
+		}
 	}
+	if offset > uint64(len(holders)) {
+		return
+	}
+	if offset+size > uint64(len(holders)) {
+		rets = holders[offset:]
+		return
+	}
+	rets = holders[offset : offset+size]
 	return
 }
 
