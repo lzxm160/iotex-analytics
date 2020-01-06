@@ -740,6 +740,7 @@ func (r *queryResolver) xrc20HoldersCount(ctx context.Context, actionResponse *X
 	output := &Xrc20List{Exist: false}
 	count, err := r.AP.GetXrc20HolderCount(addr)
 	output.Count = count
+	actionResponse.HoldersCount = output
 	return nil
 }
 func (r *queryResolver) xrc20ByTokenAddress(ctx context.Context, actionResponse *Xrc20) error {
