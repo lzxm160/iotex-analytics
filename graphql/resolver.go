@@ -907,10 +907,12 @@ func (r *queryResolver) getProductivity(delegateResponse *Delegate, startEpoch i
 
 func (r *queryResolver) getBookkeeping(ctx context.Context, delegateResponse *Delegate, startEpoch int, epochCount int, delegateName string) error {
 	argsMap := parseFieldArguments(ctx, "bookkeeping", "rewardDistribution")
+	fmt.Println("910:", argsMap)
 	percentage, err := getIntArg(argsMap, "percentage")
 	if err != nil {
 		return errors.Wrap(err, "failed to get percentage for bookkeeping")
 	}
+	fmt.Println("914:", argsMap)
 	includeFoundationBonus, err := getBoolArg(argsMap, "includeFoundationBonus")
 	if err != nil {
 		return errors.Wrap(err, "failed to get includeFoundationBonus for bookkeeping")
