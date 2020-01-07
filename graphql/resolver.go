@@ -953,6 +953,7 @@ func (r *queryResolver) getBookkeeping(ctx context.Context, delegateResponse *De
 	default:
 		skip := paginationMap["skip"]
 		first := paginationMap["first"]
+		fmt.Println(skip, ":", first)
 		if skip >= uint64(len(rds)) {
 			return errors.New("invalid pagination skip number for reward distributions")
 		}
@@ -962,6 +963,7 @@ func (r *queryResolver) getBookkeeping(ctx context.Context, delegateResponse *De
 		bookkeepingOutput.RewardDistribution = rds[skip : skip+first]
 	}
 	delegateResponse.Bookkeeping = bookkeepingOutput
+
 	return nil
 }
 
