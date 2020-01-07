@@ -1120,6 +1120,8 @@ func getStringArg(argsMap map[string]*ast.Value, argName string) (string, error)
 }
 
 func getBoolArg(argsMap map[string]*ast.Value, argName string) (bool, error) {
+	fmt.Println(argsMap)
+	fmt.Println(argName)
 	getStr, err := getStringArg(argsMap, argName)
 	if err != nil {
 		return false, err
