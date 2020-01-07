@@ -1079,6 +1079,7 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 					argsMap[arg.Name].Raw = fmt.Sprintf("%d", value)
 				}
 			case "Boolean":
+				fmt.Println(val.Variables)
 				value, ok := val.Variables[arg.Name].(map[string]interface{})
 				if ok {
 					fmt.Println(value)
