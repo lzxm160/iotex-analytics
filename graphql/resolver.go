@@ -1078,6 +1078,23 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 					}
 					argsMap[arg.Name].Raw = fmt.Sprintf("%d", value)
 				}
+			case "Boolean":
+				value, ok := val.Variables[arg.Name].(map[string]interface{})
+				if ok {
+					for k, v := range value {
+						valueJSON, ok := v.(bool)
+						child := &ast.ChildValue{}
+						if ok {
+							if valueJSON {
+								child = &ast.ChildValue{Name: k, Value: &ast.Value{Raw: "true"}}
+
+							} else {
+								child = &ast.ChildValue{Name: k, Value: &ast.Value{Raw: "false"}}
+							}
+							argsMap[arg.Name].Children = append(argsMap[arg.Name].Children, child)
+						}
+					}
+				}
 			case "Pagination":
 				value, ok := val.Variables[arg.Name].(map[string]interface{})
 				if ok {
