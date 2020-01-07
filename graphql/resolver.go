@@ -1081,6 +1081,7 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 			case "Boolean":
 				value, ok := val.Variables[arg.Name].(map[string]interface{})
 				if ok {
+					fmt.Println(value)
 					for k, v := range value {
 						valueJSON, ok := v.(bool)
 						child := &ast.ChildValue{}
