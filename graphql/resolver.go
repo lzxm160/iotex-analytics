@@ -1080,23 +1080,19 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 				}
 			case "Boolean":
 				fmt.Println(val.Variables)
-				value, ok := val.Variables[arg.Name].(map[string]interface{})
+				value, ok := val.Variables[arg.Name].(bool)
 				if ok {
 					fmt.Println(value)
-					for k, v := range value {
-						valueJSON, ok := v.(bool)
-						child := &ast.ChildValue{}
-						if ok {
-							if valueJSON {
-								child = &ast.ChildValue{Name: k, Value: &ast.Value{Raw: "true"}}
+					var child *ast.ChildValue
+					if value {
+						child = &ast.ChildValue{Name: arg.Name, Value: &ast.Value{Raw: "true"}}
 
-							} else {
-								child = &ast.ChildValue{Name: k, Value: &ast.Value{Raw: "false"}}
-							}
-							argsMap[arg.Name].Children = append(argsMap[arg.Name].Children, child)
-						}
+					} else {
+						child = &ast.ChildValue{Name: arg.Name, Value: &ast.Value{Raw: "false"}}
 					}
+					argsMap[arg.Name].Children = append(argsMap[arg.Name].Children, child)
 				}
+
 			case "Pagination":
 				value, ok := val.Variables[arg.Name].(map[string]interface{})
 				if ok {
