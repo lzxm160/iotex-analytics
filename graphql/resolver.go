@@ -1082,7 +1082,7 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 				fmt.Println(val.Variables)
 				value, ok := val.Variables[arg.Name].(bool)
 				if ok {
-					fmt.Println(value)
+					fmt.Println(arg.Name, ":", value)
 					var child *ast.ChildValue
 					if value {
 						child = &ast.ChildValue{Name: arg.Name, Value: &ast.Value{Raw: "true"}}
