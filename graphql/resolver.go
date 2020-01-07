@@ -1171,6 +1171,7 @@ func getPaginationArgs(argsMap map[string]*ast.Value) (map[string]uint64, error)
 	if ok && (size <= 0 || size > MaximumPageSize) {
 		return nil, ErrPaginationInvalidSize
 	}
+	fmt.Println(offset, ":", size)
 	ret := make(map[string]uint64)
 	for k, v := range paginationMap {
 		if v < 0 {
