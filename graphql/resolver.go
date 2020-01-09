@@ -15,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 
+	"go.uber.org/zap"
+
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
@@ -741,7 +743,7 @@ func (r *queryResolver) xrc20HoldersCount(ctx context.Context, actionResponse *X
 	if err != nil {
 		return err
 	}
-	actionResponse.HoldersCount = count
+	actionResponse.HoldersCount = Uint64ToInt(count)
 	return nil
 }
 
@@ -1220,4 +1222,17 @@ func ethAddrToIoAddr(ethAddr string) (string, error) {
 		return "", err
 	}
 	return ioAddress.String(), nil
+}
+
+const (
+	maxUint = ^uint(0)
+	maxInt  = int(maxUint >> 1)
+)
+
+//Uint64ToInt converts uint64 to in
+func Uint64ToInt(u uint64) int {
+	if u > uint64(maxInt) {
+		zap.L().Panic("Height can't be converted to int64")
+	}
+	return int(u)
 }

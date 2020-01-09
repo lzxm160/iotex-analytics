@@ -441,7 +441,7 @@ func (p *Protocol) GetXrc20ByAddress(addr string, numPerPage, page uint64) (cons
 }
 
 // GetXrc20HolderCount gets xrc20 holders's address
-func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
+func (p *Protocol) GetXrc20HolderCount(addr string) (count uint64, err error) {
 	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
 		return 0, errors.New("actions protocol is unregistered")
 	}
