@@ -11,19 +11,23 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"math/big"
 	"strings"
 
-	"github.com/iotexproject/iotex-analytics/queryprotocol/actions"
-
-	"github.com/pkg/errors"
-
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/iotexproject/iotex-address/address"
 	"github.com/iotexproject/iotex-core/blockchain/block"
+	"github.com/pkg/errors"
 
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
 	s "github.com/iotexproject/iotex-analytics/sql"
 )
 
 const (
+	topicsPlusDataLen = 256
+	sha3Len           = 64
+	contractParamsLen = 64
+	addressLen        = 40
 	// Xrc20HistoryTableName is the table name of xrc20 history
 	Xrc20HistoryTableName = "xrc20_history"
 	// Xrc20HoldersTableName is the table name of xrc20 holders
@@ -98,7 +102,7 @@ func (p *Protocol) updateXrc20History(
 			valStrs = append(valStrs, "(?, ?, ?, ?, ?, ?, ?, ?, ?)")
 			valArgs = append(valArgs, ah, rh, l.Address, topics, data, l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus)
 
-			from, to, _, err := actions.ParseContractData(topics, data)
+			from, to, _, err := ParseContractData(topics, data)
 			if err != nil {
 				continue
 			}
@@ -158,4 +162,37 @@ func (p *Protocol) getXrc20History(address string) ([]*Xrc20History, error) {
 	}
 
 	return ret, nil
+}
+
+// ParseContractData parse xrc20 topics
+func ParseContractData(topics, data string) (from, to, amount string, err error) {
+	// This should cover input of indexed or not indexed ,i.e., len(topics)==192 len(data)==64 or len(topics)==64 len(data)==192
+	all := topics + data
+	if len(all) != topicsPlusDataLen {
+		err = errors.New("data's len is wrong")
+		return
+	}
+	fromEth := all[sha3Len+contractParamsLen-addressLen : sha3Len+contractParamsLen]
+	ethAddress := common.HexToAddress(fromEth)
+	ioAddress, err := address.FromBytes(ethAddress.Bytes())
+	if err != nil {
+		return
+	}
+	from = ioAddress.String()
+
+	toEth := all[sha3Len+contractParamsLen*2-addressLen : sha3Len+contractParamsLen*2]
+	ethAddress = common.HexToAddress(toEth)
+	ioAddress, err = address.FromBytes(ethAddress.Bytes())
+	if err != nil {
+		return
+	}
+	to = ioAddress.String()
+
+	amountBig, ok := new(big.Int).SetString(all[sha3Len+contractParamsLen*2:], 16)
+	if !ok {
+		err = errors.New("amount convert error")
+		return
+	}
+	amount = amountBig.Text(10)
+	return
 }

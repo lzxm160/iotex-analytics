@@ -8,7 +8,6 @@ package actions
 
 import (
 	"fmt"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
@@ -24,10 +23,6 @@ import (
 )
 
 const (
-	topicsPlusDataLen              = 256
-	sha3Len                        = 64
-	contractParamsLen              = 64
-	addressLen                     = 40
 	selectActionHistoryByTimestamp = "SELECT action_hash, block_hash, timestamp, action_type, `from`, `to`, amount, t1.gas_price*t1.gas_consumed " +
 		"FROM %s AS t1 LEFT JOIN %s AS t2 ON t1.block_height=t2.block_height " +
 		"WHERE timestamp >= ? AND timestamp <= ? ORDER BY `timestamp` desc limit ?,?"
@@ -381,7 +376,7 @@ func (p *Protocol) GetXrc20(address string, numPerPage, page uint64) (cons []*Xr
 	for _, parsedRow := range parsedRows {
 		con := &Xrc20Info{}
 		r := parsedRow.(*actions.Xrc20History)
-		con.From, con.To, con.Quantity, err = ParseContractData(r.Topics, r.Data)
+		con.From, con.To, con.Quantity, err = actions.ParseContractData(r.Topics, r.Data)
 		if err != nil {
 			return
 		}
@@ -432,7 +427,7 @@ func (p *Protocol) GetXrc20ByAddress(addr string, numPerPage, page uint64) (cons
 	for _, parsedRow := range parsedRows {
 		con := &Xrc20Info{}
 		r := parsedRow.(*actions.Xrc20History)
-		con.From, con.To, con.Quantity, err = ParseContractData(r.Topics, r.Data)
+		con.From, con.To, con.Quantity, err = actions.ParseContractData(r.Topics, r.Data)
 		if err != nil {
 			return
 		}
@@ -476,7 +471,7 @@ func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
 	for _, parsedRow := range parsedRows {
 		con := &Xrc20Info{}
 		r := parsedRow.(*actions.Xrc20History)
-		con.From, con.To, _, err = ParseContractData(r.Topics, r.Data)
+		con.From, con.To, _, err = actions.ParseContractData(r.Topics, r.Data)
 		if err != nil {
 			continue
 		}
@@ -532,7 +527,7 @@ func (p *Protocol) GetXrc20Holders(addr string, offset, size uint64) (rets []*st
 	for _, parsedRow := range parsedRows {
 		con := &Xrc20Info{}
 		r := parsedRow.(*actions.Xrc20History)
-		con.From, con.To, _, err = ParseContractData(r.Topics, r.Data)
+		con.From, con.To, _, err = actions.ParseContractData(r.Topics, r.Data)
 		if err != nil {
 			continue
 		}
@@ -587,7 +582,7 @@ func (p *Protocol) GetXrc20ByPage(offset, limit uint64) (cons []*Xrc20Info, err 
 	for _, parsedRow := range parsedRows {
 		con := &Xrc20Info{}
 		r := parsedRow.(*actions.Xrc20History)
-		con.From, con.To, con.Quantity, err = ParseContractData(r.Topics, r.Data)
+		con.From, con.To, con.Quantity, err = actions.ParseContractData(r.Topics, r.Data)
 		if err != nil {
 			return
 		}
@@ -659,37 +654,5 @@ func (p *Protocol) GetTopHolders(endEpochNumber, skip, first uint64) (holders []
 	for _, parsedRow := range parsedRows {
 		holders = append(holders, parsedRow.(*TopHolder))
 	}
-	return
-}
-
-func ParseContractData(topics, data string) (from, to, amount string, err error) {
-	// This should cover input of indexed or not indexed ,i.e., len(topics)==192 len(data)==64 or len(topics)==64 len(data)==192
-	all := topics + data
-	if len(all) != topicsPlusDataLen {
-		err = errors.New("data's len is wrong")
-		return
-	}
-	fromEth := all[sha3Len+contractParamsLen-addressLen : sha3Len+contractParamsLen]
-	ethAddress := common.HexToAddress(fromEth)
-	ioAddress, err := address.FromBytes(ethAddress.Bytes())
-	if err != nil {
-		return
-	}
-	from = ioAddress.String()
-
-	toEth := all[sha3Len+contractParamsLen*2-addressLen : sha3Len+contractParamsLen*2]
-	ethAddress = common.HexToAddress(toEth)
-	ioAddress, err = address.FromBytes(ethAddress.Bytes())
-	if err != nil {
-		return
-	}
-	to = ioAddress.String()
-
-	amountBig, ok := new(big.Int).SetString(all[sha3Len+contractParamsLen*2:], 16)
-	if !ok {
-		err = errors.New("amount convert error")
-		return
-	}
-	amount = amountBig.Text(10)
 	return
 }
