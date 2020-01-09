@@ -441,7 +441,7 @@ func (p *Protocol) GetXrc20ByAddress(addr string, numPerPage, page uint64) (cons
 }
 
 // GetXrc20HolderCount gets xrc20 holders's address
-func (p *Protocol) GetXrc20HolderCount(addr string) (count uint64, err error) {
+func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
 	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
 		return 0, errors.New("actions protocol is unregistered")
 	}
@@ -458,11 +458,15 @@ func (p *Protocol) GetXrc20HolderCount(addr string) (count uint64, err error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to execute get query")
 	}
-
-	_, err = s.ParseSQLRows(rows, &count)
+	type countStruct struct {
+		count int
+	}
+	var c countStruct
+	_, err = s.ParseSQLRows(rows, &c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to parse results")
 	}
+	count = c.count
 	return
 }
 

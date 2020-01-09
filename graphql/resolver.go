@@ -743,7 +743,7 @@ func (r *queryResolver) xrc20HoldersCount(ctx context.Context, actionResponse *X
 	if err != nil {
 		return err
 	}
-	actionResponse.HoldersCount = Uint64ToInt(count)
+	actionResponse.HoldersCount = count
 	return nil
 }
 
