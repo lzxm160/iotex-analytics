@@ -381,7 +381,7 @@ func (p *Protocol) GetXrc20(address string, numPerPage, page uint64) (cons []*Xr
 	for _, parsedRow := range parsedRows {
 		con := &Xrc20Info{}
 		r := parsedRow.(*actions.Xrc20History)
-		con.From, con.To, con.Quantity, err = parseContractData(r.Topics, r.Data)
+		con.From, con.To, con.Quantity, err = ParseContractData(r.Topics, r.Data)
 		if err != nil {
 			return
 		}
@@ -432,7 +432,7 @@ func (p *Protocol) GetXrc20ByAddress(addr string, numPerPage, page uint64) (cons
 	for _, parsedRow := range parsedRows {
 		con := &Xrc20Info{}
 		r := parsedRow.(*actions.Xrc20History)
-		con.From, con.To, con.Quantity, err = parseContractData(r.Topics, r.Data)
+		con.From, con.To, con.Quantity, err = ParseContractData(r.Topics, r.Data)
 		if err != nil {
 			return
 		}
@@ -476,11 +476,10 @@ func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
 	for _, parsedRow := range parsedRows {
 		con := &Xrc20Info{}
 		r := parsedRow.(*actions.Xrc20History)
-		con.From, con.To, _, err = parseContractData(r.Topics, r.Data)
+		con.From, con.To, _, err = ParseContractData(r.Topics, r.Data)
 		if err != nil {
 			continue
 		}
-		fmt.Println(con.From, ":", con.To)
 		if _, ok := allHolder[con.From]; !ok {
 			count++
 			allHolder[con.From] = true
@@ -533,7 +532,7 @@ func (p *Protocol) GetXrc20Holders(addr string, offset, size uint64) (rets []*st
 	for _, parsedRow := range parsedRows {
 		con := &Xrc20Info{}
 		r := parsedRow.(*actions.Xrc20History)
-		con.From, con.To, _, err = parseContractData(r.Topics, r.Data)
+		con.From, con.To, _, err = ParseContractData(r.Topics, r.Data)
 		if err != nil {
 			continue
 		}
@@ -588,7 +587,7 @@ func (p *Protocol) GetXrc20ByPage(offset, limit uint64) (cons []*Xrc20Info, err 
 	for _, parsedRow := range parsedRows {
 		con := &Xrc20Info{}
 		r := parsedRow.(*actions.Xrc20History)
-		con.From, con.To, con.Quantity, err = parseContractData(r.Topics, r.Data)
+		con.From, con.To, con.Quantity, err = ParseContractData(r.Topics, r.Data)
 		if err != nil {
 			return
 		}
@@ -663,7 +662,7 @@ func (p *Protocol) GetTopHolders(endEpochNumber, skip, first uint64) (holders []
 	return
 }
 
-func parseContractData(topics, data string) (from, to, amount string, err error) {
+func ParseContractData(topics, data string) (from, to, amount string, err error) {
 	// This should cover input of indexed or not indexed ,i.e., len(topics)==192 len(data)==64 or len(topics)==64 len(data)==192
 	all := topics + data
 	if len(all) != topicsPlusDataLen {
