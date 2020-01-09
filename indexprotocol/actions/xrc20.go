@@ -14,6 +14,10 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/iotexproject/iotex-proto/golang/iotexapi"
+
+	"github.com/iotexproject/iotex-analytics/indexcontext"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/iotexproject/iotex-address/address"
 	"github.com/iotexproject/iotex-core/blockchain/block"
@@ -71,9 +75,25 @@ func (p *Protocol) CreateXrc20Tables(ctx context.Context) error {
 
 // updateXrc20History stores Xrc20 information into Xrc20 history table
 func (p *Protocol) updateXrc20History(
+	ctx context.Context,
 	tx *sql.Tx,
 	blk *block.Block,
 ) error {
+	indexCtx := indexcontext.MustGetIndexCtx(ctx)
+	if indexCtx.ChainClient == nil {
+		return errors.New("chain client is nil")
+	}
+	getRawBlocksRes, err := indexCtx.ChainClient.GetRawBlocks(context.Background(), &iotexapi.GetRawBlocksRequest{
+		StartHeight:  1,
+		Count:        1,
+		WithReceipts: true,
+	})
+
+	if err != nil {
+		return errors.Wrap(err, "failed to get raw blocks from the chain")
+	}
+	fmt.Println("92:", getRawBlocksRes.Blocks[0].Block.String())
+
 	valStrs := make([]string, 0)
 	valArgs := make([]interface{}, 0)
 	holdersStrs := make([]string, 0)
