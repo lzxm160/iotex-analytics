@@ -463,11 +463,17 @@ func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
 		Count int
 	}
 	var c countStruct
-	_, err = s.ParseSQLRows(rows, &c)
+	parsedRows, err := s.ParseSQLRows(rows, &c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to parse results")
 	}
-	count = c.Count
+	if len(parsedRows) == 0 {
+		err = indexprotocol.ErrNotExist
+		return 0, err
+	}
+	for _, parsedRow := range parsedRows {
+		count = parsedRow.(int)
+	}
 	return
 }
 
