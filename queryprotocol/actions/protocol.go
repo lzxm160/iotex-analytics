@@ -472,7 +472,8 @@ func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
 		return 0, err
 	}
 	for _, parsedRow := range parsedRows {
-		count = parsedRow.(int)
+		r := parsedRow.(*countStruct)
+		count = r.Count
 	}
 	return
 }
