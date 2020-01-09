@@ -516,7 +516,7 @@ func (p *Protocol) GetXrc20Holders(addr string, offset, size uint64) (rets []*st
 	}
 	for _, parsedRow := range parsedRows {
 		r := parsedRow.(*holdersStruct)
-		rets = append(rets, r.Holder)
+		rets = append(rets, &r.Holder)
 	}
 	return
 }
