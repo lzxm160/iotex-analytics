@@ -447,7 +447,7 @@ func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
 	}
 
 	db := p.indexer.Store.GetDB()
-	getQuery := fmt.Sprintf(selectXrc20HoldersCount, actions.Xrc20HistoryTableName, addr)
+	getQuery := fmt.Sprintf(selectXrc20HoldersCount, actions.Xrc20HoldersTableName, addr)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to prepare get query")
@@ -480,7 +480,7 @@ func (p *Protocol) GetXrc20Holders(addr string, offset, size uint64) (rets []*st
 	if size < 1 {
 		size = 1
 	}
-	getQuery := fmt.Sprintf(selectXrc20Holders, actions.Xrc20HistoryTableName, a, offset, size)
+	getQuery := fmt.Sprintf(selectXrc20Holders, actions.Xrc20HoldersTableName, a, offset, size)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")
