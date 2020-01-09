@@ -15,8 +15,6 @@ import (
 	"strconv"
 	"strings"
 
-	"go.uber.org/zap"
-
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
@@ -1129,6 +1127,15 @@ func parseVariables(ctx context.Context, argsMap map[string]*ast.Value, argument
 					}
 					argsMap[arg.Name].Raw = fmt.Sprintf("%d", value)
 				}
+			case "Boolean":
+				value, ok := val.Variables[arg.Name].(bool)
+				if ok {
+					if value {
+						argsMap[arg.Name].Raw = "true"
+					} else {
+						argsMap[arg.Name].Raw = "false"
+					}
+				}
 			case "Pagination":
 				value, ok := val.Variables[arg.Name].(map[string]interface{})
 				if ok {
@@ -1222,17 +1229,4 @@ func ethAddrToIoAddr(ethAddr string) (string, error) {
 		return "", err
 	}
 	return ioAddress.String(), nil
-}
-
-const (
-	maxUint = ^uint(0)
-	maxInt  = int(maxUint >> 1)
-)
-
-//Uint64ToInt converts uint64 to in
-func Uint64ToInt(u uint64) int {
-	if u > uint64(maxInt) {
-		zap.L().Panic("Height can't be converted to int64")
-	}
-	return int(u)
 }
