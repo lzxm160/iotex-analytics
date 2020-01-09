@@ -36,7 +36,8 @@ const (
 		"WHERE action_type = 'execution' AND (`from` = ? OR `to` = ?) ORDER BY `timestamp` desc limit ?,?"
 	selectActionHistory        = "SELECT DISTINCT `from`, block_height FROM %s ORDER BY block_height desc limit %d"
 	selectXrc20History         = "SELECT * FROM %s WHERE address='%s' ORDER BY `timestamp` desc limit %d,%d"
-	selectXrc20AllHistory      = "SELECT * FROM %s WHERE address='%s' ORDER BY `timestamp` desc"
+	selectXrc20HoldersCount    = "SELECT COUNT(*) FROM %s WHERE contract='%s'"
+	selectXrc20Holders         = "SELECT holder FROM %s WHERE contract='%s' ORDER BY `timestamp` desc limit %d,%d"
 	selectXrc20HistoryByTopics = "SELECT * FROM %s WHERE topics like ? ORDER BY `timestamp` desc limit %d,%d"
 	selectXrc20AddressesByPage = "SELECT address, MAX(`timestamp`) AS t FROM %s GROUP BY address ORDER BY t desc limit %d,%d"
 	selectXrc20HistoryByPage   = "SELECT * FROM %s ORDER BY `timestamp` desc limit %d,%d"
@@ -446,7 +447,7 @@ func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
 	}
 
 	db := p.indexer.Store.GetDB()
-	getQuery := fmt.Sprintf(selectXrc20AllHistory, actions.Xrc20HistoryTableName, addr)
+	getQuery := fmt.Sprintf(selectXrc20HoldersCount, actions.Xrc20HistoryTableName, addr)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to prepare get query")
@@ -458,31 +459,9 @@ func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
 		return 0, errors.Wrap(err, "failed to execute get query")
 	}
 
-	var ret actions.Xrc20History
-	parsedRows, err := s.ParseSQLRows(rows, &ret)
+	_, err = s.ParseSQLRows(rows, &count)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to parse results")
-	}
-	if len(parsedRows) == 0 {
-		err = indexprotocol.ErrNotExist
-		return 0, err
-	}
-	allHolder := make(map[string]bool, 0)
-	for _, parsedRow := range parsedRows {
-		con := &Xrc20Info{}
-		r := parsedRow.(*actions.Xrc20History)
-		con.From, con.To, _, err = actions.ParseContractData(r.Topics, r.Data)
-		if err != nil {
-			continue
-		}
-		if _, ok := allHolder[con.From]; !ok {
-			count++
-			allHolder[con.From] = true
-		}
-		if _, ok := allHolder[con.To]; !ok {
-			count++
-			allHolder[con.To] = true
-		}
 	}
 	return
 }
@@ -501,7 +480,7 @@ func (p *Protocol) GetXrc20Holders(addr string, offset, size uint64) (rets []*st
 	if size < 1 {
 		size = 1
 	}
-	getQuery := fmt.Sprintf(selectXrc20AllHistory, actions.Xrc20HistoryTableName, a)
+	getQuery := fmt.Sprintf(selectXrc20Holders, actions.Xrc20HistoryTableName, a, offset, size)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")
@@ -513,7 +492,7 @@ func (p *Protocol) GetXrc20Holders(addr string, offset, size uint64) (rets []*st
 		return nil, errors.Wrap(err, "failed to execute get query")
 	}
 
-	var ret actions.Xrc20History
+	var ret string
 	parsedRows, err := s.ParseSQLRows(rows, &ret)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse results")
@@ -522,32 +501,10 @@ func (p *Protocol) GetXrc20Holders(addr string, offset, size uint64) (rets []*st
 		err = indexprotocol.ErrNotExist
 		return nil, err
 	}
-	allHolder := make(map[string]bool, 0)
-	holders := make([]*string, 0)
 	for _, parsedRow := range parsedRows {
-		con := &Xrc20Info{}
-		r := parsedRow.(*actions.Xrc20History)
-		con.From, con.To, _, err = actions.ParseContractData(r.Topics, r.Data)
-		if err != nil {
-			continue
-		}
-		if _, ok := allHolder[con.From]; !ok {
-			holders = append(holders, &con.From)
-			allHolder[con.From] = true
-		}
-		if _, ok := allHolder[con.To]; !ok {
-			holders = append(holders, &con.To)
-			allHolder[con.To] = true
-		}
+		r := parsedRow.(*string)
+		rets = append(rets, r)
 	}
-	if offset > uint64(len(holders)) {
-		return
-	}
-	if offset+size > uint64(len(holders)) {
-		rets = holders[offset:]
-		return
-	}
-	rets = holders[offset : offset+size]
 	return
 }
 
