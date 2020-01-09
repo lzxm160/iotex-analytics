@@ -459,14 +459,14 @@ func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
 		return 0, errors.Wrap(err, "failed to execute get query")
 	}
 	type countStruct struct {
-		count int
+		Count int
 	}
 	var c countStruct
 	_, err = s.ParseSQLRows(rows, &c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to parse results")
 	}
-	count = c.count
+	count = c.Count
 	return
 }
 
