@@ -704,9 +704,9 @@ func (r *queryResolver) getXrcByContractAddress(ctx context.Context, actionRespo
 	}
 	output := &Xrc20List{Exist: false}
 	switch v := actionResponse.(type) {
-	case Xrc721:
+	case *Xrc721:
 		v.ByContractAddress = output
-	case Xrc20:
+	case *Xrc20:
 		v.ByContractAddress = output
 	default:
 		return errors.New("failed to convert type")
@@ -759,9 +759,9 @@ func (r *queryResolver) getXrcByAddress(ctx context.Context, actionResponse inte
 	}
 	output := &Xrc20List{Exist: false}
 	switch v := actionResponse.(type) {
-	case Xrc721:
+	case *Xrc721:
 		v.ByAddress = output
-	case Xrc20:
+	case *Xrc20:
 		v.ByAddress = output
 	default:
 		return errors.New("failed to convert type")
@@ -813,7 +813,6 @@ func (r *queryResolver) xrcHoldersCount(ctx context.Context, actionResponse inte
 	case *Xrc20:
 		v.HoldersCount = count
 	default:
-		fmt.Println(v)
 		return errors.New("failed to convert type")
 	}
 	return nil
@@ -847,9 +846,9 @@ func (r *queryResolver) xrcByTokenAddress(ctx context.Context, actionResponse in
 	}
 	output := &XRC20AddressList{Exist: false}
 	switch v := actionResponse.(type) {
-	case Xrc721:
+	case *Xrc721:
 		v.ByTokenAddress = output
-	case Xrc20:
+	case *Xrc20:
 		v.ByTokenAddress = output
 	default:
 		return errors.New("failed to convert type")
@@ -882,9 +881,9 @@ func (r *queryResolver) getXrcByPage(ctx context.Context, actionResponse interfa
 	first := paginationMap["first"]
 	output := &Xrc20List{Exist: false}
 	switch v := actionResponse.(type) {
-	case Xrc721:
+	case *Xrc721:
 		v.ByPage = output
-	case Xrc20:
+	case *Xrc20:
 		v.ByPage = output
 	default:
 		return errors.New("failed to convert type")
@@ -930,9 +929,9 @@ func (r *queryResolver) getXrcAddresses(ctx context.Context, actionResponse inte
 	first := paginationMap["first"]
 	output := &XRC20AddressList{Exist: false}
 	switch v := actionResponse.(type) {
-	case Xrc721:
+	case *Xrc721:
 		v.Xrc721Addresses = output
-	case Xrc20:
+	case *Xrc20:
 		v.Xrc20Addresses = output
 	default:
 		return errors.New("failed to convert type")
