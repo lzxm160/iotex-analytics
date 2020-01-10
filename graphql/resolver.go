@@ -813,6 +813,7 @@ func (r *queryResolver) xrcHoldersCount(ctx context.Context, actionResponse inte
 	case Xrc20:
 		v.HoldersCount = count
 	default:
+		fmt.Println(v)
 		return errors.New("failed to convert type")
 	}
 	return nil
