@@ -254,3 +254,12 @@ type Xrc20List struct {
 	Xrc20 []*Xrc20Info `json:"xrc20"`
 	Count int          `json:"count"`
 }
+
+type Xrc721 struct {
+	ByContractAddress *Xrc20List        `json:"byContractAddress"`
+	ByAddress         *Xrc20List        `json:"byAddress"`
+	ByPage            *Xrc20List        `json:"byPage"`
+	Xrc721Addresses   *XRC20AddressList `json:"xrc721Addresses"`
+	HoldersCount      int               `json:"holdersCount"`
+	ByTokenAddress    *XRC20AddressList `json:"byTokenAddress"`
+}
