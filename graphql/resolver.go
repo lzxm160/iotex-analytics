@@ -54,6 +54,7 @@ type (
 	xrcHoldersCount   func(string) (int, error)
 	xrcByTokenAddress func(string, uint64, uint64) ([]*string, error)
 	xrcbypage         func(uint64, uint64) ([]*actions.Xrc20Info, error)
+	getXrc            func(string, uint64, uint64) ([]*actions.Xrc20Info, error)
 )
 
 // EncodeDelegateName converts a delegate name input to an internal format
@@ -686,9 +687,7 @@ func (r *queryResolver) getEvmTransfersByAddress(ctx context.Context, actionResp
 	return nil
 }
 
-type getxrc func(string, uint64, uint64) ([]*actions.Xrc20Info, error)
-
-func (r *queryResolver) getXrcByContractAddress(ctx context.Context, actionResponse interface{}, field string, get getxrc) error {
+func (r *queryResolver) getXrcByContractAddress(ctx context.Context, actionResponse interface{}, field string, get getXrc) error {
 	argsMap := parseFieldArguments(ctx, "byContractAddress", field)
 	address, err := getStringArg(argsMap, "address")
 	if err != nil {
@@ -743,7 +742,7 @@ func (r *queryResolver) getXrc721ByContractAddress(ctx context.Context, actionRe
 	return r.getXrcByContractAddress(ctx, actionResponse, "xrc721", r.AP.GetXrc721)
 }
 
-func (r *queryResolver) getXrcByAddress(ctx context.Context, actionResponse interface{}, field string, get getxrc) error {
+func (r *queryResolver) getXrcByAddress(ctx context.Context, actionResponse interface{}, field string, get getXrc) error {
 	argsMap := parseFieldArguments(ctx, "byAddress", field)
 	address, err := getStringArg(argsMap, "address")
 	if err != nil {

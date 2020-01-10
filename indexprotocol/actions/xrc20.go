@@ -14,19 +14,15 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/iotexproject/iotex-analytics/indexcontext"
-
-	"github.com/iotexproject/iotex-core/test/identityset"
-
-	"github.com/iotexproject/iotex-core/action"
-
-	"github.com/iotexproject/iotex-proto/golang/iotexapi"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/iotexproject/iotex-address/address"
+	"github.com/iotexproject/iotex-core/action"
 	"github.com/iotexproject/iotex-core/blockchain/block"
+	"github.com/iotexproject/iotex-core/test/identityset"
+	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"github.com/pkg/errors"
 
+	"github.com/iotexproject/iotex-analytics/indexcontext"
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
 	s "github.com/iotexproject/iotex-analytics/sql"
 )
@@ -128,12 +124,11 @@ func (p *Protocol) updateXrc20History(
 			if !strings.Contains(topics, transferSha3) {
 				continue
 			}
-			// check erc20 or erc721
+			// check is erc20 or erc721
 			isErc721 := p.checkIsErc721(ctx, l.Address)
 			ah := hex.EncodeToString(l.ActionHash[:])
 			receiptHash := receipt.Hash()
 			rh := hex.EncodeToString(receiptHash[:])
-			// success is erc721
 			if isErc721 {
 				erc721ValStrs = append(erc721ValStrs, "(?, ?, ?, ?, ?, ?, ?, ?, ?)")
 				erc721ValArgs = append(erc721ValArgs, ah, rh, l.Address, topics, data, l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus)
