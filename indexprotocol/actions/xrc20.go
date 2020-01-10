@@ -14,6 +14,8 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/iotexproject/iotex-analytics/indexcontext"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/iotexproject/iotex-address/address"
 	"github.com/iotexproject/iotex-core/action"
@@ -22,7 +24,6 @@ import (
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"github.com/pkg/errors"
 
-	"github.com/iotexproject/iotex-analytics/indexcontext"
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
 	s "github.com/iotexproject/iotex-analytics/sql"
 )
@@ -186,7 +187,10 @@ func (p *Protocol) updateXrc20History(
 }
 
 func (p *Protocol) checkIsErc721(ctx context.Context, addr string) bool {
-	indexCtx := indexcontext.MustGetIndexCtx(ctx)
+	indexCtx, ok := ctx.Value(struct{}{}).(indexcontext.IndexCtx)
+	if !ok {
+		return false
+	}
 	if indexCtx.ChainClient == nil {
 		return false
 	}
