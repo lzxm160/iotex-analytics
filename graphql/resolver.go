@@ -808,9 +808,9 @@ func (r *queryResolver) xrcHoldersCount(ctx context.Context, actionResponse inte
 		return err
 	}
 	switch v := actionResponse.(type) {
-	case Xrc721:
+	case *Xrc721:
 		v.HoldersCount = count
-	case Xrc20:
+	case *Xrc20:
 		v.HoldersCount = count
 	default:
 		fmt.Println(v)
