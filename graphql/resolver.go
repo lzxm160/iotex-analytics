@@ -295,7 +295,7 @@ func (r *queryResolver) Xrc20(ctx context.Context) (*Xrc20, error) {
 		g.Go(func() error { return r.getXrc20Addresses(ctx, actionResponse) })
 	}
 	if containField(requestedFields, "tokenHolderAddresses") {
-		g.Go(func() error { return r.xrc20ByTokenAddress(ctx, actionResponse) })
+		g.Go(func() error { return r.xrc20HoldersByTokenAddress(ctx, actionResponse) })
 	}
 	return actionResponse, g.Wait()
 }
@@ -753,8 +753,8 @@ func (r *queryResolver) getXrc20ByAddress(ctx context.Context, actionResponse *X
 	return nil
 }
 
-func (r *queryResolver) xrc20ByTokenAddress(ctx context.Context, actionResponse *Xrc20) error {
-	argsMap := parseFieldArguments(ctx, "tokenHolderAddresses", "xrc20")
+func (r *queryResolver) xrc20HoldersByTokenAddress(ctx context.Context, actionResponse *Xrc20) error {
+	argsMap := parseFieldArguments(ctx, "tokenHolderAddresses", "addresses")
 	addr, err := getStringArg(argsMap, "tokenAddress")
 	if err != nil {
 		return errors.Wrap(err, "failed to get address")
