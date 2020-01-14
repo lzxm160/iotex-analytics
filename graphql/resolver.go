@@ -774,7 +774,7 @@ func (r *queryResolver) xrc20ByTokenAddress(ctx context.Context, actionResponse 
 	}
 	fmt.Println(offset, ":", size)
 
-	output := &XRC20AddressList{}
+	output := &XRC20HolderAddressList{}
 	actionResponse.TokenHolderAddresses = output
 	holders, err := r.AP.GetXrc20Holders(addr, offset, size)
 	if err != nil {
