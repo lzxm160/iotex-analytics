@@ -283,11 +283,11 @@ type ComplexityRoot struct {
 	}
 
 	Xrc20 struct {
-		ByAddress         func(childComplexity int, address string, numPerPage int, page int) int
-		ByContractAddress func(childComplexity int, address string, numPerPage int, page int) int
-		ByPage            func(childComplexity int, pagination Pagination) int
-		ByTokenAddress    func(childComplexity int, tokenAddress string, pagination Pagination) int
-		Xrc20Addresses    func(childComplexity int, pagination Pagination) int
+		ByAddress            func(childComplexity int, address string, numPerPage int, page int) int
+		ByContractAddress    func(childComplexity int, address string, numPerPage int, page int) int
+		ByPage               func(childComplexity int, pagination Pagination) int
+		TokenHolderAddresses func(childComplexity int, tokenAddress string) int
+		Xrc20Addresses       func(childComplexity int, pagination Pagination) int
 	}
 
 	Xrc20Info struct {
@@ -1391,17 +1391,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Xrc20.ByPage(childComplexity, args["pagination"].(Pagination)), true
 
-	case "Xrc20.ByTokenAddress":
-		if e.complexity.Xrc20.ByTokenAddress == nil {
+	case "Xrc20.TokenHolderAddresses":
+		if e.complexity.Xrc20.TokenHolderAddresses == nil {
 			break
 		}
 
-		args, err := ec.field_Xrc20_byTokenAddress_args(context.TODO(), rawArgs)
+		args, err := ec.field_Xrc20_tokenHolderAddresses_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Xrc20.ByTokenAddress(childComplexity, args["tokenAddress"].(string), args["pagination"].(Pagination)), true
+		return e.complexity.Xrc20.TokenHolderAddresses(childComplexity, args["tokenAddress"].(string)), true
 
 	case "Xrc20.Xrc20Addresses":
 		if e.complexity.Xrc20.Xrc20Addresses == nil {
@@ -1578,7 +1578,7 @@ type Xrc20 {
     byAddress(address:String!,numPerPage:Int!,page:Int!): Xrc20List
     byPage(pagination: Pagination!): Xrc20List
     xrc20Addresses(pagination: Pagination!): XRC20AddressList
-    byTokenAddress(tokenAddress:String!, pagination:Pagination!): XRC20AddressList
+    tokenHolderAddresses(tokenAddress:String!): XRC20AddressList
 }
 
 type Account {
@@ -2313,7 +2313,7 @@ func (ec *executionContext) field_Xrc20_byPage_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Xrc20_byTokenAddress_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Xrc20_tokenHolderAddresses_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -2324,14 +2324,6 @@ func (ec *executionContext) field_Xrc20_byTokenAddress_args(ctx context.Context,
 		}
 	}
 	args["tokenAddress"] = arg0
-	var arg1 Pagination
-	if tmp, ok := rawArgs["pagination"]; ok {
-		arg1, err = ec.unmarshalNPagination2githubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐPagination(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["pagination"] = arg1
 	return args, nil
 }
 
@@ -6169,7 +6161,7 @@ func (ec *executionContext) _Xrc20_xrc20Addresses(ctx context.Context, field gra
 	return ec.marshalOXRC20AddressList2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐXRC20AddressList(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Xrc20_byTokenAddress(ctx context.Context, field graphql.CollectedField, obj *Xrc20) graphql.Marshaler {
+func (ec *executionContext) _Xrc20_tokenHolderAddresses(ctx context.Context, field graphql.CollectedField, obj *Xrc20) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
 	rctx := &graphql.ResolverContext{
@@ -6180,7 +6172,7 @@ func (ec *executionContext) _Xrc20_byTokenAddress(ctx context.Context, field gra
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Xrc20_byTokenAddress_args(ctx, rawArgs)
+	args, err := ec.field_Xrc20_tokenHolderAddresses_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -6189,7 +6181,7 @@ func (ec *executionContext) _Xrc20_byTokenAddress(ctx context.Context, field gra
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ByTokenAddress, nil
+		return obj.TokenHolderAddresses, nil
 	})
 	if resTmp == nil {
 		return graphql.Null
@@ -8839,8 +8831,8 @@ func (ec *executionContext) _Xrc20(ctx context.Context, sel ast.SelectionSet, ob
 			out.Values[i] = ec._Xrc20_byPage(ctx, field, obj)
 		case "xrc20Addresses":
 			out.Values[i] = ec._Xrc20_xrc20Addresses(ctx, field, obj)
-		case "byTokenAddress":
-			out.Values[i] = ec._Xrc20_byTokenAddress(ctx, field, obj)
+		case "tokenHolderAddresses":
+			out.Values[i] = ec._Xrc20_tokenHolderAddresses(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

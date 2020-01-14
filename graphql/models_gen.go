@@ -243,11 +243,11 @@ type XRC20AddressList struct {
 }
 
 type Xrc20 struct {
-	ByContractAddress *Xrc20List        `json:"byContractAddress"`
-	ByAddress         *Xrc20List        `json:"byAddress"`
-	ByPage            *Xrc20List        `json:"byPage"`
-	Xrc20Addresses    *XRC20AddressList `json:"xrc20Addresses"`
-	ByTokenAddress    *XRC20AddressList `json:"byTokenAddress"`
+	ByContractAddress    *Xrc20List        `json:"byContractAddress"`
+	ByAddress            *Xrc20List        `json:"byAddress"`
+	ByPage               *Xrc20List        `json:"byPage"`
+	Xrc20Addresses       *XRC20AddressList `json:"xrc20Addresses"`
+	TokenHolderAddresses *XRC20AddressList `json:"tokenHolderAddresses"`
 }
 
 type Xrc20Info struct {
