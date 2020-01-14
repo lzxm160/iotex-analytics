@@ -777,11 +777,11 @@ func (r *queryResolver) xrc20ByTokenAddress(ctx context.Context, actionResponse 
 	if err != nil {
 		return err
 	}
-	output.Exist = true
 	count, err := r.AP.GetXrc20HolderCount(addr)
 	if err != nil {
 		return err
 	}
+	output.Exist = true
 	output.Count = count
 	output.Addresses = holders
 	return nil
