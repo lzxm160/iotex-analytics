@@ -771,6 +771,8 @@ func (r *queryResolver) xrc20ByTokenAddress(ctx context.Context, actionResponse 
 	case err != nil:
 		return errors.Wrap(err, "failed to get pagination arguments for xrc20 ByTokenAddress")
 	}
+	fmt.Println(offset, ":", size)
+
 	output := &XRC20AddressList{Exist: false}
 	actionResponse.TokenHolderAddresses = output
 	holders, err := r.AP.GetXrc20Holders(addr, offset, size)
