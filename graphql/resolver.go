@@ -782,7 +782,6 @@ func (r *queryResolver) xrc20ByTokenAddress(ctx context.Context, actionResponse 
 	if err != nil {
 		return err
 	}
-	actionResponse.HoldersCount = count
 	output.Count = count
 	output.Addresses = holders
 	return nil
