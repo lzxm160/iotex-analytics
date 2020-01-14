@@ -759,6 +759,7 @@ func (r *queryResolver) xrc20ByTokenAddress(ctx context.Context, actionResponse 
 	if err != nil {
 		return errors.Wrap(err, "failed to get address")
 	}
+	fmt.Println(argsMap)
 	var offset, size uint64
 	paginationMap, err := getPaginationArgs(argsMap)
 	switch {
