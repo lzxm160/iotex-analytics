@@ -774,7 +774,7 @@ func (r *queryResolver) xrc20ByTokenAddress(ctx context.Context, actionResponse 
 	}
 	fmt.Println(offset, ":", size)
 
-	output := &XRC20AddressList{Exist: false}
+	output := &XRC20AddressList{}
 	actionResponse.TokenHolderAddresses = output
 	holders, err := r.AP.GetXrc20Holders(addr, offset, size)
 	if err != nil {
@@ -784,7 +784,6 @@ func (r *queryResolver) xrc20ByTokenAddress(ctx context.Context, actionResponse 
 	if err != nil {
 		return err
 	}
-	output.Exist = true
 	output.Count = count
 	output.Addresses = holders
 	return nil
