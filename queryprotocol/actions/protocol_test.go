@@ -324,7 +324,8 @@ func TestProtocol(t *testing.T) {
 		require.NoError(errXrc)
 		count, errXrc := p.GetXrc20HolderCount(contract[0].Contract)
 		require.NoError(errXrc)
-		require.Equal(3, count)
+		require.Equal(4, count)
+		//order by timestamp
 		require.Equal(contract[2].To, *holders[0])
 		require.Equal(contract[1].To, *holders[1])
 	})
