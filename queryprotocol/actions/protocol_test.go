@@ -310,12 +310,12 @@ func TestProtocol(t *testing.T) {
 
 		valStrs := make([]string, 0, len(contract))
 		valArgs := make([]interface{}, 0, len(contract)*2)
-		timeStampList := []uint64{1565391390, 1565825770, 1565729760, 1565291380}
+		timeStampList := []uint64{1, 2, 3, 4, 5, 6, 7, 8}
 		for i, c := range contract {
 			valStrs = append(valStrs, "(?, ?, ?)")
-			valArgs = append(valArgs, c.Contract, c.From, timeStampList[i])
+			valArgs = append(valArgs, c.Contract, c.From, timeStampList[i*2])
 			valStrs = append(valStrs, "(?, ?, ?)")
-			valArgs = append(valArgs, c.Contract, c.To, timeStampList[i])
+			valArgs = append(valArgs, c.Contract, c.To, timeStampList[i*2+1])
 			insertQuery := fmt.Sprintf("INSERT IGNORE INTO %s (contract, holder,`timestamp`) VALUES %s", actions.Xrc20HoldersTableName, strings.Join(valStrs, ","))
 			_, errXrc = store.GetDB().Exec(insertQuery, valArgs...)
 			require.NoError(errXrc)
@@ -324,8 +324,8 @@ func TestProtocol(t *testing.T) {
 		require.NoError(errXrc)
 		fmt.Println(len(holders))
 		fmt.Println(*holders[0])
-		require.Equal(contract[0].From, *holders[0])
-		require.Equal(contract[0].To, *holders[1])
+		require.Equal(contract[0].To, *holders[0])
+		require.Equal(contract[0].From, *holders[1])
 
 	})
 }
