@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/iotexproject/iotex-analytics/indexprotocol/actions"
+
 	"github.com/stretchr/testify/require"
 
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
@@ -302,12 +304,25 @@ func TestProtocol(t *testing.T) {
 		}
 	})
 	t.Run("Testing GetXrc20Holders", func(t *testing.T) {
-		for k := 0; k < 2; k++ {
-			test, errXrc := p.GetXrc20Holders(testSituation.output[k].Contract, 0, 2)
+		err := idx.CreateTablesIfNotExist()
+		require.NoError(err)
+		valStrs := make([]string, 0, len(contract))
+		valArgs := make([]interface{}, 0, len(contract)*2)
+		timeStampList := []uint64{1565391390, 1565825770, 1565729760, 1565291380}
+		for i, c := range contract {
+			valStrs = append(valStrs, "(?, ?, ?)")
+			valArgs = append(valArgs, c.Contract, c.From, timeStampList[i])
+			valArgs = append(valArgs, c.Contract, c.To, timeStampList[i])
+			insertQuery := fmt.Sprintf("INSERT IGNORE INTO %s (contract, holder,`timestamp`) VALUES %s", actions.Xrc20HoldersTableName, strings.Join(valStrs, ","))
+			_, errXrc = store.GetDB().Exec(insertQuery, valArgs...)
 			require.NoError(errXrc)
-			fmt.Println(len(test))
-			fmt.Println(test[0])
-			require.Equal(test[k], testSituation.output[k+2].Hash)
 		}
+		holders, errXrc := p.GetXrc20Holders(contract[0].Contract, 0, 2)
+		require.NoError(errXrc)
+		fmt.Println(len(holders))
+		fmt.Println(holders[0])
+		require.Equal(contract[0].From, holders[0])
+		require.Equal(contract[0].To, holders[1])
+
 	})
 }
