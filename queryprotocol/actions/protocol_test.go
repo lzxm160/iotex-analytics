@@ -323,9 +323,9 @@ func TestProtocol(t *testing.T) {
 		holders, errXrc := p.GetXrc20Holders(contract[0].Contract, 0, 2)
 		require.NoError(errXrc)
 		fmt.Println(len(holders))
-		fmt.Println(holders[0])
-		require.Equal(contract[0].From, holders[0])
-		require.Equal(contract[0].To, holders[1])
+		fmt.Println(*holders[0])
+		require.Equal(contract[0].From, *holders[0])
+		require.Equal(contract[0].To, *holders[1])
 
 	})
 }
