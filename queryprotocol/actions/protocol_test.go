@@ -304,8 +304,10 @@ func TestProtocol(t *testing.T) {
 		}
 	})
 	t.Run("Testing GetXrc20Holders", func(t *testing.T) {
-		err := idx.CreateTablesIfNotExist()
-		require.NoError(err)
+		_, errXrc := store.GetDB().Exec(fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (contract VARCHAR(41) NOT NULL,holder VARCHAR(41) NOT NULL,`timestamp` DECIMAL(65, 0), PRIMARY KEY (contract,holder))",
+			actions.Xrc20HoldersTableName))
+		require.NoError(errXrc)
+
 		valStrs := make([]string, 0, len(contract))
 		valArgs := make([]interface{}, 0, len(contract)*2)
 		timeStampList := []uint64{1565391390, 1565825770, 1565729760, 1565291380}
