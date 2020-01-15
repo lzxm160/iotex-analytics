@@ -301,4 +301,13 @@ func TestProtocol(t *testing.T) {
 			require.Equal(test[k].Contract, testSituation.output[k+2].Contract)
 		}
 	})
+	t.Run("Testing GetXrc20Holders", func(t *testing.T) {
+		for k := 0; k < 2; k++ {
+			test, errXrc := p.GetXrc20Holders(testSituation.output[k].Contract, 0, 2)
+			require.NoError(errXrc)
+			fmt.Println(len(test))
+			fmt.Println(test[0])
+			require.Equal(test[k], testSituation.output[k+2].Hash)
+		}
+	})
 }
