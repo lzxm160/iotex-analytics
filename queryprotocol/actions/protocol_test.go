@@ -314,6 +314,7 @@ func TestProtocol(t *testing.T) {
 		for i, c := range contract {
 			valStrs = append(valStrs, "(?, ?, ?)")
 			valArgs = append(valArgs, c.Contract, c.From, timeStampList[i])
+			valStrs = append(valStrs, "(?, ?, ?)")
 			valArgs = append(valArgs, c.Contract, c.To, timeStampList[i])
 			insertQuery := fmt.Sprintf("INSERT IGNORE INTO %s (contract, holder,`timestamp`) VALUES %s", actions.Xrc20HoldersTableName, strings.Join(valStrs, ","))
 			_, errXrc = store.GetDB().Exec(insertQuery, valArgs...)
