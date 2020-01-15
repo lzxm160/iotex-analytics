@@ -324,8 +324,8 @@ func TestProtocol(t *testing.T) {
 		require.NoError(errXrc)
 		fmt.Println(len(holders))
 		fmt.Println(*holders[0])
-		require.Equal(contract[0].To, *holders[0])
-		require.Equal(contract[0].From, *holders[1])
+		require.Equal(contract[2].To, *holders[0])
+		require.Equal(contract[2].From, *holders[1])
 
 	})
 }
