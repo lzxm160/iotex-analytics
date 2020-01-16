@@ -157,9 +157,11 @@ func (p *Protocol) updateXrc20History(
 func (p *Protocol) checkIsErc20(ctx context.Context, addr string) bool {
 	indexCtx, ok := ctx.Value(struct{}{}).(indexcontext.IndexCtx)
 	if !ok {
+		fmt.Println("indexCtx")
 		return false
 	}
 	if indexCtx.ChainClient == nil {
+		fmt.Println("indexCtx.ChainClient == nil")
 		return false
 	}
 	ret := p.readContract(indexCtx.ChainClient, addr, 1, []byte(totalSupply))
