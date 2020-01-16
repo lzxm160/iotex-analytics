@@ -108,6 +108,7 @@ func (p *Protocol) updateXrc20History(
 			if !isErc20 {
 				continue
 			}
+			fmt.Println("xrc200000000000000000000")
 			data := hex.EncodeToString(l.Data)
 			var topics string
 			for _, t := range l.Topics {
@@ -219,7 +220,7 @@ func (p *Protocol) readContract(cli iotexapi.APIServiceClient, addr string, nonc
 		return false
 	}
 	if res.Receipt.Status == uint64(1) {
-		fmt.Println("status false:", string(callData))
+		fmt.Println("status true:", string(callData))
 		return true
 	}
 	return false
