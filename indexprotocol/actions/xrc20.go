@@ -164,22 +164,27 @@ func (p *Protocol) checkIsErc20(ctx context.Context, addr string) bool {
 	}
 	ret := p.readContract(indexCtx.ChainClient, addr, 1, []byte(totalSupply))
 	if !ret {
+		fmt.Println("totalSupply")
 		return false
 	}
 	ret = p.readContract(indexCtx.ChainClient, addr, 2, []byte(balanceOf))
 	if !ret {
+		fmt.Println("balanceOf")
 		return false
 	}
 	ret = p.readContract(indexCtx.ChainClient, addr, 3, []byte(allowance))
 	if !ret {
+		fmt.Println("allowance")
 		return false
 	}
 	ret = p.readContract(indexCtx.ChainClient, addr, 4, []byte(transfer))
 	if !ret {
+		fmt.Println("transfer")
 		return false
 	}
 	ret = p.readContract(indexCtx.ChainClient, addr, 5, []byte(approve))
 	if !ret {
+		fmt.Println("approve")
 		return false
 	}
 	return p.readContract(indexCtx.ChainClient, addr, 6, []byte(transferFrom))
