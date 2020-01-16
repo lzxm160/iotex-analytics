@@ -18,8 +18,12 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/iotexproject/iotex-address/address"
+	"github.com/iotexproject/iotex-core/action"
 	"github.com/iotexproject/iotex-core/blockchain/block"
+	"github.com/iotexproject/iotex-core/test/identityset"
+	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 
+	"github.com/iotexproject/iotex-analytics/indexcontext"
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
 	s "github.com/iotexproject/iotex-analytics/sql"
 )
@@ -29,11 +33,25 @@ const (
 	sha3Len           = 64
 	contractParamsLen = 64
 	addressLen        = 40
+
+	//18160ddd -> totalSupply()
+	totalSupply = "18160ddd"
+	//70a08231 -> balanceOf(address)
+	balanceOf = "70a08231000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc"
+	//dd62ed3e -> allowance(address,address)
+	allowance = "dd62ed3e000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc"
+	//a9059cbb -> transfer(address,uint256)
+	transfer = "a9059cbb000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc0000000000000000000000000000000000000000000000000000000000000001"
+	//095ea7b3 -> approve(address,uint256)
+	approve = "095ea7b3000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc0000000000000000000000000000000000000000000000000000000000000001"
+	//23b872dd -> transferFrom(address,address,uint256)
+	transferFrom = "23b872dd000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc0000000000000000000000000000000000000000000000000000000000000001"
+
 	// Xrc20HistoryTableName is the table name of xrc20 history
 	Xrc20HistoryTableName = "xrc20_history"
 	// Xrc20HoldersTableName is the table name of xrc20 holders
 	Xrc20HoldersTableName = "xrc20_holders"
-	// transferSha3 is sha3 of xrc20's transfer,keccak('Transfer(address,address,uint256)')
+	// transferSha3 is sha3 of xrc20's transfer event,keccak('Transfer(address,address,uint256)')
 	transferSha3 = "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 
 	createXrc20History = "CREATE TABLE IF NOT EXISTS %s (action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, address VARCHAR(41) NOT NULL,`topics` VARCHAR(192),`data` VARCHAR(192),block_height DECIMAL(65, 0), `index` DECIMAL(65, 0),`timestamp` DECIMAL(65, 0),status VARCHAR(7) NOT NULL, PRIMARY KEY (action_hash,receipt_hash,topics))"
@@ -72,6 +90,7 @@ func (p *Protocol) CreateXrc20Tables(ctx context.Context) error {
 
 // updateXrc20History stores Xrc20 information into Xrc20 history table
 func (p *Protocol) updateXrc20History(
+	ctx context.Context,
 	tx *sql.Tx,
 	blk *block.Block,
 ) error {
@@ -85,6 +104,10 @@ func (p *Protocol) updateXrc20History(
 			receiptStatus = "success"
 		}
 		for _, l := range receipt.Logs {
+			isErc20 := p.checkIsErc20(ctx, l.Address)
+			if !isErc20 {
+				continue
+			}
 			data := hex.EncodeToString(l.Data)
 			var topics string
 			for _, t := range l.Topics {
@@ -96,6 +119,7 @@ func (p *Protocol) updateXrc20History(
 			if !strings.Contains(topics, transferSha3) {
 				continue
 			}
+
 			ah := hex.EncodeToString(l.ActionHash[:])
 			receiptHash := receipt.Hash()
 
@@ -128,6 +152,68 @@ func (p *Protocol) updateXrc20History(
 		return err
 	}
 	return nil
+}
+
+func (p *Protocol) checkIsErc20(ctx context.Context, addr string) bool {
+	indexCtx, ok := ctx.Value(struct{}{}).(indexcontext.IndexCtx)
+	if !ok {
+		return false
+	}
+	if indexCtx.ChainClient == nil {
+		return false
+	}
+	ret := p.readContract(indexCtx.ChainClient, addr, 1, []byte(totalSupply))
+	if !ret {
+		return false
+	}
+	ret = p.readContract(indexCtx.ChainClient, addr, 2, []byte(balanceOf))
+	if !ret {
+		return false
+	}
+	ret = p.readContract(indexCtx.ChainClient, addr, 3, []byte(allowance))
+	if !ret {
+		return false
+	}
+	ret = p.readContract(indexCtx.ChainClient, addr, 4, []byte(transfer))
+	if !ret {
+		return false
+	}
+	ret = p.readContract(indexCtx.ChainClient, addr, 5, []byte(approve))
+	if !ret {
+		return false
+	}
+	return p.readContract(indexCtx.ChainClient, addr, 6, []byte(transferFrom))
+}
+
+func (p *Protocol) readContract(cli iotexapi.APIServiceClient, addr string, nonce uint64, callData []byte) bool {
+	execution, err := action.NewExecution(addr, nonce, big.NewInt(0), 100000, big.NewInt(10000000), callData)
+	if err != nil {
+		return false
+	}
+	bd := &action.EnvelopeBuilder{}
+	elp := bd.SetNonce(1).
+		SetGasPrice(big.NewInt(10000000)).
+		SetGasLimit(100000).
+		SetAction(execution).Build()
+	testPrivate := identityset.PrivateKey(30)
+	selp, err := action.Sign(elp, testPrivate)
+	if err != nil {
+		return false
+	}
+	request := &iotexapi.ReadContractRequest{
+		Execution:     selp.Proto().GetCore().GetExecution(),
+		CallerAddress: identityset.Address(30).String(),
+	}
+
+	res, err := cli.ReadContract(context.Background(), request)
+	if err != nil {
+		return false
+	}
+	if res.Receipt.Status == uint64(1) {
+		fmt.Println("status false:", hex.EncodeToString(callData))
+		return true
+	}
+	return false
 }
 
 // getActionHistory returns action history by action hash
