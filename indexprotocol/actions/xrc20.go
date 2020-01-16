@@ -219,7 +219,7 @@ func (p *Protocol) readContract(cli iotexapi.APIServiceClient, addr string, nonc
 		return false
 	}
 	if res.Receipt.Status == uint64(1) {
-		fmt.Println("status false:", hex.EncodeToString(callData))
+		fmt.Println("status false:", string(callData))
 		return true
 	}
 	return false
