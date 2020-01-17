@@ -10,8 +10,13 @@ import (
 	"context"
 	"database/sql"
 	"encoding/hex"
+	"fmt"
 	"math/big"
 	"testing"
+	"time"
+
+	"github.com/iotexproject/iotex-core/pkg/log"
+	"google.golang.org/grpc"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -129,23 +134,64 @@ func TestXrc20(t *testing.T) {
 	require.Equal("failure", xrc20History[0].Status)
 }
 
-//func TestCheckIsErc20(t *testing.T) {
-//	chainEndpoint := "api.testnet.iotex.one:80"
-//	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-//	defer cancel()
-//	conn1, err := grpc.DialContext(grpcCtx1, chainEndpoint, grpc.WithBlock(), grpc.WithInsecure())
-//	if err != nil {
-//		log.L().Error("Failed to connect to chain's API server.")
-//	}
-//
-//	chainClient := iotexapi.NewAPIServiceClient(conn1)
-//
-//	ctx := indexcontext.WithIndexCtx(context.Background(), indexcontext.IndexCtx{
-//		ChainClient: chainClient,
-//	})
-//	r := checkIsErc20(ctx, "io1fpnufwk6j4fjz6ljjmzvvn5l7p6fypjfjwmde8")
-//	fmt.Println(r)
-//	fmt.Println("////////////////////////////////")
-//	r = checkIsErc20(ctx, "io1wg80fjr9jy4kuwcq7j5ujyq7m0akgqg9vzgymp")
-//	fmt.Println(r)
-//}
+func TestCheckIsErc20(t *testing.T) {
+	chainEndpoint := "api.testnet.iotex.one:80"
+	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	conn1, err := grpc.DialContext(grpcCtx1, chainEndpoint, grpc.WithBlock(), grpc.WithInsecure())
+	if err != nil {
+		log.L().Error("Failed to connect to chain's API server.")
+	}
+
+	chainClient := iotexapi.NewAPIServiceClient(conn1)
+
+	ctx := indexcontext.WithIndexCtx(context.Background(), indexcontext.IndexCtx{
+		ChainClient: chainClient,
+	})
+	r := checkIsErc20(ctx, "io1fpnufwk6j4fjz6ljjmzvvn5l7p6fypjfjwmde8")
+	fmt.Println(r)
+	fmt.Println("////////////////////////////////")
+	r = checkIsErc20(ctx, "io1wg80fjr9jy4kuwcq7j5ujyq7m0akgqg9vzgymp")
+	fmt.Println(r)
+	// normal address,not contract
+	r = checkIsErc20(ctx, "io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02")
+	fmt.Println(r)
+}
+
+func checkIsErc20(ctx context.Context, addr string) bool {
+	if _, ok := contract[addr]; ok {
+		fmt.Println("cache have")
+		return true
+	}
+	indexCtx := indexcontext.MustGetIndexCtx(ctx)
+	if indexCtx.ChainClient == nil {
+		return false
+	}
+	ret := readContract(indexCtx.ChainClient, addr, 1, totalSupply)
+	if !ret {
+		return false
+	}
+
+	ret = readContract(indexCtx.ChainClient, addr, 2, balanceOf)
+	if !ret {
+		return false
+	}
+	ret = readContract(indexCtx.ChainClient, addr, 3, allowance)
+	if !ret {
+		return false
+	}
+	ret = readContract(indexCtx.ChainClient, addr, 5, approve)
+	if !ret {
+		return false
+	}
+	contract[addr] = struct{}{}
+	return true
+	//check transfer and transferFrom is not nessessary,because those two's results are the same as the contract that have no such function
+	//ret = readContract(indexCtx.ChainClient, addr, 4, transfer)
+	//if !ret {
+	//	fmt.Println("transfer")
+	//	return false
+	//}
+	//
+	//return readContract(indexCtx.ChainClient, addr, 6, transferFrom)
+}
