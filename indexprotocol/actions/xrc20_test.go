@@ -103,7 +103,7 @@ func TestXrc20(t *testing.T) {
 	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
 		Data: data,
 	}, nil)
-	chainClient.EXPECT().ReadContract(gomock.Any(), gomock.Any()).Times(4).Return(&iotexapi.ReadContractResponse{
+	chainClient.EXPECT().ReadContract(gomock.Any(), gomock.Any()).AnyTimes().Return(&iotexapi.ReadContractResponse{
 		Receipt: &iotextypes.Receipt{Status: 1},
 		Data:    "xx",
 	}, nil)
