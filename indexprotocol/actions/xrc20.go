@@ -35,17 +35,17 @@ const (
 	addressLen        = 40
 
 	//18160ddd -> totalSupply()
-	totalSupply = "18160ddd"
+	totalSupplyString = "18160ddd"
 	//70a08231 -> balanceOf(address)
-	balanceOf = "70a08231000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc"
+	balanceOfString = "70a08231000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc"
 	//dd62ed3e -> allowance(address,address)
-	allowance = "dd62ed3e000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc"
+	allowanceString = "dd62ed3e000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc"
 	//a9059cbb -> transfer(address,uint256)
-	transfer = "a9059cbb000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc0000000000000000000000000000000000000000000000000000000000000001"
+	transferString = "a9059cbb000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc0000000000000000000000000000000000000000000000000000000000000001"
 	//095ea7b3 -> approve(address,uint256)
-	approve = "095ea7b3000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc0000000000000000000000000000000000000000000000000000000000000001"
+	approveString = "095ea7b3000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc0000000000000000000000000000000000000000000000000000000000000001"
 	//23b872dd -> transferFrom(address,address,uint256)
-	transferFrom = "23b872dd000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc0000000000000000000000000000000000000000000000000000000000000001"
+	transferFromString = "23b872dd000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc0000000000000000000000000000000000000000000000000000000000000001"
 
 	// Xrc20HistoryTableName is the table name of xrc20 history
 	Xrc20HistoryTableName = "xrc20_history"
@@ -59,6 +59,15 @@ const (
 	insertXrc20History = "INSERT IGNORE INTO %s (action_hash, receipt_hash, address,topics,`data`,block_height, `index`,`timestamp`,status) VALUES %s"
 	insertXrc20Holders = "INSERT IGNORE INTO %s (contract, holder,`timestamp`) VALUES %s"
 	selectXrc20History = "SELECT * FROM %s WHERE address=?"
+)
+
+var (
+	totalSupply, _  = hex.DecodeString(totalSupplyString)
+	balanceOf, _    = hex.DecodeString(balanceOfString)
+	allowance, _    = hex.DecodeString(allowanceString)
+	transfer, _     = hex.DecodeString(transferString)
+	approve, _      = hex.DecodeString(approveString)
+	transferFrom, _ = hex.DecodeString(transferFromString)
 )
 
 type (
@@ -157,47 +166,38 @@ func (p *Protocol) updateXrc20History(
 
 func checkIsErc20(ctx context.Context, addr string) bool {
 	fmt.Println("checkIsErc20")
-	//indexCtx, ok := ctx.Value(struct{}{}).(indexcontext.IndexCtx)
-	//if !ok {
-	//	fmt.Println("indexCtx:", ctx)
-	//	return false
-	//}
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
 	if indexCtx.ChainClient == nil {
 		fmt.Println("indexCtx.ChainClient == nil")
 		return false
 	}
-	ts, err := hex.DecodeString(totalSupply)
-	if err != nil {
-		fmt.Println("DecodeString")
-		return false
-	}
-	ret := readContract(indexCtx.ChainClient, addr, 1, ts)
+	ret := readContract(indexCtx.ChainClient, addr, 1, totalSupply)
 	if !ret {
 		fmt.Println("totalSupply")
 		return false
 	}
-	ret = readContract(indexCtx.ChainClient, addr, 2, []byte(balanceOf))
+
+	ret = readContract(indexCtx.ChainClient, addr, 2, balanceOf)
 	if !ret {
 		fmt.Println("balanceOf")
 		return false
 	}
-	ret = readContract(indexCtx.ChainClient, addr, 3, []byte(allowance))
+	ret = readContract(indexCtx.ChainClient, addr, 3, allowance)
 	if !ret {
 		fmt.Println("allowance")
 		return false
 	}
-	ret = readContract(indexCtx.ChainClient, addr, 4, []byte(transfer))
+	ret = readContract(indexCtx.ChainClient, addr, 4, transfer)
 	if !ret {
 		fmt.Println("transfer")
 		return false
 	}
-	ret = readContract(indexCtx.ChainClient, addr, 5, []byte(approve))
+	ret = readContract(indexCtx.ChainClient, addr, 5, approve)
 	if !ret {
 		fmt.Println("approve")
 		return false
 	}
-	return readContract(indexCtx.ChainClient, addr, 6, []byte(transferFrom))
+	return readContract(indexCtx.ChainClient, addr, 6, transferFrom)
 }
 
 func readContract(cli iotexapi.APIServiceClient, addr string, nonce uint64, callData []byte) bool {
