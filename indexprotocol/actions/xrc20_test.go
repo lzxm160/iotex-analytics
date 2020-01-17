@@ -13,8 +13,6 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/iotexproject/iotex-proto/golang/iotextypes"
-
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
@@ -25,6 +23,7 @@ import (
 	"github.com/iotexproject/iotex-election/pb/api"
 	mock_election "github.com/iotexproject/iotex-election/test/mock/mock_apiserviceclient"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
+	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 
 	"github.com/iotexproject/iotex-analytics/epochctx"
 	"github.com/iotexproject/iotex-analytics/indexcontext"
