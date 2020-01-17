@@ -13,6 +13,8 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/iotexproject/iotex-proto/golang/iotextypes"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
@@ -101,7 +103,10 @@ func TestXrc20(t *testing.T) {
 	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
 		Data: data,
 	}, nil)
-
+	chainClient.EXPECT().ReadContract(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadContractResponse{
+		Receipt: &iotextypes.Receipt{Status: 1},
+		Data:    "xx",
+	}, nil)
 	blk, err := testutil.BuildCompleteBlock(uint64(180), uint64(361))
 	require.NoError(err)
 
