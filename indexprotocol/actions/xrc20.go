@@ -219,9 +219,8 @@ func readContract(cli iotexapi.APIServiceClient, addr string, nonce uint64, call
 	if err != nil {
 		return false
 	}
+	fmt.Println("res:", res)
 	if res.Receipt.Status == uint64(1) {
-		fmt.Println("status true:", addr, ":", string(callData))
-		fmt.Println("status true Data:", res)
 		return true
 	}
 	return false
