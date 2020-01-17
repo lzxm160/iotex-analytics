@@ -150,7 +150,7 @@ func TestCheckIsErc20(t *testing.T) {
 	})
 	r := checkIsErc20(ctx, "io1fpnufwk6j4fjz6ljjmzvvn5l7p6fypjfjwmde8")
 	fmt.Println(r)
-
-	//r = checkIsErc20(ctx, "io1wg80fjr9jy4kuwcq7j5ujyq7m0akgqg9vzgymp")
-	//fmt.Println(r)
+	fmt.Println("////////////////////////////////")
+	r = checkIsErc20(ctx, "io1wg80fjr9jy4kuwcq7j5ujyq7m0akgqg9vzgymp")
+	fmt.Println(r)
 }
