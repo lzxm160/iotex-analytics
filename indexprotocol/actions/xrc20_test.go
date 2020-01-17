@@ -159,6 +159,14 @@ func TestCheckIsErc20(t *testing.T) {
 }
 
 func checkIsErc20(ctx context.Context, addr string) bool {
+	if _, ok := notxrc20contract[addr]; ok {
+		fmt.Println("cache have")
+		return false
+	}
+	if _, ok := xrc20contract[addr]; ok {
+		fmt.Println("cache have")
+		return true
+	}
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
 	if indexCtx.ChainClient == nil {
 		return false
@@ -180,7 +188,7 @@ func checkIsErc20(ctx context.Context, addr string) bool {
 	if !ret {
 		return false
 	}
-	contract[addr] = struct{}{}
+	xrc20contract[addr] = struct{}{}
 	return true
 	//check transfer and transferFrom is not nessessary,because those two's results are the same as the contract that have no such function
 	//ret = readContract(indexCtx.ChainClient, addr, 4, transfer)

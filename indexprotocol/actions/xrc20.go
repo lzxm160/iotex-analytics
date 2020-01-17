@@ -64,13 +64,14 @@ const (
 )
 
 var (
-	totalSupply, _  = hex.DecodeString(totalSupplyString)
-	balanceOf, _    = hex.DecodeString(balanceOfString)
-	allowance, _    = hex.DecodeString(allowanceString)
-	transfer, _     = hex.DecodeString(transferString)
-	approve, _      = hex.DecodeString(approveString)
-	transferFrom, _ = hex.DecodeString(transferFromString)
-	contract        = make(map[string]struct{})
+	totalSupply, _   = hex.DecodeString(totalSupplyString)
+	balanceOf, _     = hex.DecodeString(balanceOfString)
+	allowance, _     = hex.DecodeString(allowanceString)
+	transfer, _      = hex.DecodeString(transferString)
+	approve, _       = hex.DecodeString(approveString)
+	transferFrom, _  = hex.DecodeString(transferFromString)
+	xrc20contract    = make(map[string]struct{})
+	notxrc20contract = make(map[string]struct{})
 )
 
 type (
@@ -126,7 +127,7 @@ func (p *Protocol) initContract() (err error) {
 	}
 	for _, parsedRow := range parsedRows {
 		r := parsedRow.(*contractStruct)
-		contract[r.Contract] = struct{}{}
+		xrc20contract[r.Contract] = struct{}{}
 		fmt.Println(r.Contract)
 	}
 	return
@@ -214,12 +215,16 @@ func (p *Protocol) checkXrc20InDB(addr string) bool {
 }
 
 func (p *Protocol) checkIsErc20(ctx context.Context, addr string) bool {
-	if _, ok := contract[addr]; ok {
+	if _, ok := notxrc20contract[addr]; ok {
+		fmt.Println("cache have")
+		return false
+	}
+	if _, ok := xrc20contract[addr]; ok {
 		fmt.Println("cache have")
 		return true
 	}
 	if p.checkXrc20InDB(addr) {
-		contract[addr] = struct{}{}
+		xrc20contract[addr] = struct{}{}
 		return true
 	}
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
@@ -228,22 +233,26 @@ func (p *Protocol) checkIsErc20(ctx context.Context, addr string) bool {
 	}
 	ret := readContract(indexCtx.ChainClient, addr, 1, totalSupply)
 	if !ret {
+		xrc20contract[addr] = struct{}{}
 		return false
 	}
 
 	ret = readContract(indexCtx.ChainClient, addr, 2, balanceOf)
 	if !ret {
+		xrc20contract[addr] = struct{}{}
 		return false
 	}
 	ret = readContract(indexCtx.ChainClient, addr, 3, allowance)
 	if !ret {
+		xrc20contract[addr] = struct{}{}
 		return false
 	}
 	ret = readContract(indexCtx.ChainClient, addr, 5, approve)
 	if !ret {
+		xrc20contract[addr] = struct{}{}
 		return false
 	}
-	contract[addr] = struct{}{}
+	xrc20contract[addr] = struct{}{}
 	return true
 	//check transfer and transferFrom is not nessessary,because those two's results are the same as the contract that have no such function
 	//ret = readContract(indexCtx.ChainClient, addr, 4, transfer)
