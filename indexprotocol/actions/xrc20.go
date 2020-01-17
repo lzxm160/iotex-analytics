@@ -187,16 +187,18 @@ func checkIsErc20(ctx context.Context, addr string) bool {
 		fmt.Println("allowance")
 		return false
 	}
-	ret = readContract(indexCtx.ChainClient, addr, 4, transfer)
-	if !ret {
-		fmt.Println("transfer")
-		return false
-	}
 	ret = readContract(indexCtx.ChainClient, addr, 5, approve)
 	if !ret {
 		fmt.Println("approve")
 		return false
 	}
+
+	ret = readContract(indexCtx.ChainClient, addr, 4, transfer)
+	if !ret {
+		fmt.Println("transfer")
+		return false
+	}
+
 	return readContract(indexCtx.ChainClient, addr, 6, transferFrom)
 }
 
