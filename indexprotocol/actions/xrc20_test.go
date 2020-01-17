@@ -115,7 +115,7 @@ func TestXrc20(t *testing.T) {
 	}))
 
 	require.NoError(store.Transact(func(tx *sql.Tx) error {
-		return p.HandleBlock(ctx, tx, blk)
+		return p.HandleBlock(bpctx, tx, blk)
 	}))
 
 	actionHash := blk.Actions[6].Hash()
