@@ -167,7 +167,12 @@ func checkIsErc20(ctx context.Context, addr string) bool {
 		fmt.Println("indexCtx.ChainClient == nil")
 		return false
 	}
-	ret := readContract(indexCtx.ChainClient, addr, 1, []byte(totalSupply))
+	ts, err := hex.DecodeString(totalSupply)
+	if err != nil {
+		fmt.Println("DecodeString")
+		return false
+	}
+	ret := readContract(indexCtx.ChainClient, addr, 1, ts)
 	if !ret {
 		fmt.Println("totalSupply")
 		return false
