@@ -152,7 +152,7 @@ func (p *Protocol) updateXrc20History(
 			if !isErc20 {
 				continue
 			}
-			fmt.Println("xrc200000000000000000000")
+			fmt.Println("xrc200000000000000000000:", l.Address)
 			data := hex.EncodeToString(l.Data)
 			var topics string
 			for _, t := range l.Topics {
