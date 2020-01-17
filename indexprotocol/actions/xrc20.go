@@ -104,7 +104,7 @@ func (p *Protocol) updateXrc20History(
 			receiptStatus = "success"
 		}
 		for _, l := range receipt.Logs {
-			isErc20 := p.checkIsErc20(ctx, l.Address)
+			isErc20 := checkIsErc20(ctx, l.Address)
 			if !isErc20 {
 				continue
 			}
@@ -155,7 +155,7 @@ func (p *Protocol) updateXrc20History(
 	return nil
 }
 
-func (p *Protocol) checkIsErc20(ctx context.Context, addr string) bool {
+func checkIsErc20(ctx context.Context, addr string) bool {
 	fmt.Println("checkIsErc20")
 	//indexCtx, ok := ctx.Value(struct{}{}).(indexcontext.IndexCtx)
 	//if !ok {
@@ -167,35 +167,35 @@ func (p *Protocol) checkIsErc20(ctx context.Context, addr string) bool {
 		fmt.Println("indexCtx.ChainClient == nil")
 		return false
 	}
-	ret := p.readContract(indexCtx.ChainClient, addr, 1, []byte(totalSupply))
+	ret := readContract(indexCtx.ChainClient, addr, 1, []byte(totalSupply))
 	if !ret {
 		fmt.Println("totalSupply")
 		return false
 	}
-	ret = p.readContract(indexCtx.ChainClient, addr, 2, []byte(balanceOf))
+	ret = readContract(indexCtx.ChainClient, addr, 2, []byte(balanceOf))
 	if !ret {
 		fmt.Println("balanceOf")
 		return false
 	}
-	ret = p.readContract(indexCtx.ChainClient, addr, 3, []byte(allowance))
+	ret = readContract(indexCtx.ChainClient, addr, 3, []byte(allowance))
 	if !ret {
 		fmt.Println("allowance")
 		return false
 	}
-	ret = p.readContract(indexCtx.ChainClient, addr, 4, []byte(transfer))
+	ret = readContract(indexCtx.ChainClient, addr, 4, []byte(transfer))
 	if !ret {
 		fmt.Println("transfer")
 		return false
 	}
-	ret = p.readContract(indexCtx.ChainClient, addr, 5, []byte(approve))
+	ret = readContract(indexCtx.ChainClient, addr, 5, []byte(approve))
 	if !ret {
 		fmt.Println("approve")
 		return false
 	}
-	return p.readContract(indexCtx.ChainClient, addr, 6, []byte(transferFrom))
+	return readContract(indexCtx.ChainClient, addr, 6, []byte(transferFrom))
 }
 
-func (p *Protocol) readContract(cli iotexapi.APIServiceClient, addr string, nonce uint64, callData []byte) bool {
+func readContract(cli iotexapi.APIServiceClient, addr string, nonce uint64, callData []byte) bool {
 	execution, err := action.NewExecution(addr, nonce, big.NewInt(0), 100000, big.NewInt(10000000), callData)
 	if err != nil {
 		return false
