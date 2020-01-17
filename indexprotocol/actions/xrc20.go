@@ -216,11 +216,11 @@ func (p *Protocol) checkXrc20InDB(addr string) bool {
 
 func (p *Protocol) checkIsErc20(ctx context.Context, addr string) bool {
 	if _, ok := notxrc20contract[addr]; ok {
-		fmt.Println("cache have")
+		fmt.Println("notxrc20contract have")
 		return false
 	}
 	if _, ok := xrc20contract[addr]; ok {
-		fmt.Println("cache have")
+		fmt.Println("xrc20contract have")
 		return true
 	}
 	if p.checkXrc20InDB(addr) {
