@@ -159,7 +159,7 @@ func (p *Protocol) updateXrc20History(
 				topics += hex.EncodeToString(t[:])
 			}
 			if topics == "" || len(topics) > 64*3 || len(data) > 64*3 {
-				fmt.Println("topics len not transfer:", topics)
+				fmt.Println("topics len not transfer:", topics, ":", data)
 				continue
 			}
 			if !strings.Contains(topics, transferSha3) {
