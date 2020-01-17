@@ -233,23 +233,23 @@ func (p *Protocol) checkIsErc20(ctx context.Context, addr string) bool {
 	}
 	ret := readContract(indexCtx.ChainClient, addr, 1, totalSupply)
 	if !ret {
-		xrc20contract[addr] = struct{}{}
+		notxrc20contract[addr] = struct{}{}
 		return false
 	}
 
 	ret = readContract(indexCtx.ChainClient, addr, 2, balanceOf)
 	if !ret {
-		xrc20contract[addr] = struct{}{}
+		notxrc20contract[addr] = struct{}{}
 		return false
 	}
 	ret = readContract(indexCtx.ChainClient, addr, 3, allowance)
 	if !ret {
-		xrc20contract[addr] = struct{}{}
+		notxrc20contract[addr] = struct{}{}
 		return false
 	}
 	ret = readContract(indexCtx.ChainClient, addr, 5, approve)
 	if !ret {
-		xrc20contract[addr] = struct{}{}
+		notxrc20contract[addr] = struct{}{}
 		return false
 	}
 	xrc20contract[addr] = struct{}{}
