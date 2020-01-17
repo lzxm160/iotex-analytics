@@ -159,10 +159,6 @@ func TestCheckIsErc20(t *testing.T) {
 }
 
 func checkIsErc20(ctx context.Context, addr string) bool {
-	if _, ok := contract[addr]; ok {
-		fmt.Println("cache have")
-		return true
-	}
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
 	if indexCtx.ChainClient == nil {
 		return false
