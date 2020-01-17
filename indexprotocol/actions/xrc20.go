@@ -165,41 +165,36 @@ func (p *Protocol) updateXrc20History(
 }
 
 func checkIsErc20(ctx context.Context, addr string) bool {
-	fmt.Println("checkIsErc20")
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
 	if indexCtx.ChainClient == nil {
-		fmt.Println("indexCtx.ChainClient == nil")
 		return false
 	}
 	ret := readContract(indexCtx.ChainClient, addr, 1, totalSupply)
 	if !ret {
-		fmt.Println("totalSupply")
 		return false
 	}
 
 	ret = readContract(indexCtx.ChainClient, addr, 2, balanceOf)
 	if !ret {
-		fmt.Println("balanceOf")
 		return false
 	}
 	ret = readContract(indexCtx.ChainClient, addr, 3, allowance)
 	if !ret {
-		fmt.Println("allowance")
 		return false
 	}
 	ret = readContract(indexCtx.ChainClient, addr, 5, approve)
 	if !ret {
-		fmt.Println("approve")
 		return false
 	}
-
-	ret = readContract(indexCtx.ChainClient, addr, 4, transfer)
-	if !ret {
-		fmt.Println("transfer")
-		return false
-	}
-
-	return readContract(indexCtx.ChainClient, addr, 6, transferFrom)
+	return true
+	//check transfer and transferFrom is not nessessary,because those two's results are the same as the contract that have no such function
+	//ret = readContract(indexCtx.ChainClient, addr, 4, transfer)
+	//if !ret {
+	//	fmt.Println("transfer")
+	//	return false
+	//}
+	//
+	//return readContract(indexCtx.ChainClient, addr, 6, transferFrom)
 }
 
 func readContract(cli iotexapi.APIServiceClient, addr string, nonce uint64, callData []byte) bool {
