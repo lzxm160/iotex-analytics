@@ -54,11 +54,13 @@ const (
 	// transferSha3 is sha3 of xrc20's transfer event,keccak('Transfer(address,address,uint256)')
 	transferSha3 = "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 
-	createXrc20History = "CREATE TABLE IF NOT EXISTS %s (action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, address VARCHAR(41) NOT NULL,`topics` VARCHAR(192),`data` VARCHAR(192),block_height DECIMAL(65, 0), `index` DECIMAL(65, 0),`timestamp` DECIMAL(65, 0),status VARCHAR(7) NOT NULL, PRIMARY KEY (action_hash,receipt_hash,topics))"
-	createXrc20Holders = "CREATE TABLE IF NOT EXISTS %s (contract VARCHAR(41) NOT NULL,holder VARCHAR(41) NOT NULL,`timestamp` DECIMAL(65, 0), PRIMARY KEY (contract,holder))"
-	insertXrc20History = "INSERT IGNORE INTO %s (action_hash, receipt_hash, address,topics,`data`,block_height, `index`,`timestamp`,status) VALUES %s"
-	insertXrc20Holders = "INSERT IGNORE INTO %s (contract, holder,`timestamp`) VALUES %s"
-	selectXrc20History = "SELECT * FROM %s WHERE address=?"
+	createXrc20History      = "CREATE TABLE IF NOT EXISTS %s (action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, address VARCHAR(41) NOT NULL,`topics` VARCHAR(192),`data` VARCHAR(192),block_height DECIMAL(65, 0), `index` DECIMAL(65, 0),`timestamp` DECIMAL(65, 0),status VARCHAR(7) NOT NULL, PRIMARY KEY (action_hash,receipt_hash,topics))"
+	createXrc20Holders      = "CREATE TABLE IF NOT EXISTS %s (contract VARCHAR(41) NOT NULL,holder VARCHAR(41) NOT NULL,`timestamp` DECIMAL(65, 0), PRIMARY KEY (contract,holder))"
+	insertXrc20History      = "INSERT IGNORE INTO %s (action_hash, receipt_hash, address,topics,`data`,block_height, `index`,`timestamp`,status) VALUES %s"
+	insertXrc20Holders      = "INSERT IGNORE INTO %s (contract, holder,`timestamp`) VALUES %s"
+	selectXrc20History      = "SELECT * FROM %s WHERE address=?"
+	selectXrc20Contract     = "SELECT distinct address FROM %s"
+	selectXrc20ContractInDB = "select COUNT(1) FROM %s WHERE address=%s"
 )
 
 var (
@@ -68,6 +70,7 @@ var (
 	transfer, _     = hex.DecodeString(transferString)
 	approve, _      = hex.DecodeString(approveString)
 	transferFrom, _ = hex.DecodeString(transferFromString)
+	contract        = make(map[string]struct{})
 )
 
 type (
@@ -92,9 +95,41 @@ func (p *Protocol) CreateXrc20Tables(ctx context.Context) error {
 		Xrc20HistoryTableName)); err != nil {
 		return err
 	}
-	_, err := p.Store.GetDB().Exec(fmt.Sprintf(createXrc20Holders,
-		Xrc20HoldersTableName))
-	return err
+	if _, err := p.Store.GetDB().Exec(fmt.Sprintf(createXrc20Holders,
+		Xrc20HoldersTableName)); err != nil {
+		return err
+	}
+
+	return p.initContract()
+}
+
+func (p *Protocol) initContract() (err error) {
+	db := p.Store.GetDB()
+	getQuery := fmt.Sprintf(selectXrc20Contract, Xrc20HistoryTableName)
+	stmt, err := db.Prepare(getQuery)
+	if err != nil {
+		return errors.Wrap(err, "failed to prepare get query")
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return errors.Wrap(err, "failed to execute get query")
+	}
+	type contractStruct struct {
+		Contract string
+	}
+	var c contractStruct
+	parsedRows, err := s.ParseSQLRows(rows, &c)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse results")
+	}
+	for _, parsedRow := range parsedRows {
+		r := parsedRow.(*contractStruct)
+		contract[r.Contract] = struct{}{}
+		fmt.Println(r.Contract)
+	}
+	return
 }
 
 // updateXrc20History stores Xrc20 information into Xrc20 history table
@@ -113,7 +148,7 @@ func (p *Protocol) updateXrc20History(
 			receiptStatus = "success"
 		}
 		for _, l := range receipt.Logs {
-			isErc20 := checkIsErc20(ctx, l.Address)
+			isErc20 := p.checkIsErc20(ctx, l.Address)
 			if !isErc20 {
 				continue
 			}
@@ -164,7 +199,27 @@ func (p *Protocol) updateXrc20History(
 	return nil
 }
 
-func checkIsErc20(ctx context.Context, addr string) bool {
+func (p *Protocol) checkXrc20InDB(addr string) bool {
+	var exist uint64
+	if err := p.Store.GetDB().QueryRow(fmt.Sprintf(selectXrc20ContractInDB, ActionHistoryTableName, addr)).Scan(&exist); err != nil {
+		return false
+	}
+	fmt.Println("exist:", exist)
+	if exist == 0 {
+		return false
+	}
+	return true
+}
+
+func (p *Protocol) checkIsErc20(ctx context.Context, addr string) bool {
+	if _, ok := contract[addr]; ok {
+		fmt.Println("cache have")
+		return true
+	}
+	if p.checkXrc20InDB(addr) {
+		contract[addr] = struct{}{}
+		return true
+	}
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
 	if indexCtx.ChainClient == nil {
 		return false
