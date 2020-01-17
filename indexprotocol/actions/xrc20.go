@@ -241,6 +241,7 @@ func (p *Protocol) checkIsErc20(ctx context.Context, addr string) bool {
 	if !ret {
 		return false
 	}
+	contract[addr] = struct{}{}
 	return true
 	//check transfer and transferFrom is not nessessary,because those two's results are the same as the contract that have no such function
 	//ret = readContract(indexCtx.ChainClient, addr, 4, transfer)
