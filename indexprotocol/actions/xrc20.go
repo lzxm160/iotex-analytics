@@ -14,6 +14,8 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/iotexproject/iotex-core/test/identityset"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
 
@@ -237,7 +239,8 @@ func readContract(cli iotexapi.APIServiceClient, addr string, callData []byte) b
 		SetGasLimit(100000).
 		SetAction(execution).Build()
 	request := &iotexapi.ReadContractRequest{
-		Execution: elp.Proto().GetExecution(),
+		Execution:     elp.Proto().GetExecution(),
+		CallerAddress: identityset.Address(30).String(),
 	}
 
 	res, err := cli.ReadContract(context.Background(), request)
