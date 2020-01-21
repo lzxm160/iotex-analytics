@@ -50,11 +50,11 @@ const (
 	// transferSha3 is sha3 of xrc20's transfer event,keccak('Transfer(address,address,uint256)')
 	transferSha3 = "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 
-	createXrc20History = "CREATE TABLE IF NOT EXISTS %s (action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, address VARCHAR(41) NOT NULL,`topics` VARCHAR(192),`data` VARCHAR(192),block_height DECIMAL(65, 0), `index` DECIMAL(65, 0),`timestamp` DECIMAL(65, 0),status VARCHAR(7) NOT NULL, PRIMARY KEY (action_hash,receipt_hash,topics))"
-	createXrc20Holders = "CREATE TABLE IF NOT EXISTS %s (contract VARCHAR(41) NOT NULL,holder VARCHAR(41) NOT NULL,`timestamp` DECIMAL(65, 0), PRIMARY KEY (contract,holder))"
-	insertXrc20History = "INSERT IGNORE INTO %s (action_hash, receipt_hash, address,topics,`data`,block_height, `index`,`timestamp`,status) VALUES %s"
-	insertXrc20Holders = "INSERT IGNORE INTO %s (contract, holder,`timestamp`) VALUES %s"
-	selectXrc20History = "SELECT * FROM %s WHERE address=?"
+	createXrc20History      = "CREATE TABLE IF NOT EXISTS %s (action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, address VARCHAR(41) NOT NULL,`topics` VARCHAR(192),`data` VARCHAR(192),block_height DECIMAL(65, 0), `index` DECIMAL(65, 0),`timestamp` DECIMAL(65, 0),status VARCHAR(7) NOT NULL, PRIMARY KEY (action_hash,receipt_hash,topics))"
+	createXrc20Holders      = "CREATE TABLE IF NOT EXISTS %s (contract VARCHAR(41) NOT NULL,holder VARCHAR(41) NOT NULL,`timestamp` DECIMAL(65, 0), PRIMARY KEY (contract,holder))"
+	insertXrc20History      = "INSERT IGNORE INTO %s (action_hash, receipt_hash, address,topics,`data`,block_height, `index`,`timestamp`,status) VALUES %s"
+	insertXrc20Holders      = "INSERT IGNORE INTO %s (contract, holder,`timestamp`) VALUES %s"
+	selectXrc20History      = "SELECT * FROM %s WHERE address=?"
 	selectXrc20Contract     = "SELECT distinct address FROM %s"
 	selectXrc20ContractInDB = "select COUNT(1) FROM %s WHERE address=%s"
 )
@@ -147,19 +147,13 @@ func (p *Protocol) updateXrc20History(
 			receiptStatus = "success"
 		}
 		for _, l := range receipt.Logs {
-			isErc20 := p.checkIsErc20(ctx, l.Address)
-			if !isErc20 {
-				continue
-			}
 			data := hex.EncodeToString(l.Data)
 			var topics string
 			for _, t := range l.Topics {
 				topics += hex.EncodeToString(t[:])
 			}
-			if topics == "" || len(topics) > 64*3 || len(data) > 64*3 {
-				continue
-			}
-			if !strings.Contains(topics, transferSha3) {
+			isErc20 := p.checkIsErc20(ctx, l.Address, topics, data)
+			if !isErc20 {
 				continue
 			}
 			ah := hex.EncodeToString(l.ActionHash[:])
@@ -196,7 +190,13 @@ func (p *Protocol) updateXrc20History(
 	return nil
 }
 
-func (p *Protocol) checkIsErc20(ctx context.Context, addr string) bool {
+func (p *Protocol) checkIsErc20(ctx context.Context, addr, topics, data string) bool {
+	if topics == "" || len(topics) > 64*3 || len(data) > 64*3 {
+		return false
+	}
+	if !strings.Contains(topics, transferSha3) {
+		return false
+	}
 	if _, ok := nonXrc20Contract[addr]; ok {
 		return false
 	}
