@@ -138,7 +138,7 @@ func TestXrc20(t *testing.T) {
 	require.Equal("failure", xrc20History[0].Status)
 }
 
-func TestCheckIsErc20(t *testing.T) {
+func TestCheckIsXrc20(t *testing.T) {
 	chainEndpoint := "api.testnet.iotex.one:80"
 	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -152,17 +152,17 @@ func TestCheckIsErc20(t *testing.T) {
 	ctx := indexcontext.WithIndexCtx(context.Background(), indexcontext.IndexCtx{
 		ChainClient: chainClient,
 	})
-	r := checkIsErc20(ctx, "io1fpnufwk6j4fjz6ljjmzvvn5l7p6fypjfjwmde8")
+	r := checkIsXrc20(ctx, "io1fpnufwk6j4fjz6ljjmzvvn5l7p6fypjfjwmde8")
 	fmt.Println(r)
 	fmt.Println("////////////////////////////////")
-	r = checkIsErc20(ctx, "io1wg80fjr9jy4kuwcq7j5ujyq7m0akgqg9vzgymp")
+	r = checkIsXrc20(ctx, "io1wg80fjr9jy4kuwcq7j5ujyq7m0akgqg9vzgymp")
 	fmt.Println(r)
 	// normal address,not contract
-	r = checkIsErc20(ctx, "io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02")
+	r = checkIsXrc20(ctx, "io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02")
 	fmt.Println(r)
 }
 
-func checkIsErc20(ctx context.Context, addr string) bool {
+func checkIsXrc20(ctx context.Context, addr string) bool {
 	if _, ok := nonXrc20Contract[addr]; ok {
 		return false
 	}
@@ -198,7 +198,7 @@ func checkIsErc20(ctx context.Context, addr string) bool {
 	return true
 }
 
-func TestCheckIsErc721(t *testing.T) {
+func TestCheckIsXrc721(t *testing.T) {
 	chainEndpoint := "api.testnet.iotex.one:80"
 	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -212,20 +212,20 @@ func TestCheckIsErc721(t *testing.T) {
 	ctx := indexcontext.WithIndexCtx(context.Background(), indexcontext.IndexCtx{
 		ChainClient: chainClient,
 	})
-	r := checkIsErc721(ctx, "io1fpnufwk6j4fjz6ljjmzvvn5l7p6fypjfjwmde8")
+	r := checkIsXrc721(ctx, "io1fpnufwk6j4fjz6ljjmzvvn5l7p6fypjfjwmde8")
 	fmt.Println("xrc20 is not xrc721:", r)
 	fmt.Println("////////////////////////////////")
-	r = checkIsErc721(ctx, "io1wg80fjr9jy4kuwcq7j5ujyq7m0akgqg9vzgymp")
+	r = checkIsXrc721(ctx, "io1wg80fjr9jy4kuwcq7j5ujyq7m0akgqg9vzgymp")
 	fmt.Println("regular contract is not xrc721:", r)
 	// normal address,not contract
-	r = checkIsErc721(ctx, "io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02")
+	r = checkIsXrc721(ctx, "io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02")
 	fmt.Println("regular addr is not xrc721:", r)
-	//real erc721
-	r = checkIsErc721(ctx, "io1kacrmtuygg6mxpj2z33xh5gmkyffgcwj5eac4d")
+	//real xrc721
+	r = checkIsXrc721(ctx, "io1kacrmtuygg6mxpj2z33xh5gmkyffgcwj5eac4d")
 	fmt.Println("regular addr is not xrc721:", r)
 }
 
-func checkIsErc721(ctx context.Context, addr string) bool {
+func checkIsXrc721(ctx context.Context, addr string) bool {
 	if _, ok := nonXrc721Contract[addr]; ok {
 		return false
 	}

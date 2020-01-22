@@ -43,7 +43,7 @@ const (
 	//095ea7b3 -> approve(address,uint256)
 	approveString = "095ea7b3000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc0000000000000000000000000000000000000000000000000000000000000001"
 
-	// check erc721 through read the following func:
+	// check xrc721 through read the following func:
 	//18160ddd -> totalSupply()
 	//70a08231 -> balanceOf(address)
 	//095ea7b3 -> approve(address,uint256)
@@ -166,10 +166,10 @@ func (p *Protocol) updateXrc20History(
 	holdersStrs := make([]string, 0)
 	holdersArgs := make([]interface{}, 0)
 
-	erc721ValStrs := make([]string, 0)
-	erc721ValArgs := make([]interface{}, 0)
-	erc721HoldersStrs := make([]string, 0)
-	erc721HoldersArgs := make([]interface{}, 0)
+	xrc721ValStrs := make([]string, 0)
+	xrc721ValArgs := make([]interface{}, 0)
+	xrc721HoldersStrs := make([]string, 0)
+	xrc721HoldersArgs := make([]interface{}, 0)
 	for _, receipt := range blk.Receipts {
 		receiptStatus := "failure"
 		if receipt.Status == uint64(1) {
@@ -181,9 +181,9 @@ func (p *Protocol) updateXrc20History(
 			for _, t := range l.Topics {
 				topics += hex.EncodeToString(t[:])
 			}
-			isErc20 := p.checkIsErc20(ctx, l.Address, topics, data)
-			isErc721 := p.checkIsErc721(ctx, l.Address, topics, data)
-			if !isErc20 && !isErc721 {
+			isXrc20 := p.checkIsXrc20(ctx, l.Address, topics, data)
+			isXrc721 := p.checkIsXrc721(ctx, l.Address, topics, data)
+			if !isXrc20 && !isXrc721 {
 				continue
 			}
 
@@ -191,11 +191,11 @@ func (p *Protocol) updateXrc20History(
 			receiptHash := receipt.Hash()
 
 			rh := hex.EncodeToString(receiptHash[:])
-			if isErc721 {
-				erc721ValStrs = append(erc721ValStrs, "(?, ?, ?, ?, ?, ?, ?, ?, ?)")
-				erc721ValArgs = append(erc721ValArgs, ah, rh, l.Address, topics, data, l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus)
+			if isXrc721 {
+				xrc721ValStrs = append(xrc721ValStrs, "(?, ?, ?, ?, ?, ?, ?, ?, ?)")
+				xrc721ValArgs = append(xrc721ValArgs, ah, rh, l.Address, topics, data, l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus)
 			}
-			if isErc20 {
+			if isXrc20 {
 				valStrs = append(valStrs, "(?, ?, ?, ?, ?, ?, ?, ?, ?)")
 				valArgs = append(valArgs, ah, rh, l.Address, topics, data, l.BlockHeight, l.Index, blk.Timestamp().Unix(), receiptStatus)
 			}
@@ -204,13 +204,13 @@ func (p *Protocol) updateXrc20History(
 			if err != nil {
 				continue
 			}
-			if isErc721 {
-				erc721HoldersStrs = append(erc721HoldersStrs, "(?, ?, ?)")
-				erc721HoldersArgs = append(erc721HoldersArgs, l.Address, from, blk.Timestamp().Unix())
-				erc721HoldersStrs = append(erc721HoldersStrs, "(?, ?, ?)")
-				erc721HoldersArgs = append(erc721HoldersArgs, l.Address, to, blk.Timestamp().Unix())
+			if isXrc721 {
+				xrc721HoldersStrs = append(xrc721HoldersStrs, "(?, ?, ?)")
+				xrc721HoldersArgs = append(xrc721HoldersArgs, l.Address, from, blk.Timestamp().Unix())
+				xrc721HoldersStrs = append(xrc721HoldersStrs, "(?, ?, ?)")
+				xrc721HoldersArgs = append(xrc721HoldersArgs, l.Address, to, blk.Timestamp().Unix())
 			}
-			if isErc20 {
+			if isXrc20 {
 				holdersStrs = append(holdersStrs, "(?, ?, ?)")
 				holdersArgs = append(holdersArgs, l.Address, from, blk.Timestamp().Unix())
 				holdersStrs = append(holdersStrs, "(?, ?, ?)")
@@ -232,16 +232,16 @@ func (p *Protocol) updateXrc20History(
 		}
 	}
 
-	if len(erc721HoldersArgs) != 0 {
-		insertQuery := fmt.Sprintf(insertXrc20History, Xrc721HistoryTableName, strings.Join(erc721ValStrs, ","))
+	if len(xrc721HoldersArgs) != 0 {
+		insertQuery := fmt.Sprintf(insertXrc20History, Xrc721HistoryTableName, strings.Join(xrc721ValStrs, ","))
 
-		if _, err := tx.Exec(insertQuery, erc721ValArgs...); err != nil {
+		if _, err := tx.Exec(insertQuery, xrc721ValArgs...); err != nil {
 			return err
 		}
 
-		insertQuery = fmt.Sprintf(insertXrc20Holders, Xrc721HoldersTableName, strings.Join(erc721HoldersStrs, ","))
+		insertQuery = fmt.Sprintf(insertXrc20Holders, Xrc721HoldersTableName, strings.Join(xrc721HoldersStrs, ","))
 
-		if _, err := tx.Exec(insertQuery, erc721HoldersArgs...); err != nil {
+		if _, err := tx.Exec(insertQuery, xrc721HoldersArgs...); err != nil {
 			return err
 		}
 	}
@@ -259,7 +259,7 @@ func (p *Protocol) checkTopics(topics, data string) bool {
 	return true
 }
 
-func (p *Protocol) checkIsErc20(ctx context.Context, addr, topics, data string) bool {
+func (p *Protocol) checkIsXrc20(ctx context.Context, addr, topics, data string) bool {
 	if !p.checkTopics(topics, data) {
 		return false
 	}
@@ -298,7 +298,7 @@ func (p *Protocol) checkIsErc20(ctx context.Context, addr, topics, data string) 
 	return true
 }
 
-func (p *Protocol) checkIsErc721(ctx context.Context, addr, topics, data string) bool {
+func (p *Protocol) checkIsXrc721(ctx context.Context, addr, topics, data string) bool {
 	if !p.checkTopics(topics, data) {
 		return false
 	}
