@@ -44,14 +44,11 @@ const (
 	approveString = "095ea7b3000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc0000000000000000000000000000000000000000000000000000000000000001"
 
 	// check erc721 through read the following func:
+	//18160ddd -> totalSupply()
 	//70a08231 -> balanceOf(address)
 	//095ea7b3 -> approve(address,uint256)
 	//6352211e -> ownerOf(uint256)
 	ownerOfString = "6352211e000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc"
-	//081812fc -> getApproved(uint256)
-	getApprovedString = "081812fc0000000000000000000000000000000000000000000000000000000000000001"
-	//e985e9c5 -> isApprovedForAll(address,address)
-	isApprovedForAllString = "e985e9c5000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc"
 
 	// Xrc20HistoryTableName is the table name of xrc20 history
 	Xrc20HistoryTableName = "xrc20_history"
@@ -74,22 +71,20 @@ const (
 )
 
 var (
-	totalSupply, _      = hex.DecodeString(totalSupplyString)
-	balanceOf, _        = hex.DecodeString(balanceOfString)
-	allowance, _        = hex.DecodeString(allowanceString)
-	approve, _          = hex.DecodeString(approveString)
-	ownerOf, _          = hex.DecodeString(ownerOfString)
-	getApproved, _      = hex.DecodeString(getApprovedString)
-	isApprovedForAll, _ = hex.DecodeString(isApprovedForAllString)
-	xrc20Contract       = make(map[string]bool)
-	nonXrc20Contract    = make(map[string]bool)
-	xrc721Contract      = make(map[string]bool)
-	nonXrc721Contract   = make(map[string]bool)
-	nonce               = uint64(1)
-	transferAmount      = big.NewInt(0)
-	gasLimit            = uint64(100000)
-	gasPrice            = big.NewInt(10000000)
-	callerAddress       = identityset.Address(30).String()
+	totalSupply, _    = hex.DecodeString(totalSupplyString)
+	balanceOf, _      = hex.DecodeString(balanceOfString)
+	allowance, _      = hex.DecodeString(allowanceString)
+	approve, _        = hex.DecodeString(approveString)
+	ownerOf, _        = hex.DecodeString(ownerOfString)
+	xrc20Contract     = make(map[string]bool)
+	nonXrc20Contract  = make(map[string]bool)
+	xrc721Contract    = make(map[string]bool)
+	nonXrc721Contract = make(map[string]bool)
+	nonce             = uint64(1)
+	transferAmount    = big.NewInt(0)
+	gasLimit          = uint64(100000)
+	gasPrice          = big.NewInt(10000000)
+	callerAddress     = identityset.Address(30).String()
 )
 
 type (
@@ -318,7 +313,13 @@ func (p *Protocol) checkIsErc721(ctx context.Context, addr, topics, data string)
 		return false
 	}
 
-	ret := readContract(indexCtx.ChainClient, addr, balanceOf)
+	ret := readContract(indexCtx.ChainClient, addr, totalSupply)
+	if !ret {
+		nonXrc721Contract[addr] = true
+		return false
+	}
+
+	ret = readContract(indexCtx.ChainClient, addr, balanceOf)
 	if !ret {
 		nonXrc721Contract[addr] = true
 		return false
@@ -331,18 +332,6 @@ func (p *Protocol) checkIsErc721(ctx context.Context, addr, topics, data string)
 	}
 
 	ret = readContract(indexCtx.ChainClient, addr, ownerOf)
-	if !ret {
-		nonXrc721Contract[addr] = true
-		return false
-	}
-
-	ret = readContract(indexCtx.ChainClient, addr, getApproved)
-	if !ret {
-		nonXrc721Contract[addr] = true
-		return false
-	}
-
-	ret = readContract(indexCtx.ChainClient, addr, isApprovedForAll)
 	if !ret {
 		nonXrc721Contract[addr] = true
 		return false

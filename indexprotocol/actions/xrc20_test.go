@@ -10,8 +10,13 @@ import (
 	"context"
 	"database/sql"
 	"encoding/hex"
+	"fmt"
 	"math/big"
 	"testing"
+	"time"
+
+	"github.com/iotexproject/iotex-core/pkg/log"
+	"google.golang.org/grpc"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -131,4 +136,137 @@ func TestXrc20(t *testing.T) {
 	require.Equal("100000", xrc20History[0].BlockHeight)
 	require.Equal("888", xrc20History[0].Index)
 	require.Equal("failure", xrc20History[0].Status)
+}
+
+func TestCheckIsErc20(t *testing.T) {
+	chainEndpoint := "api.testnet.iotex.one:80"
+	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	conn1, err := grpc.DialContext(grpcCtx1, chainEndpoint, grpc.WithBlock(), grpc.WithInsecure())
+	if err != nil {
+		log.L().Error("Failed to connect to chain's API server.")
+	}
+
+	chainClient := iotexapi.NewAPIServiceClient(conn1)
+
+	ctx := indexcontext.WithIndexCtx(context.Background(), indexcontext.IndexCtx{
+		ChainClient: chainClient,
+	})
+	r := checkIsErc20(ctx, "io1fpnufwk6j4fjz6ljjmzvvn5l7p6fypjfjwmde8")
+	fmt.Println(r)
+	fmt.Println("////////////////////////////////")
+	r = checkIsErc20(ctx, "io1wg80fjr9jy4kuwcq7j5ujyq7m0akgqg9vzgymp")
+	fmt.Println(r)
+	// normal address,not contract
+	r = checkIsErc20(ctx, "io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02")
+	fmt.Println(r)
+}
+
+func checkIsErc20(ctx context.Context, addr string) bool {
+	if _, ok := nonXrc20Contract[addr]; ok {
+		return false
+	}
+	if _, ok := xrc20Contract[addr]; ok {
+		return true
+	}
+	indexCtx := indexcontext.MustGetIndexCtx(ctx)
+	if indexCtx.ChainClient == nil {
+		return false
+	}
+	ret := readContract(indexCtx.ChainClient, addr, totalSupply)
+	if !ret {
+		nonXrc20Contract[addr] = true
+		return false
+	}
+
+	ret = readContract(indexCtx.ChainClient, addr, balanceOf)
+	if !ret {
+		nonXrc20Contract[addr] = true
+		return false
+	}
+	ret = readContract(indexCtx.ChainClient, addr, allowance)
+	if !ret {
+		nonXrc20Contract[addr] = true
+		return false
+	}
+	ret = readContract(indexCtx.ChainClient, addr, approve)
+	if !ret {
+		nonXrc20Contract[addr] = true
+		return false
+	}
+	nonXrc20Contract[addr] = true
+	return true
+}
+
+func TestCheckIsErc721(t *testing.T) {
+	chainEndpoint := "api.testnet.iotex.one:80"
+	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	conn1, err := grpc.DialContext(grpcCtx1, chainEndpoint, grpc.WithBlock(), grpc.WithInsecure())
+	if err != nil {
+		log.L().Error("Failed to connect to chain's API server.")
+	}
+
+	chainClient := iotexapi.NewAPIServiceClient(conn1)
+
+	ctx := indexcontext.WithIndexCtx(context.Background(), indexcontext.IndexCtx{
+		ChainClient: chainClient,
+	})
+	r := checkIsErc721(ctx, "io1fpnufwk6j4fjz6ljjmzvvn5l7p6fypjfjwmde8")
+	fmt.Println("xrc20 is not xrc721:", r)
+	fmt.Println("////////////////////////////////")
+	r = checkIsErc721(ctx, "io1wg80fjr9jy4kuwcq7j5ujyq7m0akgqg9vzgymp")
+	fmt.Println("regular contract is not xrc721:", r)
+	// normal address,not contract
+	r = checkIsErc721(ctx, "io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02")
+	fmt.Println("regular addr is not xrc721:", r)
+	//real erc721
+	r = checkIsErc721(ctx, "io1kacrmtuygg6mxpj2z33xh5gmkyffgcwj5eac4d")
+	fmt.Println("regular addr is not xrc721:", r)
+}
+
+func checkIsErc721(ctx context.Context, addr string) bool {
+	if _, ok := nonXrc721Contract[addr]; ok {
+		return false
+	}
+	if _, ok := xrc721Contract[addr]; ok {
+		return true
+	}
+	indexCtx := indexcontext.MustGetIndexCtx(ctx)
+	if indexCtx.ChainClient == nil {
+		return false
+	}
+
+	ret := readContract(indexCtx.ChainClient, addr, balanceOf)
+	if !ret {
+		nonXrc721Contract[addr] = true
+		return false
+	}
+
+	ret = readContract(indexCtx.ChainClient, addr, approve)
+	if !ret {
+		nonXrc721Contract[addr] = true
+		return false
+	}
+
+	ret = readContract(indexCtx.ChainClient, addr, ownerOf)
+	if !ret {
+		nonXrc721Contract[addr] = true
+		return false
+	}
+
+	ret = readContract(indexCtx.ChainClient, addr, getApproved)
+	if !ret {
+		nonXrc721Contract[addr] = true
+		return false
+	}
+
+	ret = readContract(indexCtx.ChainClient, addr, isApprovedForAll)
+	if !ret {
+		nonXrc721Contract[addr] = true
+		return false
+	}
+
+	xrc721Contract[addr] = true
+	return true
 }
