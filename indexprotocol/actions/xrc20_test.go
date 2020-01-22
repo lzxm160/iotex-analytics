@@ -237,7 +237,13 @@ func checkIsErc721(ctx context.Context, addr string) bool {
 		return false
 	}
 
-	ret := readContract(indexCtx.ChainClient, addr, balanceOf)
+	ret := readContract(indexCtx.ChainClient, addr, totalSupply)
+	if !ret {
+		nonXrc721Contract[addr] = true
+		return false
+	}
+
+	ret = readContract(indexCtx.ChainClient, addr, balanceOf)
 	if !ret {
 		nonXrc721Contract[addr] = true
 		return false
@@ -250,18 +256,6 @@ func checkIsErc721(ctx context.Context, addr string) bool {
 	}
 
 	ret = readContract(indexCtx.ChainClient, addr, ownerOf)
-	if !ret {
-		nonXrc721Contract[addr] = true
-		return false
-	}
-
-	ret = readContract(indexCtx.ChainClient, addr, getApproved)
-	if !ret {
-		nonXrc721Contract[addr] = true
-		return false
-	}
-
-	ret = readContract(indexCtx.ChainClient, addr, isApprovedForAll)
 	if !ret {
 		nonXrc721Contract[addr] = true
 		return false
