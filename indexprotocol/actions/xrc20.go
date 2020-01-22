@@ -46,7 +46,7 @@ const (
 	// check xrc721 through read the following func:
 	//18160ddd -> totalSupply()
 	//70a08231 -> balanceOf(address)
-	//095ea7b3 -> approve(address,uint256)
+	//095ea7b3 -> approve(address,uint256) receipt status 106
 	//6352211e -> ownerOf(uint256)
 	ownerOfString = "6352211e000000000000000000000000fea7d8ac16886585f1c232f13fefc3cfa26eb4cc"
 
@@ -320,12 +320,6 @@ func (p *Protocol) checkIsXrc721(ctx context.Context, addr, topics, data string)
 	}
 
 	ret = readContract(indexCtx.ChainClient, addr, balanceOf)
-	if !ret {
-		nonXrc721Contract[addr] = true
-		return false
-	}
-
-	ret = readContract(indexCtx.ChainClient, addr, approve)
 	if !ret {
 		nonXrc721Contract[addr] = true
 		return false
