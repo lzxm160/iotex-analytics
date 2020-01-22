@@ -325,6 +325,12 @@ func (p *Protocol) checkIsXrc721(ctx context.Context, addr, topics, data string)
 		return false
 	}
 
+	ret = readContract(indexCtx.ChainClient, addr, approve)
+	if !ret {
+		nonXrc721Contract[addr] = true
+		return false
+	}
+
 	ret = readContract(indexCtx.ChainClient, addr, ownerOf)
 	if !ret {
 		nonXrc721Contract[addr] = true
@@ -350,7 +356,7 @@ func readContract(cli iotexapi.APIServiceClient, addr string, callData []byte) b
 	if err != nil {
 		return false
 	}
-	if res.Receipt.Status == uint64(1) && res.Data != "" {
+	if (res.Receipt.Status == uint64(1) || res.Receipt.Status == uint64(106)) && res.Data != "" {
 		return true
 	}
 	return false

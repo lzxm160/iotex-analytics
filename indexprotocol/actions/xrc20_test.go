@@ -249,6 +249,12 @@ func checkIsXrc721(ctx context.Context, addr string) bool {
 		return false
 	}
 
+	ret = readContract(indexCtx.ChainClient, addr, approve)
+	if !ret {
+		nonXrc721Contract[addr] = true
+		return false
+	}
+
 	ret = readContract(indexCtx.ChainClient, addr, ownerOf)
 	if !ret {
 		nonXrc721Contract[addr] = true
