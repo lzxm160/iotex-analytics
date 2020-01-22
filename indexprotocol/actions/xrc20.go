@@ -352,6 +352,7 @@ func readContract(cli iotexapi.APIServiceClient, addr string, callData []byte) b
 	}
 
 	res, err := cli.ReadContract(context.Background(), request)
+	fmt.Println(res, ":", err)
 	if err != nil {
 		return false
 	}
