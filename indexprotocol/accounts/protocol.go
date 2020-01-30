@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/big"
+	"reflect"
 
 	"github.com/pkg/errors"
 
@@ -175,7 +176,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 				return errors.Wrapf(err, "failed to update balance history on height %d", height)
 			}
 		default:
-			fmt.Println(act)
+			fmt.Println(fmt.Println(reflect.TypeOf(act)))
 		}
 	}
 	for _, receipt := range blk.Receipts {
