@@ -281,6 +281,7 @@ func (p *Protocol) updateBalanceHistory(
 	if _, err := tx.Exec(insertQuery, epochNumber, blockHeight, hex.EncodeToString(actionHash[:]), actionType, from, to, amount); err != nil {
 		return errors.Wrap(err, "failed to update balance history")
 	}
+	fmt.Println(insertQuery, ":", epochNumber, blockHeight, hex.EncodeToString(actionHash[:]), actionType, from, to, amount)
 	return nil
 }
 
@@ -288,16 +289,17 @@ func (p *Protocol) rebuildAccountIncomeTable(tx *sql.Tx) error {
 	if _, err := tx.Exec(fmt.Sprintf(insertAccountInflow, AccountInflowTableName, BalanceHistoryTableName)); err != nil {
 		return err
 	}
-
+	fmt.Println(fmt.Sprintf(insertAccountInflow, AccountInflowTableName, BalanceHistoryTableName))
 	if _, err := tx.Exec(fmt.Sprintf(insertAccountOutflow, AccountOutflowTableName, BalanceHistoryTableName)); err != nil {
 		return err
 	}
-
+	fmt.Println(fmt.Sprintf(insertAccountOutflow, AccountOutflowTableName, BalanceHistoryTableName))
 	if _, err := tx.Exec(fmt.Sprintf(insertAccountIncome, AccountIncomeTableName,
 		AccountInflowTableName, AccountOutflowTableName, AccountInflowTableName, AccountOutflowTableName)); err != nil {
 		return err
 	}
-
+	fmt.Println(fmt.Sprintf(insertAccountIncome, AccountIncomeTableName,
+		AccountInflowTableName, AccountOutflowTableName, AccountInflowTableName, AccountOutflowTableName))
 	return nil
 }
 
