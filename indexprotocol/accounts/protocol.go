@@ -174,6 +174,8 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			if err := p.updateBalanceHistory(tx, epochNumber, height, actionHash, actionType, src, "", act.Amount().String()); err != nil {
 				return errors.Wrapf(err, "failed to update balance history on height %d", height)
 			}
+		default:
+			fmt.Println(act)
 		}
 	}
 	for _, receipt := range blk.Receipts {
