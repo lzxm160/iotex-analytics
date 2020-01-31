@@ -316,7 +316,7 @@ type ComplexityRoot struct {
 	XrcList struct {
 		Count func(childComplexity int) int
 		Exist func(childComplexity int) int
-		Xrc20 func(childComplexity int, pagination *Pagination) int
+		Xrc   func(childComplexity int, pagination *Pagination) int
 	}
 }
 
@@ -1572,17 +1572,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.XrcList.Exist(childComplexity), true
 
-	case "XrcList.Xrc20":
-		if e.complexity.XrcList.Xrc20 == nil {
+	case "XrcList.Xrc":
+		if e.complexity.XrcList.Xrc == nil {
 			break
 		}
 
-		args, err := ec.field_XrcList_xrc20_args(context.TODO(), rawArgs)
+		args, err := ec.field_XrcList_xrc_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.XrcList.Xrc20(childComplexity, args["pagination"].(*Pagination)), true
+		return e.complexity.XrcList.Xrc(childComplexity, args["pagination"].(*Pagination)), true
 
 	}
 	return 0, false
@@ -1787,7 +1787,7 @@ type ActionList {
 
 type XrcList {
     exist: Boolean!
-    xrc20(pagination: Pagination): [XrcInfo]!
+    xrc(pagination: Pagination): [XrcInfo]!
     count: Int!
 }
 
@@ -2558,7 +2558,7 @@ func (ec *executionContext) field_Xrc721_xrc721Addresses_args(ctx context.Contex
 	return args, nil
 }
 
-func (ec *executionContext) field_XrcList_xrc20_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_XrcList_xrc_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *Pagination
@@ -6852,7 +6852,7 @@ func (ec *executionContext) _XrcList_exist(ctx context.Context, field graphql.Co
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _XrcList_xrc20(ctx context.Context, field graphql.CollectedField, obj *XrcList) graphql.Marshaler {
+func (ec *executionContext) _XrcList_xrc(ctx context.Context, field graphql.CollectedField, obj *XrcList) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
 	rctx := &graphql.ResolverContext{
@@ -6863,7 +6863,7 @@ func (ec *executionContext) _XrcList_xrc20(ctx context.Context, field graphql.Co
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_XrcList_xrc20_args(ctx, rawArgs)
+	args, err := ec.field_XrcList_xrc_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -6872,7 +6872,7 @@ func (ec *executionContext) _XrcList_xrc20(ctx context.Context, field graphql.Co
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Xrc20, nil
+		return obj.Xrc, nil
 	})
 	if resTmp == nil {
 		if !ec.HasError(rctx) {
@@ -9458,8 +9458,8 @@ func (ec *executionContext) _XrcList(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				invalid = true
 			}
-		case "xrc20":
-			out.Values[i] = ec._XrcList_xrc20(ctx, field, obj)
+		case "xrc":
+			out.Values[i] = ec._XrcList_xrc(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalid = true
 			}
