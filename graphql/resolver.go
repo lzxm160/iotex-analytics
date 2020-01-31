@@ -740,9 +740,9 @@ func (r *queryResolver) getXrcByContractAddress(ctx context.Context, actionRespo
 	}
 	output.Exist = true
 	output.Count = len(xrc20InfoList)
-	output.Xrc20 = make([]*XrcInfo, 0, len(xrc20InfoList))
+	output.Xrc = make([]*XrcInfo, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
-		output.Xrc20 = append(output.Xrc20, &XrcInfo{
+		output.Xrc = append(output.Xrc, &XrcInfo{
 			Hash:      c.Hash,
 			Timestamp: c.Timestamp,
 			From:      c.From,
@@ -794,9 +794,9 @@ func (r *queryResolver) getXrcByAddress(ctx context.Context, actionResponse inte
 	}
 	output.Exist = true
 	output.Count = len(xrc20InfoList)
-	output.Xrc20 = make([]*XrcInfo, 0, len(xrc20InfoList))
+	output.Xrc = make([]*XrcInfo, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
-		output.Xrc20 = append(output.Xrc20, &XrcInfo{
+		output.Xrc = append(output.Xrc, &XrcInfo{
 			Hash:      c.Hash,
 			Timestamp: c.Timestamp,
 			From:      c.From,
@@ -890,9 +890,9 @@ func (r *queryResolver) getXrcByPage(ctx context.Context, actionResponse interfa
 	}
 	output.Exist = true
 	output.Count = len(xrc20InfoList)
-	output.Xrc20 = make([]*XrcInfo, 0, len(xrc20InfoList))
+	output.Xrc = make([]*XrcInfo, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
-		output.Xrc20 = append(output.Xrc20, &XrcInfo{
+		output.Xrc = append(output.Xrc, &XrcInfo{
 			Hash:      c.Hash,
 			Timestamp: c.Timestamp,
 			From:      c.From,
