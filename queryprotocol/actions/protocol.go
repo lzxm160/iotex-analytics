@@ -170,7 +170,9 @@ func (p *Protocol) GetActionsByType(actionType string, offset, size uint64) ([]*
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-
+	fmt.Println("type:", actionType)
+	fmt.Println("offset:", offset)
+	fmt.Println("size:", size)
 	rows, err := stmt.Query(actionType, offset, size)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
