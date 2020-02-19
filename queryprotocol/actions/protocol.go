@@ -162,17 +162,12 @@ func (p *Protocol) GetActionsByType(actionType string, offset, size uint64) ([]*
 	}
 
 	db := p.indexer.Store.GetDB()
-
 	getQuery := fmt.Sprintf(selectActionHistoryByType, actions.ActionHistoryTableName, blocks.BlockHistoryTableName)
-	fmt.Println("by type:", getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-	fmt.Println("type:", actionType)
-	fmt.Println("offset:", offset)
-	fmt.Println("size:", size)
 	rows, err := stmt.Query(actionType, offset, size)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
@@ -184,8 +179,7 @@ func (p *Protocol) GetActionsByType(actionType string, offset, size uint64) ([]*
 		return nil, errors.Wrap(err, "failed to parse results")
 	}
 	if len(parsedRows) == 0 {
-		err = indexprotocol.ErrNotExist
-		return nil, err
+		return nil, indexprotocol.ErrNotExist
 	}
 
 	actionInfoList := make([]*ActionInfo, 0)

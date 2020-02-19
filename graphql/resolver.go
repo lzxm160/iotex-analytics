@@ -48,7 +48,6 @@ var (
 	ErrPaginationInvalidSize = errors.New("invalid pagination size number")
 	// ErrInvalidParameter is the error indicating that invalid size
 	ErrInvalidParameter = errors.New("invalid parameter number")
-
 	// ErrActionTypeNotSupported is the error indicating that invalid action type
 	ErrActionTypeNotSupported = errors.New("action type is not supported")
 )
@@ -634,15 +633,11 @@ func (r *queryResolver) getActionsByType(ctx context.Context, actionResponse *Ac
 	}
 	offset := paginationMap["skip"]
 	size := paginationMap["first"]
+	actionResponse.ByType = &ActionList{Exist: false}
 	actionInfoList, err := r.AP.GetActionsByType(actionType, offset, size)
-	switch {
-	case errors.Cause(err) == indexprotocol.ErrNotExist:
-		actionResponse.ByType = &ActionList{Exist: false}
-		return nil
-	case err != nil:
+	if err != nil {
 		return errors.Wrap(err, "failed to get actions' information")
 	}
-
 	actInfoList := make([]*ActionInfo, 0, len(actionInfoList))
 	for _, act := range actionInfoList {
 		actInfoList = append(actInfoList, &ActionInfo{
@@ -656,9 +651,7 @@ func (r *queryResolver) getActionsByType(ctx context.Context, actionResponse *Ac
 			GasFee:    act.GasFee,
 		})
 	}
-
 	actionResponse.ByType = &ActionList{Exist: true, Actions: actInfoList, Count: len(actInfoList)}
-
 	return nil
 }
 
