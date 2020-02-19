@@ -27,7 +27,7 @@ const (
 	selectActionHistoryByTimestamp = "SELECT action_hash, block_hash, timestamp, action_type, `from`, `to`, amount, t1.gas_price*t1.gas_consumed " +
 		"FROM %s AS t1 LEFT JOIN %s AS t2 ON t1.block_height=t2.block_height " +
 		"WHERE timestamp >= ? AND timestamp <= ? ORDER BY `timestamp` desc limit ?,?"
-	selectActionHistoryByType = "SELECT action_hash, block_hash, timestamp, action_type, `from`, `to`, amount, gas_price*gas_consumed FROM %s WHERE type ='?' AND ORDER BY `timestamp` desc limit ?,?"
+	selectActionHistoryByType = "SELECT action_hash, block_hash, timestamp, action_type, `from`, `to`, amount, t1.gas_price*t1.gas_consumed FROM %s AS t1 LEFT JOIN %s AS t2 ON t1.block_height=t2.block_height WHERE type ='?' AND ORDER BY `timestamp` desc limit ?,?"
 	selectActionHistoryByHash = "SELECT action_hash, block_hash, timestamp, action_type, `from`, `to`, amount, t1.gas_price*t1.gas_consumed FROM %s " +
 		"AS t1 LEFT JOIN %s AS t2 ON t1.block_height=t2.block_height WHERE action_hash = ?"
 	selectActionHistoryByAddress = "SELECT action_hash, block_hash, timestamp, action_type, `from`, `to`, amount, t1.gas_price*t1.gas_consumed FROM %s " +
@@ -163,7 +163,7 @@ func (p *Protocol) GetActionsByType(actionType string, offset, size uint64) ([]*
 
 	db := p.indexer.Store.GetDB()
 
-	getQuery := fmt.Sprintf(selectActionHistoryByType, actions.ActionHistoryTableName)
+	getQuery := fmt.Sprintf(selectActionHistoryByType, actions.ActionHistoryTableName, blocks.BlockHistoryTableName)
 	fmt.Println("by type:", getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
