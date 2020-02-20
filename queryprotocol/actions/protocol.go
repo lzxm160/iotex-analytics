@@ -694,7 +694,6 @@ func (p *Protocol) GetTotalNumberOfHolders() (count int, err error) {
 	}
 	db := p.indexer.Store.GetDB()
 	getQuery := fmt.Sprintf(selectTotalNumberOfHolders, accounts.AccountIncomeTableName)
-	fmt.Println(getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to prepare get query")

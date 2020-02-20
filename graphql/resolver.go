@@ -390,6 +390,7 @@ func (r *queryResolver) getTotalNumberOfHolders(ctx context.Context, accountResp
 	accountResponse.TotalNumberOfHolders = num
 	return nil
 }
+
 func (r *queryResolver) getAlias(ctx context.Context, accountResponse *Account) error {
 	argsMap := parseFieldArguments(ctx, "alias", "")
 	opAddress, err := getStringArg(argsMap, "operatorAddress")
