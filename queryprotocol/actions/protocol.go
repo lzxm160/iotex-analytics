@@ -688,7 +688,7 @@ func (p *Protocol) GetTopHolders(endEpochNumber, skip, first uint64) (holders []
 }
 
 // GetTotalNumberOfHolders gets total num of holders
-func (p *Protocol) GetTotalNumberOfHolders() (int, error) {
+func (p *Protocol) GetTotalNumberOfHolders() (count int, err error) {
 	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
 		return 0, errors.New("actions protocol is unregistered")
 	}
@@ -705,14 +705,17 @@ func (p *Protocol) GetTotalNumberOfHolders() (int, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to execute get query")
 	}
-
 	type countStruct struct {
 		Count int
 	}
 	var c countStruct
-	_, err = s.ParseSQLRows(rows, &c)
+	parsedRows, err := s.ParseSQLRows(rows, &c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to parse results")
 	}
-	return c.Count, nil
+	for _, parsedRow := range parsedRows {
+		r := parsedRow.(*countStruct)
+		count = r.Count
+	}
+	return
 }
