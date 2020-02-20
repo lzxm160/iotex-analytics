@@ -705,10 +705,13 @@ func (p *Protocol) GetTotalNumberOfHolders() (int, error) {
 		return 0, errors.Wrap(err, "failed to execute get query")
 	}
 
-	var ret int
-	_, err = s.ParseSQLRows(rows, &ret)
+	type countStruct struct {
+		Count int
+	}
+	var c countStruct
+	_, err = s.ParseSQLRows(rows, &c)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to parse results")
 	}
-	return ret, nil
+	return c.Count, nil
 }
