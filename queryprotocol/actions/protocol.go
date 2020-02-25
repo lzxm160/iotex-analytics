@@ -36,17 +36,17 @@ const (
 	selectEvmTransferHistoryByAddress = "SELECT `from`, `to`, amount, action_hash, t1.block_height, timestamp " +
 		"FROM %s AS t1 LEFT JOIN %s AS t2 ON t1.block_height=t2.block_height " +
 		"WHERE action_type = 'execution' AND (`from` = ? OR `to` = ?) ORDER BY `timestamp` desc limit ?,?"
-	selectActionHistory         = "SELECT DISTINCT `from`, block_height FROM %s ORDER BY block_height desc limit %d"
-	selectXrc20History          = "SELECT * FROM %s WHERE address='%s' ORDER BY `timestamp` desc limit %d,%d"
-	selectXrc20Count            = "SELECT COUNT(*) FROM %s"
-	selectXrc20HoldersCount     = selectXrc20Count + " WHERE contract='%s'"
-	selectXrc20TransactionCount = selectXrc20Count + " WHERE address='%s'"
-	selectXrc20Holders          = "SELECT holder FROM %s WHERE contract='%s' ORDER BY `timestamp` desc limit %d,%d"
-	selectXrc20HistoryByTopics  = "SELECT * FROM %s WHERE topics like ? ORDER BY `timestamp` desc limit %d,%d"
-	selectXrc20HistoryCount     = selectXrc20Count + " WHERE topics like %s"
-	selectXrc20AddressesByPage  = "SELECT address, MAX(`timestamp`) AS t FROM %s GROUP BY address ORDER BY t desc limit %d,%d"
-	selectXrc20HistoryByPage    = "SELECT * FROM %s ORDER BY `timestamp` desc limit %d,%d"
-	selectAccountIncome         = "SELECT address,SUM(income) AS balance FROM %s WHERE epoch_number<=%d and address<>'' and address<>'%s' GROUP BY address ORDER BY balance DESC LIMIT %d,%d"
+	selectActionHistory        = "SELECT DISTINCT `from`, block_height FROM %s ORDER BY block_height desc limit %d"
+	selectXrc20History         = "SELECT * FROM %s WHERE address='%s' ORDER BY `timestamp` desc limit %d,%d"
+	selectXrcCount             = "SELECT COUNT(*) FROM %s"
+	selectXrcHoldersCount      = selectXrcCount + " WHERE contract='%s'"
+	selectXrcTransactionCount  = selectXrcCount + " WHERE address='%s'"
+	selectXrc20Holders         = "SELECT holder FROM %s WHERE contract='%s' ORDER BY `timestamp` desc limit %d,%d"
+	selectXrc20HistoryByTopics = "SELECT * FROM %s WHERE topics like ? ORDER BY `timestamp` desc limit %d,%d"
+	selectXrcHistoryCount      = selectXrcCount + " WHERE topics like %s"
+	selectXrc20AddressesByPage = "SELECT address, MAX(`timestamp`) AS t FROM %s GROUP BY address ORDER BY t desc limit %d,%d"
+	selectXrc20HistoryByPage   = "SELECT * FROM %s ORDER BY `timestamp` desc limit %d,%d"
+	selectAccountIncome        = "SELECT address,SUM(income) AS balance FROM %s WHERE epoch_number<=%d and address<>'' and address<>'%s' GROUP BY address ORDER BY balance DESC LIMIT %d,%d"
 )
 
 type activeAccount struct {
@@ -347,34 +347,34 @@ func (p *Protocol) GetActiveAccount(count int) ([]string, error) {
 	return addrs, nil
 }
 
-// GetXrc20TransactionCount gets xrc20 transaction count info by contract address
+// GetXrc20TransactionCount gets xrc20 transaction count by contract address
 func (p *Protocol) GetXrc20TransactionCount(address string) (count int, err error) {
-	return p.getXrcTransactionCount(address, actions.Xrc20HistoryTableName)
+	return p.getXrcCount(address, selectXrcTransactionCount, actions.Xrc20HistoryTableName)
 }
 
-// GetXrc721TransactionCount gets xrc721 transaction count info by contract address
+// GetXrc721TransactionCount gets xrc721 transaction count by contract address
 func (p *Protocol) GetXrc721TransactionCount(address string) (count int, err error) {
-	return p.getXrcTransactionCount(address, actions.Xrc721HistoryTableName)
+	return p.getXrcCount(address, selectXrcTransactionCount, actions.Xrc721HistoryTableName)
 }
 
-// GetXrc20HistoryCount gets xrc20 transaction count info by transfer address
-func (p *Protocol) GetXrc20HistoryCount(address string) (count int, err error) {
-	return p.getXrcHistoryCount(address, actions.Xrc20HistoryTableName)
+// GetXrc20HistoryCount gets xrc20 transaction count by topics
+func (p *Protocol) GetXrc20HistoryCount(addr string) (count int, err error) {
+	return p.getXrcCount(addrToLike(addr), selectXrcHistoryCount, actions.Xrc20HistoryTableName)
 }
 
-// GetXrc721HistoryCount gets xrc721 transaction count info by transfer address
-func (p *Protocol) GetXrc721HistoryCount(address string) (count int, err error) {
-	return p.getXrcHistoryCount(address, actions.Xrc721HistoryTableName)
+// GetXrc721HistoryCount gets xrc721 transaction count by topics
+func (p *Protocol) GetXrc721HistoryCount(addr string) (count int, err error) {
+	return p.getXrcCount(addrToLike(addr), selectXrcHistoryCount, actions.Xrc721HistoryTableName)
 }
 
 // GetXrc721Count gets xrc721 all transaction count
 func (p *Protocol) GetXrc721Count(address string) (count int, err error) {
-	return p.getAllXrcCount(address, actions.Xrc721HistoryTableName)
+	return p.getXrcCount(address, selectXrcCount, actions.Xrc721HistoryTableName)
 }
 
 // GetXrc20Count gets xrc20 all transaction count
 func (p *Protocol) GetXrc20Count(address string) (count int, err error) {
-	return p.getAllXrcCount(address, actions.Xrc20HistoryTableName)
+	return p.getXrcCount(address, selectXrcCount, actions.Xrc20HistoryTableName)
 }
 
 // GetXrc20 gets xrc20 transfer info by contract address
@@ -497,12 +497,12 @@ func (p *Protocol) getXrcByAddress(addr, table string, numPerPage, page uint64) 
 
 // GetXrc20HolderCount gets xrc20 holders's address
 func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
-	return p.getXrcHolderCount(addr, actions.Xrc20HoldersTableName)
+	return p.getXrcCount(addr, selectXrcHoldersCount, actions.Xrc20HoldersTableName)
 }
 
 // GetXrc721HolderCount gets xrc721 holders's address
 func (p *Protocol) GetXrc721HolderCount(addr string) (count int, err error) {
-	return p.getXrcHolderCount(addr, actions.Xrc721HoldersTableName)
+	return p.getXrcCount(addr, selectXrcHoldersCount, actions.Xrc721HoldersTableName)
 }
 
 func (p *Protocol) getXrcCount(addr, selectSql, table string) (count int, err error) {
@@ -517,7 +517,6 @@ func (p *Protocol) getXrcCount(addr, selectSql, table string) (count int, err er
 	} else {
 		getQuery = fmt.Sprintf(selectSql, table)
 	}
-	fmt.Println("520 getXrcCount:", getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to prepare get query")
@@ -545,27 +544,6 @@ func (p *Protocol) getXrcCount(addr, selectSql, table string) (count int, err er
 		count = r.Count
 	}
 	return
-}
-
-func (p *Protocol) getXrcHolderCount(addr, table string) (count int, err error) {
-	return p.getXrcCount(addr, selectXrc20HoldersCount, table)
-}
-
-func (p *Protocol) getXrcTransactionCount(addr, table string) (count int, err error) {
-	return p.getXrcCount(addr, selectXrc20TransactionCount, table)
-}
-
-func (p *Protocol) getXrcHistoryCount(addr, table string) (count int, err error) {
-	a, err := address.FromString(addr)
-	if err != nil {
-		return 0, errors.New("address is invalid")
-	}
-	like := "'%" + strings.ToLower(common.BytesToAddress(a.Bytes()).String()[2:]) + "%'"
-	return p.getXrcCount(like, selectXrc20HistoryCount, table)
-}
-
-func (p *Protocol) getAllXrcCount(addr, table string) (count int, err error) {
-	return p.getXrcCount(addr, selectXrc20Count, table)
 }
 
 // GetXrc20Holders gets xrc20 holders
@@ -745,4 +723,12 @@ func (p *Protocol) GetTopHolders(endEpochNumber, skip, first uint64) (holders []
 		holders = append(holders, parsedRow.(*TopHolder))
 	}
 	return
+}
+
+func addrToLike(addr string) string {
+	a, err := address.FromString(addr)
+	if err != nil {
+		return ""
+	}
+	return "'%" + strings.ToLower(common.BytesToAddress(a.Bytes()).String()[2:]) + "%'"
 }
