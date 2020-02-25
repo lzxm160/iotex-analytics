@@ -560,7 +560,7 @@ func (p *Protocol) getXrcHistoryCount(addr, table string) (count int, err error)
 	if err != nil {
 		return 0, errors.New("address is invalid")
 	}
-	like := "'%" + common.BytesToAddress(a.Bytes()).String()[2:] + "%'"
+	like := "'%" + strings.ToLower(common.BytesToAddress(a.Bytes()).String()[2:]) + "%'"
 	return p.getXrcCount(like, selectXrc20HistoryCount, table)
 }
 
