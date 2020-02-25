@@ -730,7 +730,11 @@ func (r *queryResolver) getXrcByContractAddress(ctx context.Context, actionRespo
 	default:
 		return errors.New("failed to convert type")
 	}
-
+	count, err := xrcCount(address)
+	if err != nil {
+		return errors.Wrap(err, "failed to get contract transaction count")
+	}
+	output.Count = count
 	xrc20InfoList, err := xrcGetter(address, uint64(numPerPage), uint64(page))
 	switch {
 	case errors.Cause(err) == indexprotocol.ErrNotExist:
@@ -750,11 +754,6 @@ func (r *queryResolver) getXrcByContractAddress(ctx context.Context, actionRespo
 			Contract:  c.Contract,
 		})
 	}
-	count, err := xrcCount(address)
-	if err != nil {
-		return errors.Wrap(err, "failed to get contract transaction count")
-	}
-	output.Count = count
 	return nil
 }
 
@@ -789,6 +788,11 @@ func (r *queryResolver) getXrcByAddress(ctx context.Context, actionResponse inte
 	default:
 		return errors.New("failed to convert type")
 	}
+	count, err := xrcCount(address)
+	if err != nil {
+		return errors.Wrap(err, "failed to get contract transaction count")
+	}
+	output.Count = count
 	xrc20InfoList, err := xrcGetter(address, uint64(numPerPage), uint64(page))
 	switch {
 	case errors.Cause(err) == indexprotocol.ErrNotExist:
@@ -808,11 +812,6 @@ func (r *queryResolver) getXrcByAddress(ctx context.Context, actionResponse inte
 			Contract:  c.Contract,
 		})
 	}
-	count, err := xrcCount(address)
-	if err != nil {
-		return errors.Wrap(err, "failed to get contract transaction count")
-	}
-	output.Count = count
 	return nil
 }
 
@@ -889,6 +888,11 @@ func (r *queryResolver) getXrcByPage(ctx context.Context, actionResponse interfa
 	default:
 		return errors.New("failed to convert type")
 	}
+	count, err := xrcCount("")
+	if err != nil {
+		return errors.Wrap(err, "failed to get contract transaction count")
+	}
+	output.Count = count
 	xrc20InfoList, err := xrcGetter(skip, first)
 	switch {
 	case errors.Cause(err) == indexprotocol.ErrNotExist:
@@ -908,11 +912,6 @@ func (r *queryResolver) getXrcByPage(ctx context.Context, actionResponse interfa
 			Contract:  c.Contract,
 		})
 	}
-	count, err := xrcCount("")
-	if err != nil {
-		return errors.Wrap(err, "failed to get contract transaction count")
-	}
-	output.Count = count
 	return nil
 }
 
