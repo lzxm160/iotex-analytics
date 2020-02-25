@@ -51,11 +51,11 @@ var (
 )
 
 type (
-	xrcaddresses   func(uint64, uint64) ([]*string, error)
-	xrcHolders     func(string, uint64, uint64) ([]*string, error)
-	xrcbypage      func(uint64, uint64) ([]*actions.Xrc20Info, error)
-	getXrc         func(string, uint64, uint64) ([]*actions.Xrc20Info, error)
-	xrcHolderCount func(string) (int, error)
+	xrcaddresses func(uint64, uint64) ([]*string, error)
+	xrcHolders   func(string, uint64, uint64) ([]*string, error)
+	xrcbypage    func(uint64, uint64) ([]*actions.Xrc20Info, error)
+	getXrc       func(string, uint64, uint64) ([]*actions.Xrc20Info, error)
+	xrcCount     func(string) (int, error)
 )
 
 // EncodeDelegateName converts a delegate name input to an internal format
@@ -707,7 +707,7 @@ func (r *queryResolver) getEvmTransfersByAddress(ctx context.Context, actionResp
 	return nil
 }
 
-func (r *queryResolver) getXrcByContractAddress(ctx context.Context, actionResponse interface{}, xrcType string, xrcGetter getXrc) error {
+func (r *queryResolver) getXrcByContractAddress(ctx context.Context, actionResponse interface{}, xrcType string, xrcGetter getXrc, xrcCount xrcCount) error {
 	argsMap := parseFieldArguments(ctx, "byContractAddress", xrcType)
 	address, err := getStringArg(argsMap, "address")
 	if err != nil {
@@ -739,7 +739,6 @@ func (r *queryResolver) getXrcByContractAddress(ctx context.Context, actionRespo
 		return errors.Wrap(err, "failed to get contract information")
 	}
 	output.Exist = true
-	output.Count = len(xrc20InfoList)
 	output.Xrc = make([]*XrcInfo, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
 		output.Xrc = append(output.Xrc, &XrcInfo{
@@ -751,18 +750,23 @@ func (r *queryResolver) getXrcByContractAddress(ctx context.Context, actionRespo
 			Contract:  c.Contract,
 		})
 	}
+	count, err := xrcCount(address)
+	if err != nil {
+		return errors.Wrap(err, "failed to get contract transaction count")
+	}
+	output.Count = count
 	return nil
 }
 
 func (r *queryResolver) getXrc20ByContractAddress(ctx context.Context, actionResponse *Xrc20) error {
-	return r.getXrcByContractAddress(ctx, actionResponse, "xrc20", r.AP.GetXrc20)
+	return r.getXrcByContractAddress(ctx, actionResponse, "xrc20", r.AP.GetXrc20, r.AP.GetXrc20TransactionCount)
 }
 
 func (r *queryResolver) getXrc721ByContractAddress(ctx context.Context, actionResponse *Xrc721) error {
-	return r.getXrcByContractAddress(ctx, actionResponse, "xrc721", r.AP.GetXrc721)
+	return r.getXrcByContractAddress(ctx, actionResponse, "xrc721", r.AP.GetXrc721, r.AP.GetXrc721TransactionCount)
 }
 
-func (r *queryResolver) getXrcByAddress(ctx context.Context, actionResponse interface{}, xrcType string, xrcGetter getXrc) error {
+func (r *queryResolver) getXrcByAddress(ctx context.Context, actionResponse interface{}, xrcType string, xrcGetter getXrc, xrcCount xrcCount) error {
 	argsMap := parseFieldArguments(ctx, "byAddress", xrcType)
 	address, err := getStringArg(argsMap, "address")
 	if err != nil {
@@ -793,7 +797,6 @@ func (r *queryResolver) getXrcByAddress(ctx context.Context, actionResponse inte
 		return errors.Wrap(err, "failed to get contract information")
 	}
 	output.Exist = true
-	output.Count = len(xrc20InfoList)
 	output.Xrc = make([]*XrcInfo, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
 		output.Xrc = append(output.Xrc, &XrcInfo{
@@ -805,18 +808,23 @@ func (r *queryResolver) getXrcByAddress(ctx context.Context, actionResponse inte
 			Contract:  c.Contract,
 		})
 	}
+	count, err := xrcCount(address)
+	if err != nil {
+		return errors.Wrap(err, "failed to get contract transaction count")
+	}
+	output.Count = count
 	return nil
 }
 
 func (r *queryResolver) getXrc20ByAddress(ctx context.Context, actionResponse *Xrc20) error {
-	return r.getXrcByAddress(ctx, actionResponse, "xrc20", r.AP.GetXrc20ByAddress)
+	return r.getXrcByAddress(ctx, actionResponse, "xrc20", r.AP.GetXrc20ByAddress, r.AP.GetXrc20HistoryCount)
 }
 
 func (r *queryResolver) getXrc721ByAddress(ctx context.Context, actionResponse *Xrc721) error {
-	return r.getXrcByAddress(ctx, actionResponse, "xrc721", r.AP.GetXrc721ByAddress)
+	return r.getXrcByAddress(ctx, actionResponse, "xrc721", r.AP.GetXrc721ByAddress, r.AP.GetXrc721HistoryCount)
 }
 
-func (r *queryResolver) xrcTokenHolderAddresses(ctx context.Context, actionResponse interface{}, xrcType string, xrcGetter xrcHolders, holderCount xrcHolderCount) error {
+func (r *queryResolver) xrcTokenHolderAddresses(ctx context.Context, actionResponse interface{}, xrcType string, xrcGetter xrcHolders, holderCount xrcCount) error {
 	argsMap := parseFieldArguments(ctx, "tokenHolderAddresses", xrcType)
 	addr, err := getStringArg(argsMap, "tokenAddress")
 	if err != nil {
@@ -864,7 +872,7 @@ func (r *queryResolver) xrc721TokenHolderAddresses(ctx context.Context, actionRe
 	return r.xrcTokenHolderAddresses(ctx, actionResponse, "xrc721", r.AP.GetXrc721Holders, r.AP.GetXrc721HolderCount)
 }
 
-func (r *queryResolver) getXrcByPage(ctx context.Context, actionResponse interface{}, xrcType string, xrcGetter xrcbypage) error {
+func (r *queryResolver) getXrcByPage(ctx context.Context, actionResponse interface{}, xrcType string, xrcGetter xrcbypage, xrcCount xrcCount) error {
 	argsMap := parseFieldArguments(ctx, "byPage", xrcType)
 	paginationMap, err := getPaginationArgs(argsMap)
 	if err != nil {
@@ -889,7 +897,6 @@ func (r *queryResolver) getXrcByPage(ctx context.Context, actionResponse interfa
 		return errors.Wrap(err, "failed to get contract information")
 	}
 	output.Exist = true
-	output.Count = len(xrc20InfoList)
 	output.Xrc = make([]*XrcInfo, 0, len(xrc20InfoList))
 	for _, c := range xrc20InfoList {
 		output.Xrc = append(output.Xrc, &XrcInfo{
@@ -901,15 +908,20 @@ func (r *queryResolver) getXrcByPage(ctx context.Context, actionResponse interfa
 			Contract:  c.Contract,
 		})
 	}
+	count, err := xrcCount("")
+	if err != nil {
+		return errors.Wrap(err, "failed to get contract transaction count")
+	}
+	output.Count = count
 	return nil
 }
 
 func (r *queryResolver) getXrc20ByPage(ctx context.Context, actionResponse *Xrc20) error {
-	return r.getXrcByPage(ctx, actionResponse, "xrc20", r.AP.GetXrc20ByPage)
+	return r.getXrcByPage(ctx, actionResponse, "xrc20", r.AP.GetXrc20ByPage, r.AP.GetXrc20Count)
 }
 
 func (r *queryResolver) getXrc721ByPage(ctx context.Context, actionResponse *Xrc721) error {
-	return r.getXrcByPage(ctx, actionResponse, "xrc721", r.AP.GetXrc721ByPage)
+	return r.getXrcByPage(ctx, actionResponse, "xrc721", r.AP.GetXrc721ByPage, r.AP.GetXrc721Count)
 }
 
 func (r *queryResolver) getXrcAddresses(ctx context.Context, actionResponse interface{}, xrcType string, xrcGetter xrcaddresses) error {
