@@ -362,19 +362,19 @@ func (p *Protocol) GetXrc20HistoryCount(address string) (count int, err error) {
 	return p.getXrcHistoryCount(address, actions.Xrc20HistoryTableName)
 }
 
+// GetXrc721HistoryCount gets xrc721 transaction count info by transfer address
+func (p *Protocol) GetXrc721HistoryCount(address string) (count int, err error) {
+	return p.getXrcHistoryCount(address, actions.Xrc721HistoryTableName)
+}
+
 // GetXrc721Count gets xrc721 all transaction count
 func (p *Protocol) GetXrc721Count(address string) (count int, err error) {
-	return p.getXrcTransactionCount(address, actions.Xrc721HistoryTableName)
+	return p.getAllXrcCount(address, actions.Xrc721HistoryTableName)
 }
 
 // GetXrc20Count gets xrc20 all transaction count
 func (p *Protocol) GetXrc20Count(address string) (count int, err error) {
-	return p.getXrcHistoryCount(address, actions.Xrc20HistoryTableName)
-}
-
-// GetXrc721HistoryCount gets xrc721 transaction count info by transfer address
-func (p *Protocol) GetXrc721HistoryCount(address string) (count int, err error) {
-	return p.getXrcHistoryCount(address, actions.Xrc721HistoryTableName)
+	return p.getAllXrcCount(address, actions.Xrc20HistoryTableName)
 }
 
 // GetXrc20 gets xrc20 transfer info by contract address
@@ -556,6 +556,10 @@ func (p *Protocol) getXrcTransactionCount(addr, table string) (count int, err er
 }
 
 func (p *Protocol) getXrcHistoryCount(addr, table string) (count int, err error) {
+	return p.getXrcCount(addr, selectXrc20HistoryCount, table)
+}
+
+func (p *Protocol) getAllXrcCount(addr, table string) (count int, err error) {
 	return p.getXrcCount(addr, selectXrc20Count, table)
 }
 
