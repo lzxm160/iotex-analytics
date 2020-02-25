@@ -43,7 +43,7 @@ const (
 	selectXrc20TransactionCount = selectXrc20Count + " WHERE address='%s'"
 	selectXrc20Holders          = "SELECT holder FROM %s WHERE contract='%s' ORDER BY `timestamp` desc limit %d,%d"
 	selectXrc20HistoryByTopics  = "SELECT * FROM %s WHERE topics like ? ORDER BY `timestamp` desc limit %d,%d"
-	selectXrc20HistoryCount     = selectXrc20Count + " WHERE topics like ?"
+	selectXrc20HistoryCount     = selectXrc20Count + " WHERE topics like %s"
 	selectXrc20AddressesByPage  = "SELECT address, MAX(`timestamp`) AS t FROM %s GROUP BY address ORDER BY t desc limit %d,%d"
 	selectXrc20HistoryByPage    = "SELECT * FROM %s ORDER BY `timestamp` desc limit %d,%d"
 	selectAccountIncome         = "SELECT address,SUM(income) AS balance FROM %s WHERE epoch_number<=%d and address<>'' and address<>'%s' GROUP BY address ORDER BY balance DESC LIMIT %d,%d"
@@ -556,7 +556,12 @@ func (p *Protocol) getXrcTransactionCount(addr, table string) (count int, err er
 }
 
 func (p *Protocol) getXrcHistoryCount(addr, table string) (count int, err error) {
-	return p.getXrcCount(addr, selectXrc20HistoryCount, table)
+	a, err := address.FromString(addr)
+	if err != nil {
+		return 0, errors.New("address is invalid")
+	}
+	like := "'%" + common.BytesToAddress(a.Bytes()).String()[2:] + "%'"
+	return p.getXrcCount(like, selectXrc20HistoryCount, table)
 }
 
 func (p *Protocol) getAllXrcCount(addr, table string) (count int, err error) {
