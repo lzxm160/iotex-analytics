@@ -85,7 +85,7 @@ type EvmTransferDetail struct {
 	Quantity  string
 	ActHash   string
 	BlkHash   string
-	TimeStamp sql.NullInt64
+	TimeStamp sql.NullInt64 // for timestamp is NULL
 }
 
 // Xrc20Info defines xrc20 transfer info
