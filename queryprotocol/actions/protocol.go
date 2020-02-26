@@ -7,6 +7,7 @@
 package actions
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
 
@@ -84,7 +85,7 @@ type EvmTransferDetail struct {
 	Quantity  string
 	ActHash   string
 	BlkHash   string
-	TimeStamp s.NullInt64
+	TimeStamp sql.NullInt64
 }
 
 // Xrc20Info defines xrc20 transfer info
