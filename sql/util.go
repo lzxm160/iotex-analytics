@@ -35,3 +35,21 @@ func ParseSQLRows(rows *sql.Rows, schema interface{}) ([]interface{}, error) {
 
 	return parsedRows, nil
 }
+
+// NullInt64 for int64 is null in mysql
+type NullInt64 sql.NullInt64
+
+// Scan implements the Scanner interface for NullInt64
+func (ni *NullInt64) Scan(value interface{}) error {
+	var i sql.NullInt64
+	if err := i.Scan(value); err != nil {
+		return err
+	}
+	// if nil the make Valid false
+	if reflect.TypeOf(value) == nil {
+		*ni = NullInt64{i.Int64, false}
+	} else {
+		*ni = NullInt64{i.Int64, true}
+	}
+	return nil
+}
