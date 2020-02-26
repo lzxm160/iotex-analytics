@@ -680,6 +680,7 @@ func (r *queryResolver) getEvmTransfersByAddress(ctx context.Context, actionResp
 		return errors.Wrap(err, "failed to get pagination arguments for actions")
 	}
 	etl := &EvmTransferList{Exist: false}
+	actionResponse.EvmTransfersByAddress = etl
 	count, err := r.AP.GetEvmTransferCount()
 	if err != nil {
 		return errors.Wrap(err, "failed to get execution count for actions")
@@ -688,7 +689,6 @@ func (r *queryResolver) getEvmTransfersByAddress(ctx context.Context, actionResp
 	evmTransferDetailList, err := r.AP.GetEvmTransferDetailListByAddress(addr, offset, size)
 	switch {
 	case errors.Cause(err) == indexprotocol.ErrNotExist:
-		actionResponse.EvmTransfersByAddress = etl
 		return nil
 	case err != nil:
 		return errors.Wrap(err, "failed to get evm transfers")
