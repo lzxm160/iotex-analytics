@@ -702,7 +702,7 @@ func (r *queryResolver) getEvmTransfersByAddress(ctx context.Context, actionResp
 			Quantity:  etf.Quantity,
 			ActHash:   etf.ActHash,
 			BlkHash:   etf.BlkHash,
-			TimeStamp: int(etf.TimeStamp),
+			TimeStamp: int(etf.TimeStamp.Int64),
 		})
 	}
 	etl.Exist = true
