@@ -275,7 +275,7 @@ func (p *Protocol) GetEvmTransferDetailListByAddress(address string, offset, siz
 	db := p.indexer.Store.GetDB()
 
 	getQuery := fmt.Sprintf(selectEvmTransferHistoryByAddress, accounts.BalanceHistoryTableName, blocks.BlockHistoryTableName)
-
+	fmt.Println(":", getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")
