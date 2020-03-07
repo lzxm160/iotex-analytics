@@ -496,8 +496,11 @@ func (p *Protocol) getCount(selectSQL, table string, addr ...string) (count int,
 		return 0, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-
-	rows, err := stmt.Query(addr)
+	var addrs []string
+	for _, a := range addr {
+		addrs = append(addrs, a)
+	}
+	rows, err := stmt.Query(addrs)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to execute get query")
 	}
