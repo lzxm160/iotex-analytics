@@ -9,7 +9,6 @@ package actions
 import (
 	"database/sql"
 	"fmt"
-	"os"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
@@ -476,7 +475,7 @@ func (p *Protocol) GetXrc721HolderCount(addr string) (count int, err error) {
 
 // GetEvmTransferCount gets execution count
 func (p *Protocol) GetEvmTransferCount(addr string) (count int, err error) {
-	return p.getCount(selectEvmTransferCount, actions.ActionHistoryTableName, addr, addr)
+	return p.getCount(selectEvmTransferCount, accounts.BalanceHistoryTableName, addr, addr)
 }
 
 func (p *Protocol) getCount(selectSQL, table string, addr ...string) (count int, err error) {
@@ -495,7 +494,6 @@ func (p *Protocol) getCount(selectSQL, table string, addr ...string) (count int,
 		getQuery = fmt.Sprintf(selectSQL, table, addrs[0], addrs[1])
 	}
 	fmt.Println("get count:", getQuery)
-	fmt.Fprintf(os.Stdout, selectSQL, table, addrs)
 
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
