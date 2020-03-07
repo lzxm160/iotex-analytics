@@ -36,10 +36,10 @@ const (
 	selectEvmTransferHistoryByAddress = "SELECT `from`, `to`, amount, action_hash, t1.block_height, timestamp " +
 		"FROM %s AS t1 LEFT JOIN %s AS t2 ON t1.block_height=t2.block_height " +
 		"WHERE action_type = 'execution' AND (`from` = ? OR `to` = ?) ORDER BY `timestamp` desc limit ?,?"
-	selectEvmTransferCount     = "SELECT COUNT(*) FROM %s WHERE action_type='execution' AND (`from` = ? OR `to` = ?)"
+	selectEvmTransferCount     = "SELECT COUNT(*) FROM %s WHERE action_type='execution' AND (`from` = '%s' OR `to` = '%s')"
 	selectActionHistory        = "SELECT DISTINCT `from`, block_height FROM %s ORDER BY block_height desc limit %d"
 	selectXrc20History         = "SELECT * FROM %s WHERE address='%s' ORDER BY `timestamp` desc limit %d,%d"
-	selectXrc20HoldersCount    = "SELECT COUNT(*) FROM %s WHERE contract=?"
+	selectXrc20HoldersCount    = "SELECT COUNT(*) FROM %s WHERE contract='%s'"
 	selectXrc20Holders         = "SELECT holder FROM %s WHERE contract='%s' ORDER BY `timestamp` desc limit %d,%d"
 	selectXrc20HistoryByTopics = "SELECT * FROM %s WHERE topics like ? ORDER BY `timestamp` desc limit %d,%d"
 	selectXrc20AddressesByPage = "SELECT address, MAX(`timestamp`) AS t FROM %s GROUP BY address ORDER BY t desc limit %d,%d"
@@ -482,11 +482,14 @@ func (p *Protocol) getCount(selectSQL, table string, addr ...string) (count int,
 	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
 		return 0, errors.New("actions protocol is unregistered")
 	}
-
+	var addrs []string
+	for _, a := range addr {
+		addrs = append(addrs, a)
+	}
 	db := p.indexer.Store.GetDB()
 	var getQuery string
 	//if !strings.EqualFold(addr, "") {
-	getQuery = fmt.Sprintf(selectSQL, table)
+	getQuery = fmt.Sprintf(selectSQL, table, addrs)
 	//} else {
 	//	getQuery = fmt.Sprintf(selectSQL, table)
 	//}
@@ -496,11 +499,8 @@ func (p *Protocol) getCount(selectSQL, table string, addr ...string) (count int,
 		return 0, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-	var addrs []string
-	for _, a := range addr {
-		addrs = append(addrs, a)
-	}
-	rows, err := stmt.Query(addrs)
+
+	rows, err := stmt.Query()
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to execute get query")
 	}
