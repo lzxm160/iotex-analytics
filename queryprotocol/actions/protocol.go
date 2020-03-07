@@ -434,6 +434,8 @@ func (p *Protocol) getXrcByAddress(addr, table string, numPerPage, page uint64) 
 	}
 	defer stmt.Close()
 	like := "%" + common.BytesToAddress(a.Bytes()).String()[2:] + "%"
+	fmt.Println("xrc query:", getQuery)
+	fmt.Println("like:", like)
 	rows, err := stmt.Query(like)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
