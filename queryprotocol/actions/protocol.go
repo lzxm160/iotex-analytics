@@ -550,6 +550,7 @@ func (p *Protocol) getXrcHolders(addr, table string, offset, size uint64) (rets 
 		size = 1
 	}
 	getQuery := fmt.Sprintf(selectXrc20Holders, table, a, offset, size)
+	fmt.Println("getXrcHolders:", getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")

@@ -818,6 +818,7 @@ func (r *queryResolver) getXrc20ByAddress(ctx context.Context, actionResponse *X
 }
 
 func (r *queryResolver) getXrc721ByAddress(ctx context.Context, actionResponse *Xrc721) error {
+
 	return r.getXrcByAddress(ctx, actionResponse, "xrc721", r.AP.GetXrc721ByAddress)
 }
 
