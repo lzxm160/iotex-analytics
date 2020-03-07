@@ -489,11 +489,11 @@ func (p *Protocol) getCount(selectSQL, table string, addr ...string) (count int,
 	}
 	db := p.indexer.Store.GetDB()
 	var getQuery string
-	//if !strings.EqualFold(addr, "") {
-	getQuery = fmt.Sprintf(selectSQL, table, addrs)
-	//} else {
-	//	getQuery = fmt.Sprintf(selectSQL, table)
-	//}
+	if len(addrs) == 1 {
+		getQuery = fmt.Sprintf(selectSQL, table, addrs[0])
+	} else {
+		getQuery = fmt.Sprintf(selectSQL, table, addrs[0], addrs[1])
+	}
 	fmt.Println("get count:", getQuery)
 	fmt.Fprintf(os.Stdout, selectSQL, table, addrs)
 
