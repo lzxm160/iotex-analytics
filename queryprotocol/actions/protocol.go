@@ -36,7 +36,7 @@ const (
 	selectEvmTransferHistoryByAddress = "SELECT `from`, `to`, amount, action_hash, t1.block_height, timestamp " +
 		"FROM %s AS t1 LEFT JOIN %s AS t2 ON t1.block_height=t2.block_height " +
 		"WHERE action_type = 'execution' AND (`from` = ? OR `to` = ?) ORDER BY `timestamp` desc limit ?,?"
-	selectEvmTransferCount     = "SELECT COUNT(*) FROM %s WHERE action_type='execution' AND (`from` = ? OR `to` = ?)"
+	selectEvmTransferCount     = "SELECT COUNT(*) FROM %s WHERE action_type='execution' AND (`from` = '%s' OR `to` = '%s')"
 	selectActionHistory        = "SELECT DISTINCT `from`, block_height FROM %s ORDER BY block_height desc limit %d"
 	selectXrc20History         = "SELECT * FROM %s WHERE address='%s' ORDER BY `timestamp` desc limit %d,%d"
 	selectXrc20HoldersCount    = "SELECT COUNT(*) FROM %s WHERE contract='%s'"
