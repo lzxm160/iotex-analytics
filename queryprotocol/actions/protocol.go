@@ -9,6 +9,7 @@ package actions
 import (
 	"database/sql"
 	"fmt"
+	"os"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
@@ -494,6 +495,8 @@ func (p *Protocol) getCount(selectSQL, table string, addr ...string) (count int,
 	//	getQuery = fmt.Sprintf(selectSQL, table)
 	//}
 	fmt.Println("get count:", getQuery)
+	fmt.Fprintf(os.Stdout, selectSQL, table, addrs)
+
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to prepare get query")
