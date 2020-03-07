@@ -829,7 +829,8 @@ func (r *queryResolver) xrcTokenHolderAddresses(ctx context.Context, actionRespo
 		return errors.Wrap(err, "failed to get address")
 	}
 	var offset, size uint64
-	paginationMap, err := getPaginationArgs(argsMap)
+	pageArgs := parseFieldArguments(ctx, "addresses", "tokenHolderAddresses")
+	paginationMap, err := getPaginationArgs(pageArgs)
 	switch {
 	default:
 		offset = paginationMap["skip"]
