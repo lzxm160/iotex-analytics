@@ -823,7 +823,7 @@ func (r *queryResolver) getXrc721ByAddress(ctx context.Context, actionResponse *
 }
 
 func (r *queryResolver) xrcTokenHolderAddresses(ctx context.Context, actionResponse interface{}, xrcType string, xrcGetter xrcHolders, holderCount xrcHolderCount) error {
-	argsMap := parseFieldArguments(ctx, "tokenHolderAddresses", "addresses")
+	argsMap := parseFieldArguments(ctx, "tokenHolderAddresses", xrcType)
 	addr, err := getStringArg(argsMap, "tokenAddress")
 	if err != nil {
 		return errors.Wrap(err, "failed to get address")
