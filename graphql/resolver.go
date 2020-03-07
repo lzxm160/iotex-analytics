@@ -849,6 +849,7 @@ func (r *queryResolver) xrcTokenHolderAddresses(ctx context.Context, actionRespo
 	default:
 		return errors.New("failed to convert type")
 	}
+	fmt.Println(offset, ":", size)
 	holders, err := xrcGetter(addr, offset, size)
 	if err != nil {
 		return err
@@ -887,6 +888,7 @@ func (r *queryResolver) getXrcByPage(ctx context.Context, actionResponse interfa
 	default:
 		return errors.New("failed to convert type")
 	}
+
 	xrc20InfoList, err := xrcGetter(skip, first)
 	switch {
 	case errors.Cause(err) == indexprotocol.ErrNotExist:
