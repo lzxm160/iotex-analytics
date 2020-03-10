@@ -8,6 +8,7 @@ package actions
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
@@ -38,9 +39,12 @@ const (
 		"WHERE action_type = 'execution' AND (`from` = ? OR `to` = ?) ORDER BY `timestamp` desc limit ?,?"
 	selectActionHistory        = "SELECT DISTINCT `from`, block_height FROM %s ORDER BY block_height desc limit %d"
 	selectXrc20History         = "SELECT * FROM %s WHERE address='%s' ORDER BY `timestamp` desc limit %d,%d"
-	selectXrc20HoldersCount    = "SELECT COUNT(*) FROM %s WHERE contract='%s'"
+	selectXrcCount             = "SELECT COUNT(*) FROM %s"
+	selectXrcHoldersCount      = selectXrcCount + " WHERE contract='%s'"
+	selectXrcTransactionCount  = selectXrcCount + " WHERE address='%s'"
 	selectXrc20Holders         = "SELECT holder FROM %s WHERE contract='%s' ORDER BY `timestamp` desc limit %d,%d"
 	selectXrc20HistoryByTopics = "SELECT * FROM %s WHERE topics like ? ORDER BY `timestamp` desc limit %d,%d"
+	selectXrcHistoryCount      = selectXrcCount + " WHERE topics like %s"
 	selectXrc20AddressesByPage = "SELECT address, MAX(`timestamp`) AS t FROM %s GROUP BY address ORDER BY t desc limit %d,%d"
 	selectXrc20HistoryByPage   = "SELECT * FROM %s ORDER BY `timestamp` desc limit %d,%d"
 	selectAccountIncome        = "SELECT address,SUM(income) AS balance FROM %s WHERE epoch_number<=%d and address<>'' and address<>'%s' GROUP BY address ORDER BY balance DESC LIMIT %d,%d"
@@ -379,6 +383,36 @@ func (p *Protocol) GetActiveAccount(count int) ([]string, error) {
 	return addrs, nil
 }
 
+// GetXrc20TransactionCount gets xrc20 transaction count by contract address
+func (p *Protocol) GetXrc20TransactionCount(address string) (count int, err error) {
+	return p.getXrcCount(address, selectXrcTransactionCount, actions.Xrc20HistoryTableName)
+}
+
+// GetXrc721TransactionCount gets xrc721 transaction count by contract address
+func (p *Protocol) GetXrc721TransactionCount(address string) (count int, err error) {
+	return p.getXrcCount(address, selectXrcTransactionCount, actions.Xrc721HistoryTableName)
+}
+
+// GetXrc20HistoryCount gets xrc20 transaction count by topics
+func (p *Protocol) GetXrc20HistoryCount(addr string) (count int, err error) {
+	return p.getXrcCount(addrToLike(addr), selectXrcHistoryCount, actions.Xrc20HistoryTableName)
+}
+
+// GetXrc721HistoryCount gets xrc721 transaction count by topics
+func (p *Protocol) GetXrc721HistoryCount(addr string) (count int, err error) {
+	return p.getXrcCount(addrToLike(addr), selectXrcHistoryCount, actions.Xrc721HistoryTableName)
+}
+
+// GetXrc721Count gets xrc721 all transaction count
+func (p *Protocol) GetXrc721Count(address string) (count int, err error) {
+	return p.getXrcCount(address, selectXrcCount, actions.Xrc721HistoryTableName)
+}
+
+// GetXrc20Count gets xrc20 all transaction count
+func (p *Protocol) GetXrc20Count(address string) (count int, err error) {
+	return p.getXrcCount(address, selectXrcCount, actions.Xrc20HistoryTableName)
+}
+
 // GetXrc20 gets xrc20 transfer info by contract address
 func (p *Protocol) GetXrc20(address string, numPerPage, page uint64) (cons []*Xrc20Info, err error) {
 	return p.getXrc(address, actions.Xrc20HistoryTableName, numPerPage, page)
@@ -499,21 +533,36 @@ func (p *Protocol) getXrcByAddress(addr, table string, numPerPage, page uint64) 
 
 // GetXrc20HolderCount gets xrc20 holders's address
 func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
-	return p.getXrcHolderCount(addr, actions.Xrc20HoldersTableName)
+	return p.getXrcCount(addr, selectXrcHoldersCount, actions.Xrc20HoldersTableName)
+}
+
+// GetXrc20AddressesCount gets xrc20 holders's address
+func (p *Protocol) GetXrc20AddressesCount(addr string) (count int, err error) {
+	return p.getXrcCount(addr, selectTotalNumberOfHolders, actions.Xrc20HistoryTableName)
+}
+
+// GetXrc721AddressesCount gets xrc721 holders's address
+func (p *Protocol) GetXrc721AddressesCount(addr string) (count int, err error) {
+	return p.getXrcCount(addr, selectTotalNumberOfHolders, actions.Xrc721HistoryTableName)
 }
 
 // GetXrc721HolderCount gets xrc721 holders's address
 func (p *Protocol) GetXrc721HolderCount(addr string) (count int, err error) {
-	return p.getXrcHolderCount(addr, actions.Xrc721HoldersTableName)
+	return p.getXrcCount(addr, selectXrcHoldersCount, actions.Xrc721HoldersTableName)
 }
 
-func (p *Protocol) getXrcHolderCount(addr, table string) (count int, err error) {
+func (p *Protocol) getXrcCount(addr, selectSQL, table string) (count int, err error) {
 	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
 		return 0, errors.New("actions protocol is unregistered")
 	}
 
 	db := p.indexer.Store.GetDB()
-	getQuery := fmt.Sprintf(selectXrc20HoldersCount, table, addr)
+	var getQuery string
+	if !strings.EqualFold(addr, "") {
+		getQuery = fmt.Sprintf(selectSQL, table, addr)
+	} else {
+		getQuery = fmt.Sprintf(selectSQL, table)
+	}
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to prepare get query")
@@ -752,4 +801,12 @@ func (p *Protocol) GetTotalNumberOfHolders() (count int, err error) {
 		count = r.Count
 	}
 	return
+}
+
+func addrToLike(addr string) string {
+	a, err := address.FromString(addr)
+	if err != nil {
+		return ""
+	}
+	return "'%" + strings.ToLower(common.BytesToAddress(a.Bytes()).String()[2:]) + "%'"
 }
