@@ -572,7 +572,6 @@ func (p *Protocol) getCount(addr, selectSQL, table string, isContract bool) (cou
 	} else {
 		getQuery = fmt.Sprintf(selectSQL, table, addr, addr)
 	}
-	fmt.Println(getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to prepare get query")
