@@ -59,6 +59,7 @@ func (p *Protocol) updateKickoutListTable(cli iotexapi.APIServiceClient, epochNu
 	}
 	out, err := cli.ReadState(context.Background(), request)
 	if err != nil {
+		fmt.Println("not support:", err)
 		return err
 	}
 	pb := &iotextypes.KickoutCandidateList{}
