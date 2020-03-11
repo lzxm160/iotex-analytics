@@ -264,7 +264,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			return errors.Wrapf(err, "failed to put data into voting tables in epoch %d", epochNumber)
 		}
 	}
-	return nil
+	return p.updateKickoutListTable(ctx)
 }
 
 func (p *Protocol) putVotingTables(
