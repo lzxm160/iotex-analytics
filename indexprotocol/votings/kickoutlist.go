@@ -58,11 +58,11 @@ func (p *Protocol) updateKickoutListTable(ctx context.Context) error {
 	if indexCtx.ChainClient == nil {
 		return errors.New("chain client error")
 	}
-	for i := 100; i < 5000; i += 100 {
+	for i := uint64(100); i < 5000; i += 100 {
 		request := &iotexapi.ReadStateRequest{
 			ProtocolID: []byte("poll"),
 			MethodName: []byte("KickoutListByEpoch"),
-			Arguments:  [][]byte{byteutil.Uint64ToBytes(100)},
+			Arguments:  [][]byte{byteutil.Uint64ToBytes(i)},
 		}
 		out, err := indexCtx.ChainClient.ReadState(context.Background(), request)
 		if err != nil {
