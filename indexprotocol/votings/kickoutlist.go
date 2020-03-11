@@ -72,7 +72,7 @@ func (p *Protocol) updateKickoutListTable(ctx context.Context) error {
 		if err := proto.Unmarshal(out.Data, pb); err != nil {
 			return errors.Wrap(err, "failed to unmarshal candidate")
 		}
-		fmt.Println(pb.String())
+		fmt.Println("pb:", pb.String())
 	}
 
 	return nil
