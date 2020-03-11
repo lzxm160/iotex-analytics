@@ -535,7 +535,7 @@ func (p *Protocol) getXrcByAddress(addr, table string, numPerPage, page uint64) 
 
 // GetXrc20HolderCount gets xrc20 holders's address
 func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
-	return p.getCount(selectXrcHoldersCount, actions.Xrc20HoldersTableName, addr, true)
+	return p.getCount(addr, selectXrcHoldersCount, actions.Xrc20HoldersTableName, true)
 }
 
 // GetXrc20AddressesCount gets xrc20 holders's address
@@ -550,15 +550,15 @@ func (p *Protocol) GetXrc721AddressesCount(addr string) (count int, err error) {
 
 // GetXrc721HolderCount gets xrc721 holders's address
 func (p *Protocol) GetXrc721HolderCount(addr string) (count int, err error) {
-	return p.getCount(selectXrcHoldersCount, actions.Xrc721HoldersTableName, addr, true)
+	return p.getCount(addr, selectXrcHoldersCount, actions.Xrc721HoldersTableName, true)
 }
 
 // GetEvmTransferCount gets execution count
 func (p *Protocol) GetEvmTransferCount(addr string) (count int, err error) {
-	return p.getCount(selectEvmTransferCount, accounts.BalanceHistoryTableName, addr, false)
+	return p.getCount(addr, selectEvmTransferCount, accounts.BalanceHistoryTableName, false)
 }
 
-func (p *Protocol) getCount(selectSQL, table, addr string, isContract bool) (count int, err error) {
+func (p *Protocol) getCount(addr, selectSQL, table string, isContract bool) (count int, err error) {
 	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
 		return 0, errors.New("actions protocol is unregistered")
 	}
