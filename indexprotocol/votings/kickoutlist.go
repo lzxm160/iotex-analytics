@@ -16,8 +16,6 @@ import (
 	"github.com/iotexproject/iotex-core/pkg/util/byteutil"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
-
-	"github.com/iotexproject/iotex-analytics/indexcontext"
 )
 
 const (
@@ -53,27 +51,21 @@ func (p *Protocol) createKickoutListTable(ctx context.Context) error {
 }
 
 // HandleBlock handles blocks
-func (p *Protocol) updateKickoutListTable(ctx context.Context) error {
-	indexCtx := indexcontext.MustGetIndexCtx(ctx)
-	if indexCtx.ChainClient == nil {
-		return errors.New("chain client error")
+func (p *Protocol) updateKickoutListTable(cli iotexapi.APIServiceClient, epochNum uint64) error {
+	request := &iotexapi.ReadStateRequest{
+		ProtocolID: []byte("poll"),
+		MethodName: []byte("KickoutListByEpoch"),
+		Arguments:  [][]byte{byteutil.Uint64ToBytes(epochNum)},
 	}
-	for i := uint64(100); i < 5000; i += 100 {
-		request := &iotexapi.ReadStateRequest{
-			ProtocolID: []byte("poll"),
-			MethodName: []byte("KickoutListByEpoch"),
-			Arguments:  [][]byte{byteutil.Uint64ToBytes(i)},
-		}
-		out, err := indexCtx.ChainClient.ReadState(context.Background(), request)
-		if err != nil {
-			return err
-		}
-		pb := &iotextypes.KickoutCandidateList{}
-		if err := proto.Unmarshal(out.Data, pb); err != nil {
-			return errors.Wrap(err, "failed to unmarshal candidate")
-		}
-		fmt.Println("pb:", pb.String())
+	out, err := cli.ReadState(context.Background(), request)
+	if err != nil {
+		return err
 	}
+	pb := &iotextypes.KickoutCandidateList{}
+	if err := proto.Unmarshal(out.Data, pb); err != nil {
+		return errors.Wrap(err, "failed to unmarshal candidate")
+	}
+	fmt.Println("pb:", pb.String())
 
 	return nil
 }

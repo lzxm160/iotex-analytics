@@ -246,6 +246,10 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 	height := blk.Height()
 	epochNumber := p.epochCtx.GetEpochNumber(height)
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
+	err := p.updateKickoutListTable(indexCtx.ChainClient, epochNumber)
+	if err != nil {
+		return err
+	}
 	if indexCtx.ConsensusScheme == "ROLLDPOS" && height == p.epochCtx.GetEpochHeight(epochNumber) {
 		chainClient := indexCtx.ChainClient
 		electionClient := indexCtx.ElectionClient
@@ -264,7 +268,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			return errors.Wrapf(err, "failed to put data into voting tables in epoch %d", epochNumber)
 		}
 	}
-	return p.updateKickoutListTable(ctx)
+	return nil
 }
 
 func (p *Protocol) putVotingTables(
