@@ -299,16 +299,13 @@ func (p *Protocol) GetKickoutRate(startEpoch int, epochCount int, delegateName s
 	}
 	defer stmt.Close()
 
-	type countStruct struct {
-		Count uint64
-	}
-	var c countStruct
-	if err = stmt.QueryRow(delegateName).Scan(&c); err != nil {
+	var count uint64
+	if err = stmt.QueryRow(delegateName).Scan(&count); err != nil {
 		if err == sql.ErrNoRows {
 			return "", indexprotocol.ErrNotExist
 		}
 		return "", errors.Wrap(err, "failed to execute get query")
 	}
-	rate := float64(c.Count) / float64(epochCount)
+	rate := float64(count) / float64(epochCount)
 	return fmt.Sprintf("%0.2f", rate), nil
 }
