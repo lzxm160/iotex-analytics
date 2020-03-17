@@ -64,6 +64,7 @@ func (p *Protocol) updateKickoutListTable(cli iotexapi.APIServiceClient, epochNu
 		}
 		//return err
 	}
+	fmt.Println(len(kickoutList.Blacklists))
 	tx, err := p.Store.GetDB().Begin()
 	if err != nil {
 		return err
