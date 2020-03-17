@@ -248,7 +248,8 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
 	err := p.updateKickoutListTable(indexCtx.ChainClient, epochNumber)
 	if err != nil {
-		return err
+		fmt.Println(err)
+		return nil
 	}
 	if indexCtx.ConsensusScheme == "ROLLDPOS" && height == p.epochCtx.GetEpochHeight(epochNumber) {
 		chainClient := indexCtx.ChainClient
