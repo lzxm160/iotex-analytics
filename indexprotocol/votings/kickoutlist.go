@@ -23,31 +23,30 @@ const (
 	KickoutListTableName = "kickout_list"
 
 	createKickoutList = "CREATE TABLE IF NOT EXISTS %s " +
-		"(epoch_number DECIMAL(65, 0) NOT NULL, delegate_name VARCHAR(255) NOT NULL, operator_address VARCHAR(41) NOT NULL, " +
-		"reward_address VARCHAR(41) NOT NULL, total_weighted_votes DECIMAL(65, 0) NOT NULL, self_staking DECIMAL(65,0) NOT NULL, " +
-		"block_reward_percentage INT DEFAULT 100, epoch_reward_percentage INT DEFAULT 100, foundation_bonus_percentage INT DEFAULT 100, " +
-		"staking_address VARCHAR(40) DEFAULT %s)"
+		"(epoch_number DECIMAL(65, 0) NOT NULL,intensity_rate DECIMAL(65, 0) NOT NULL,address VARCHAR(41) NOT NULL, count DECIMAL(65, 0) NOT NULL)"
 )
 
 type (
-// VotingResult defines the schema of "voting result" table
-//VotingResult struct {
-//	EpochNumber               uint64
-//	DelegateName              string
-//	OperatorAddress           string
-//	RewardAddress             string
-//	TotalWeightedVotes        string
-//	SelfStaking               string
-//	BlockRewardPercentage     uint64
-//	EpochRewardPercentage     uint64
-//	FoundationBonusPercentage uint64
-//	StakingAddress            string
-//}
+	// KickoutList defines the schema of "kickout_list" table
+	KickoutList struct {
+		EpochNumber   uint64
+		IntensityRate uint64
+		Address       string
+		Count         uint64
+	}
 )
 
 // CreateTables creates tables
-func (p *Protocol) createKickoutListTable(ctx context.Context) error {
-	return nil
+func (p *Protocol) createKickoutListTable() error {
+	tx, err := p.Store.GetDB().Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err := tx.Exec(fmt.Sprintf(createKickoutList, KickoutListTableName)); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 // HandleBlock handles blocks

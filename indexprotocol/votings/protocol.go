@@ -233,6 +233,9 @@ func (p *Protocol) CreateTables(ctx context.Context) error {
 	if _, err := tx.Exec(fmt.Sprintf(createVotingMetaTable, VotingMetaTableName, EpochIndexName)); err != nil {
 		return err
 	}
+	if err := p.createKickoutListTable(); err != nil {
+		return err
+	}
 	return tx.Commit()
 }
 
