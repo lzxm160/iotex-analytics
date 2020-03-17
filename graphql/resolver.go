@@ -362,6 +362,11 @@ func (r *queryResolver) TopHolders(ctx context.Context, endEpochNumber int, pagi
 	return ret, nil
 }
 
+// KickoutRate handles the kickout rate
+func (r *queryResolver) KickoutRate(ctx context.Context, startEpoch int, epochCount int, delegateName string) (string, error) {
+	return r.VP.GetKickoutRate(startEpoch, epochCount, delegateName)
+}
+
 func (r *queryResolver) getOperatorAddress(ctx context.Context, accountResponse *Account) error {
 	argsMap := parseFieldArguments(ctx, "operatorAddress", "")
 	val, err := getStringArg(argsMap, "aliasName")

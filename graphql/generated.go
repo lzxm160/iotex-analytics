@@ -222,6 +222,7 @@ type ComplexityRoot struct {
 		Delegate           func(childComplexity int, startEpoch int, epochCount int, delegateName string) int
 		Hermes             func(childComplexity int, startEpoch int, epochCount int, rewardAddress string, waiverThreshold int) int
 		HermesAverageStats func(childComplexity int, startEpoch int, epochCount int, rewardAddress string) int
+		KickoutRate        func(childComplexity int, startEpoch int, epochCount int, delegateName string) int
 		TopHolders         func(childComplexity int, endEpochNumber int, pagination Pagination) int
 		Voting             func(childComplexity int, startEpoch int, epochCount int) int
 		Xrc20              func(childComplexity int) int
@@ -333,6 +334,7 @@ type QueryResolver interface {
 	Xrc721(ctx context.Context) (*Xrc721, error)
 	Action(ctx context.Context) (*Action, error)
 	TopHolders(ctx context.Context, endEpochNumber int, pagination Pagination) ([]*TopHolder, error)
+	KickoutRate(ctx context.Context, startEpoch int, epochCount int, delegateName string) (string, error)
 }
 
 type executableSchema struct {
@@ -1161,6 +1163,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.HermesAverageStats(childComplexity, args["startEpoch"].(int), args["epochCount"].(int), args["rewardAddress"].(string)), true
 
+	case "Query.KickoutRate":
+		if e.complexity.Query.KickoutRate == nil {
+			break
+		}
+
+		args, err := ec.field_Query_kickoutRate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.KickoutRate(childComplexity, args["startEpoch"].(int), args["epochCount"].(int), args["delegateName"].(string)), true
+
 	case "Query.TopHolders":
 		if e.complexity.Query.TopHolders == nil {
 			break
@@ -1680,6 +1694,7 @@ var parsedSchema = gqlparser.MustLoadSchema(
     xrc721: Xrc721
     action: Action
     topHolders(endEpochNumber: Int!, pagination: Pagination!):[TopHolder]!
+    kickoutRate(startEpoch: Int!, epochCount: Int!, delegateName: String!): String!
 }
 
 type TopHolder{
@@ -2302,6 +2317,36 @@ func (ec *executionContext) field_Query_hermes_args(ctx context.Context, rawArgs
 		}
 	}
 	args["waiverThreshold"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_kickoutRate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["startEpoch"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["startEpoch"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["epochCount"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["epochCount"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["delegateName"]; ok {
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["delegateName"] = arg2
 	return args, nil
 }
 
@@ -5593,6 +5638,40 @@ func (ec *executionContext) _Query_topHolders(ctx context.Context, field graphql
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNTopHolder2ᚕᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐTopHolder(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_kickoutRate(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_kickoutRate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().KickoutRate(rctx, args["startEpoch"].(int), args["epochCount"].(int), args["delegateName"].(string))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -9027,6 +9106,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_topHolders(ctx, field)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
+		case "kickoutRate":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_kickoutRate(ctx, field)
 				if res == graphql.Null {
 					invalid = true
 				}
