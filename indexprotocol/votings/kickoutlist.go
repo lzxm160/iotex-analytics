@@ -21,9 +21,10 @@ import (
 const (
 	// KickoutListTableName is the table name of kickout list
 	KickoutListTableName = "kickout_list"
-
-	createKickoutList = "CREATE TABLE IF NOT EXISTS %s " +
-		"(epoch_number DECIMAL(65, 0) NOT NULL,intensity_rate DECIMAL(65, 0) NOT NULL,address VARCHAR(41) NOT NULL, count DECIMAL(65, 0) NOT NULL)"
+	// EpochAddressIndexName is the index name of epoch number and address on kickout table
+	EpochAddressIndexName = "epoch_address_index"
+	createKickoutList     = "CREATE TABLE IF NOT EXISTS %s " +
+		"(epoch_number DECIMAL(65, 0) NOT NULL,intensity_rate DECIMAL(65, 0) NOT NULL,address VARCHAR(41) NOT NULL, count DECIMAL(65, 0) NOT NULL, UNIQUE KEY %s (epoch_number, address))"
 )
 
 type (
@@ -43,7 +44,7 @@ func (p *Protocol) createKickoutListTable() error {
 		return err
 	}
 	defer tx.Rollback()
-	if _, err := tx.Exec(fmt.Sprintf(createKickoutList, KickoutListTableName)); err != nil {
+	if _, err := tx.Exec(fmt.Sprintf(createKickoutList, KickoutListTableName, EpochAddressIndexName)); err != nil {
 		return err
 	}
 	return tx.Commit()
