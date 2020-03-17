@@ -54,6 +54,7 @@ func (p *Protocol) createKickoutListTable() error {
 func (p *Protocol) updateKickoutListTable(cli iotexapi.APIServiceClient, epochNum uint64) error {
 	kickoutList, err := p.getKickoutList(cli, epochNum)
 	if err != nil {
+		fmt.Println("xxxxxxxxxxxxxxxxxxxx")
 		kickoutList.IntensityRate = 11
 		kickoutList.Blacklists = []*iotextypes.KickoutInfo{
 			&iotextypes.KickoutInfo{Address: "1", Count: 1},
