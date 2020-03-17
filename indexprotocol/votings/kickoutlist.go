@@ -76,6 +76,7 @@ func (p *Protocol) updateKickoutListTable(cli iotexapi.APIServiceClient, epochNu
 	fmt.Println(len(kickoutList.Blacklists), ":", insertQuery)
 
 	for _, k := range kickoutList.Blacklists {
+		fmt.Println(epochNum, ":", kickoutList.IntensityRate, ":", k.Address, ":", k.Count)
 		if _, err := tx.Exec(insertQuery, epochNum, kickoutList.IntensityRate, k.Address, k.Count); err != nil {
 			return errors.Wrap(err, "failed to update kickout list table")
 		}
