@@ -62,7 +62,7 @@ func (p *Protocol) updateKickoutListTable(cli iotexapi.APIServiceClient, epochNu
 			&iotextypes.KickoutInfo{Address: "3", Count: 3},
 			&iotextypes.KickoutInfo{Address: "3", Count: 3},
 		}
-		return err
+		//return err
 	}
 	tx, err := p.Store.GetDB().Begin()
 	if err != nil {
