@@ -55,6 +55,7 @@ func (p *Protocol) updateKickoutListTable(cli iotexapi.APIServiceClient, epochNu
 	kickoutList, err := p.getKickoutList(cli, epochNum)
 	if err != nil {
 		fmt.Println("xxxxxxxxxxxxxxxxxxxx")
+		kickoutList = &iotextypes.KickoutCandidateList{}
 		kickoutList.IntensityRate = 11
 		kickoutList.Blacklists = []*iotextypes.KickoutInfo{
 			&iotextypes.KickoutInfo{Address: "1", Count: 1},
@@ -64,9 +65,8 @@ func (p *Protocol) updateKickoutListTable(cli iotexapi.APIServiceClient, epochNu
 			&iotextypes.KickoutInfo{Address: "3", Count: 3},
 		}
 		//return err
-		fmt.Println(len(kickoutList.Blacklists))
 	}
-
+	fmt.Println("xxxxxxxxxxxxxxxxxxxx:", len(kickoutList.Blacklists))
 	tx, err := p.Store.GetDB().Begin()
 	if err != nil {
 		return err
