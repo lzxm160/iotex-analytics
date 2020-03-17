@@ -60,9 +60,6 @@ func (p *Protocol) updateKickoutListTable(cli iotexapi.APIServiceClient, epochNu
 		kickoutList.Blacklists = []*iotextypes.KickoutInfo{
 			&iotextypes.KickoutInfo{Address: "1", Count: 1},
 			&iotextypes.KickoutInfo{Address: "2", Count: 2},
-			&iotextypes.KickoutInfo{Address: "1", Count: 4},
-			&iotextypes.KickoutInfo{Address: "3", Count: 3},
-			&iotextypes.KickoutInfo{Address: "3", Count: 3},
 		}
 		//return err
 	}
