@@ -199,6 +199,10 @@ type ComplexityRoot struct {
 		WaiveServiceFee     func(childComplexity int) int
 	}
 
+	KickoutRate struct {
+		Rate func(childComplexity int) int
+	}
+
 	NumberOfActions struct {
 		Count func(childComplexity int) int
 		Exist func(childComplexity int) int
@@ -334,7 +338,7 @@ type QueryResolver interface {
 	Xrc721(ctx context.Context) (*Xrc721, error)
 	Action(ctx context.Context) (*Action, error)
 	TopHolders(ctx context.Context, endEpochNumber int, pagination Pagination) ([]*TopHolder, error)
-	KickoutRate(ctx context.Context, startEpoch int, epochCount int, delegateName string) (string, error)
+	KickoutRate(ctx context.Context, startEpoch int, epochCount int, delegateName string) (*KickoutRate, error)
 }
 
 type executableSchema struct {
@@ -1057,6 +1061,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.HermesDistribution.WaiveServiceFee(childComplexity), true
 
+	case "KickoutRate.Rate":
+		if e.complexity.KickoutRate.Rate == nil {
+			break
+		}
+
+		return e.complexity.KickoutRate.Rate(childComplexity), true
+
 	case "NumberOfActions.Count":
 		if e.complexity.NumberOfActions.Count == nil {
 			break
@@ -1694,7 +1705,11 @@ var parsedSchema = gqlparser.MustLoadSchema(
     xrc721: Xrc721
     action: Action
     topHolders(endEpochNumber: Int!, pagination: Pagination!):[TopHolder]!
-    kickoutRate(startEpoch: Int!, epochCount: Int!, delegateName: String!): String!
+    kickoutRate(startEpoch: Int!, epochCount: Int!, delegateName: String!): KickoutRate!
+}
+
+type KickoutRate{
+    rate:String!
 }
 
 type TopHolder{
@@ -5173,6 +5188,33 @@ func (ec *executionContext) _HermesDistribution_refund(ctx context.Context, fiel
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _KickoutRate_rate(ctx context.Context, field graphql.CollectedField, obj *KickoutRate) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "KickoutRate",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rate, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _NumberOfActions_exist(ctx context.Context, field graphql.CollectedField, obj *NumberOfActions) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
@@ -5668,10 +5710,10 @@ func (ec *executionContext) _Query_kickoutRate(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*KickoutRate)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNKickoutRate2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐKickoutRate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -8882,6 +8924,33 @@ func (ec *executionContext) _HermesDistribution(ctx context.Context, sel ast.Sel
 	return out
 }
 
+var kickoutRateImplementors = []string{"KickoutRate"}
+
+func (ec *executionContext) _KickoutRate(ctx context.Context, sel ast.SelectionSet, obj *KickoutRate) graphql.Marshaler {
+	fields := graphql.CollectFields(ctx, sel, kickoutRateImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	invalid := false
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("KickoutRate")
+		case "rate":
+			out.Values[i] = ec._KickoutRate_rate(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalid {
+		return graphql.Null
+	}
+	return out
+}
+
 var numberOfActionsImplementors = []string{"NumberOfActions"}
 
 func (ec *executionContext) _NumberOfActions(ctx context.Context, sel ast.SelectionSet, obj *NumberOfActions) graphql.Marshaler {
@@ -10348,6 +10417,20 @@ func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}
 
 func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
 	return graphql.MarshalInt(v)
+}
+
+func (ec *executionContext) marshalNKickoutRate2githubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐKickoutRate(ctx context.Context, sel ast.SelectionSet, v KickoutRate) graphql.Marshaler {
+	return ec._KickoutRate(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNKickoutRate2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐKickoutRate(ctx context.Context, sel ast.SelectionSet, v *KickoutRate) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._KickoutRate(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNPagination2githubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐPagination(ctx context.Context, v interface{}) (Pagination, error) {

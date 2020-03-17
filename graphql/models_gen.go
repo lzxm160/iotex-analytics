@@ -166,6 +166,10 @@ type HermesDistribution struct {
 	Refund              string                `json:"refund"`
 }
 
+type KickoutRate struct {
+	Rate string `json:"rate"`
+}
+
 type NumberOfActions struct {
 	Exist bool `json:"exist"`
 	Count int  `json:"count"`
