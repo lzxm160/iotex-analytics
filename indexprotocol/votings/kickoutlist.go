@@ -24,7 +24,7 @@ const (
 	// EpochAddressIndexName is the index name of epoch number and address on kickout table
 	EpochAddressIndexName = "epoch_address_index"
 	createKickoutList     = "CREATE TABLE IF NOT EXISTS %s " +
-		"(epoch_number DECIMAL(65, 0) NOT NULL,intensity_rate DECIMAL(65, 0) NOT NULL,address VARCHAR(41) NOT NULL, count DECIMAL(65, 0) NOT NULL, UNIQUE KEY %s (epoch_number, address))"
+		"(epoch_number DECIMAL(65, 0) NOT NULL,intensity_rate DECIMAL(65, 0) NOT NULL,address VARCHAR(41) NOT NULL, count DECIMAL(65, 0) NOT NULL,PRIMARY KEY (`epoch_number`, `address`), UNIQUE KEY %s (epoch_number, address))"
 )
 
 type (
