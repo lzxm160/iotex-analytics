@@ -9,6 +9,7 @@ type Query {
     xrc721: Xrc721
     action: Action
     topHolders(endEpochNumber: Int!, pagination: Pagination!):[TopHolder]!
+    kickoutRate(startEpoch: Int!, epochCount: Int!, delegateName: String!): String!
 }
 
 type TopHolder{
