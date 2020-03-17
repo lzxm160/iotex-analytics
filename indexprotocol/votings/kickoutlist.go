@@ -11,11 +11,11 @@ import (
 	"fmt"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/iotexproject/go-pkgs/byteutil"
+	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 	"github.com/pkg/errors"
 
-	"github.com/iotexproject/iotex-core/pkg/util/byteutil"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
-	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 )
 
 const (
@@ -25,6 +25,7 @@ const (
 	EpochAddressIndexName = "epoch_address_index"
 	createKickoutList     = "CREATE TABLE IF NOT EXISTS %s " +
 		"(epoch_number DECIMAL(65, 0) NOT NULL,intensity_rate DECIMAL(65, 0) NOT NULL,address VARCHAR(41) NOT NULL, count DECIMAL(65, 0) NOT NULL,PRIMARY KEY (`epoch_number`, `address`), UNIQUE KEY %s (epoch_number, address))"
+	insertKickoutList = "INSERT IGNORE INTO %s (epoch_number,intensity_rate,address,count) VALUES (?, ?, ?, ?)"
 )
 
 type (
@@ -50,8 +51,35 @@ func (p *Protocol) createKickoutListTable() error {
 	return tx.Commit()
 }
 
-// HandleBlock handles blocks
 func (p *Protocol) updateKickoutListTable(cli iotexapi.APIServiceClient, epochNum uint64) error {
+	kickoutList, err := p.getKickoutList(cli, epochNum)
+	if err != nil {
+		kickoutList.IntensityRate = 11
+		kickoutList.Blacklists = []*iotextypes.KickoutInfo{
+			&iotextypes.KickoutInfo{Address: "1", Count: 1},
+			&iotextypes.KickoutInfo{Address: "2", Count: 2},
+			&iotextypes.KickoutInfo{Address: "1", Count: 4},
+			&iotextypes.KickoutInfo{Address: "3", Count: 3},
+			&iotextypes.KickoutInfo{Address: "3", Count: 3},
+		}
+		return err
+	}
+	tx, err := p.Store.GetDB().Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	insertQuery := fmt.Sprintf(insertKickoutList, KickoutListTableName)
+	for _, k := range kickoutList.Blacklists {
+		if _, err := tx.Exec(insertQuery, epochNum, kickoutList.IntensityRate, k.Address, k.Count); err != nil {
+			return errors.Wrap(err, "failed to update kickout list table")
+		}
+	}
+
+	return tx.Commit()
+}
+
+func (p *Protocol) getKickoutList(cli iotexapi.APIServiceClient, epochNum uint64) (*iotextypes.KickoutCandidateList, error) {
 	request := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte("poll"),
 		MethodName: []byte("KickoutListByEpoch"),
@@ -60,13 +88,13 @@ func (p *Protocol) updateKickoutListTable(cli iotexapi.APIServiceClient, epochNu
 	out, err := cli.ReadState(context.Background(), request)
 	if err != nil {
 		fmt.Println("not support:", err)
-		return err
+		return nil, err
 	}
 	pb := &iotextypes.KickoutCandidateList{}
 	if err := proto.Unmarshal(out.Data, pb); err != nil {
-		return errors.Wrap(err, "failed to unmarshal candidate")
+		return nil, errors.Wrap(err, "failed to unmarshal candidate")
 	}
 	fmt.Println("pb:", pb.String())
 
-	return nil
+	return pb, nil
 }
