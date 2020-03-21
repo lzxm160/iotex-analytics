@@ -78,7 +78,7 @@ func TestProtocol(t *testing.T) {
 	kickoutListByEpochRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(poll.ProtocolID),
 		MethodName: []byte("KickoutListByEpoch"),
-		Arguments:  [][]byte{byteutil.Uint64ToBytes(100)},
+		Arguments:  [][]byte{byteutil.Uint64ToBytes(200)},
 	}
 	pb := &iotextypes.KickoutCandidateList{}
 	data, err := proto.Marshal(pb)
