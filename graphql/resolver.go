@@ -208,7 +208,7 @@ func (r *queryResolver) Delegate(ctx context.Context, startEpoch int, epochCount
 		g.Go(func() error { return r.getStaking(delegateResponse, startEpoch, epochCount, delegateName) })
 	}
 	if containField(requestedFields, "kickoutRate") {
-		g.Go(func() error { return r.getStaking(delegateResponse, startEpoch, epochCount, delegateName) })
+		g.Go(func() error { return r.KickoutRate(delegateResponse, startEpoch, epochCount, delegateName) })
 	}
 	return delegateResponse, g.Wait()
 }
