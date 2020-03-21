@@ -290,6 +290,7 @@ func (p *Protocol) GetKickoutRate(startEpoch int, epochCount int, delegateName s
 		return "", errors.New("votings protocol is unregistered")
 	}
 	db := p.indexer.Store.GetDB()
+	fmt.Println("before getKickoutCount")
 	kickoutCount, err := p.getKickoutCount(db, startEpoch, epochCount, delegateName)
 	if err != nil {
 		return "", errors.New("get Kickout Count error")
