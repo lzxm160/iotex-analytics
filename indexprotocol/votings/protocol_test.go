@@ -74,7 +74,7 @@ func TestProtocol(t *testing.T) {
 		ElectionClient:  electionClient,
 		ConsensusScheme: "ROLLDPOS",
 	})
-	
+
 	kickoutListByEpochRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(poll.ProtocolID),
 		MethodName: []byte("KickoutListByEpoch"),
@@ -89,7 +89,7 @@ func TestProtocol(t *testing.T) {
 	readStateRequestForGravityHeight := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(poll.ProtocolID),
 		MethodName: []byte("GetGravityChainStartHeight"),
-		Arguments:  [][]byte{byteutil.Uint64ToBytes(1)},
+		Arguments:  [][]byte{byteutil.Uint64ToBytes(2)},
 	}
 
 	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequestForGravityHeight).Times(1).Return(&iotexapi.ReadStateResponse{
