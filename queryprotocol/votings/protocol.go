@@ -10,13 +10,12 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/iotexproject/iotex-analytics/queryprotocol"
-
 	"github.com/pkg/errors"
 
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
 	"github.com/iotexproject/iotex-analytics/indexprotocol/votings"
 	"github.com/iotexproject/iotex-analytics/indexservice"
+	"github.com/iotexproject/iotex-analytics/queryprotocol"
 	"github.com/iotexproject/iotex-analytics/queryprotocol/chainmeta/chainmetautil"
 	s "github.com/iotexproject/iotex-analytics/sql"
 )
@@ -297,25 +296,18 @@ func (p *Protocol) GetKickoutRate(startEpoch int, epochCount int, delegateName s
 	if err != nil {
 		return "", errors.New("get Kickout Count error")
 	}
-	fmt.Println("appearingCount:", appearingCount)
 	kickoutCount := uint64(0)
 	for i := startEpoch; i < startEpoch+epochCount; i++ {
 		address, err := p.getOperatorAddress(delegateName, i)
 		if err != nil {
-			fmt.Println(err)
 			continue
 		}
-		fmt.Println(fmt.Sprintf(selectKickoutExist,
-			votings.KickoutListTableName, i, address))
 		exist, _ := queryprotocol.RowExists(db, fmt.Sprintf(selectKickoutExist,
 			votings.KickoutListTableName, i, address))
 		if exist {
 			kickoutCount++
 		}
 	}
-
-	fmt.Println("kickoutCount:", kickoutCount)
-
 	if appearingCount == 0 {
 		return "0", nil
 	}
@@ -326,13 +318,10 @@ func (p *Protocol) GetKickoutRate(startEpoch int, epochCount int, delegateName s
 func (p *Protocol) getAppearingCount(db *sql.DB, startEpoch int, epochCount int, delegateName string) (count uint64, err error) {
 	getQuery := fmt.Sprintf(selectAppearingCount,
 		votings.VotingResultTableName, startEpoch, startEpoch+epochCount)
-	fmt.Println(getQuery)
-	fmt.Println(delegateName)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return
 	}
-	fmt.Println(getQuery)
 	defer stmt.Close()
 	if err = stmt.QueryRow(delegateName).Scan(&count); err != nil {
 		if err == sql.ErrNoRows {
@@ -349,10 +338,8 @@ func (p *Protocol) getOperatorAddress(delegateName string, epoch int) (string, e
 
 	}
 	db := p.indexer.Store.GetDB()
-
 	getQuery := fmt.Sprintf(selectOperatorOfEpoch,
 		votings.VotingResultTableName)
-	fmt.Println(getQuery, ":", delegateName, ":", epoch)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to prepare get query")
