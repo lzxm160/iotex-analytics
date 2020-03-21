@@ -300,6 +300,9 @@ func (p *Protocol) GetKickoutRate(startEpoch int, epochCount int, delegateName s
 		return "", errors.New("get Kickout Count error")
 	}
 	fmt.Println("appearingCount:", appearingCount)
+	if appearingCount+kickoutCount == 0 {
+		return "0", nil
+	}
 	rate := float64(kickoutCount) / float64(appearingCount+kickoutCount)
 	return fmt.Sprintf("%0.2f", rate), nil
 }
