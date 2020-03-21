@@ -68,7 +68,9 @@ func (p *Protocol) getKickoutList(cli iotexapi.APIServiceClient, epochNum uint64
 	}
 	out, err := cli.ReadState(context.Background(), request)
 	if err != nil {
-		return nil, err
+		fmt.Println("getKickoutList:", err)
+		return nil, nil
+		//return nil, err
 	}
 	pb := &iotextypes.KickoutCandidateList{}
 	if err := proto.Unmarshal(out.Data, pb); err != nil {
