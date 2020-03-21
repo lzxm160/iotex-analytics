@@ -26,7 +26,7 @@ const (
 	selectDelegate             = "SELECT delegate_name FROM %s WHERE operator_address=? ORDER BY epoch_number DESC LIMIT 1"
 	selectOperator             = "SELECT operator_address FROM %s WHERE delegate_name=? ORDER BY epoch_number DESC LIMIT 1"
 	selectKickoutCount         = "select count(epoch_number) from %s where epoch_number>=%d and epoch_number<%d and address=?"
-	selectAppearingCount       = "select count(epoch_number) from %s where epoch_number>=%d and epoch_number<%d and operator_address=?"
+	selectAppearingCount       = "select count(epoch_number) from %s where epoch_number>=%d and epoch_number<%d and delegate_name=?"
 )
 
 // Protocol defines the protocol of querying tables
