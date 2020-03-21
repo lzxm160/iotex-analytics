@@ -12,9 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gogo/protobuf/proto"
-
 	"github.com/golang/mock/gomock"
+	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/stretchr/testify/require"
 
@@ -86,7 +85,7 @@ func TestProtocol(t *testing.T) {
 	}, nil)
 
 	kickoutListByEpochRequest := &iotexapi.ReadStateRequest{
-		ProtocolID: []byte("poll"),
+		ProtocolID: []byte(poll.ProtocolID),
 		MethodName: []byte("KickoutListByEpoch"),
 		Arguments:  [][]byte{byteutil.Uint64ToBytes(1)},
 	}
