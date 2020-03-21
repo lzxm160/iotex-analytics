@@ -12,6 +12,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gogo/protobuf/proto"
+
 	"github.com/golang/mock/gomock"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/stretchr/testify/require"
@@ -81,6 +83,17 @@ func TestProtocol(t *testing.T) {
 
 	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequestForGravityHeight).Times(1).Return(&iotexapi.ReadStateResponse{
 		Data: byteutil.Uint64ToBytes(uint64(1000)),
+	}, nil)
+
+	kickoutListByEpochRequest := &iotexapi.ReadStateRequest{
+		ProtocolID: []byte("poll"),
+		MethodName: []byte("KickoutListByEpoch"),
+		Arguments:  [][]byte{byteutil.Uint64ToBytes(1)},
+	}
+	pb := &iotextypes.KickoutCandidateList{}
+	data, err := proto.Marshal(pb)
+	chainClient.EXPECT().ReadState(gomock.Any(), kickoutListByEpochRequest).Times(1).Return(&iotexapi.ReadStateResponse{
+		Data: data,
 	}, nil)
 
 	timestamp, err := ptypes.TimestampProto(time.Unix(1000, 0))
