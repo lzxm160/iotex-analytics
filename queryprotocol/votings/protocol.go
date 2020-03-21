@@ -304,6 +304,8 @@ func (p *Protocol) GetKickoutRate(startEpoch int, epochCount int, delegateName s
 		if err != nil {
 			return "", err
 		}
+		fmt.Println(fmt.Sprintf(selectKickoutExist,
+			votings.KickoutListTableName, address, i))
 		exist, _ := queryprotocol.RowExists(db, fmt.Sprintf(selectKickoutExist,
 			votings.KickoutListTableName, address, i))
 		if exist {
