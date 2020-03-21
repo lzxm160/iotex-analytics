@@ -78,7 +78,7 @@ func TestProtocol(t *testing.T) {
 	kickoutListByEpochRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(poll.ProtocolID),
 		MethodName: []byte("KickoutListByEpoch"),
-		Arguments:  [][]byte{byteutil.Uint64ToBytes(1)},
+		Arguments:  [][]byte{byteutil.Uint64ToBytes(100)},
 	}
 	pb := &iotextypes.KickoutCandidateList{}
 	data, err := proto.Marshal(pb)
@@ -89,7 +89,7 @@ func TestProtocol(t *testing.T) {
 	readStateRequestForGravityHeight := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(poll.ProtocolID),
 		MethodName: []byte("GetGravityChainStartHeight"),
-		Arguments:  [][]byte{byteutil.Uint64ToBytes(2)},
+		Arguments:  [][]byte{byteutil.Uint64ToBytes(200)},
 	}
 
 	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequestForGravityHeight).Times(1).Return(&iotexapi.ReadStateResponse{
