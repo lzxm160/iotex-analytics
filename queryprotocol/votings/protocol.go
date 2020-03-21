@@ -25,6 +25,7 @@ const (
 	selectVotingMeta           = "SELECT * FROM %s where epoch_number >= ? AND epoch_number <= ?"
 	selectDelegate             = "SELECT delegate_name FROM %s WHERE operator_address=? ORDER BY epoch_number DESC LIMIT 1"
 	selectOperator             = "SELECT operator_address FROM %s WHERE delegate_name=? ORDER BY epoch_number DESC LIMIT 1"
+	selectKickoutList          = "select count(epoch_number) from %s where epoch_number>=%d and epoch_number<%d and address=?"
 )
 
 // Protocol defines the protocol of querying tables
@@ -280,4 +281,31 @@ func (p *Protocol) GetOperatorAddress(aliasName string) (string, error) {
 	}
 
 	return address, nil
+}
+
+//GetKickoutRate gets kickout rate
+func (p *Protocol) GetKickoutRate(startEpoch int, epochCount int, delegateName string) (string, error) {
+	if _, ok := p.indexer.Registry.Find(votings.ProtocolID); !ok {
+		return "", errors.New("votings protocol is unregistered")
+
+	}
+	db := p.indexer.Store.GetDB()
+
+	getQuery := fmt.Sprintf(selectKickoutList,
+		votings.KickoutListTableName, startEpoch, startEpoch+epochCount)
+	stmt, err := db.Prepare(getQuery)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to prepare get query")
+	}
+	defer stmt.Close()
+
+	var count uint64
+	if err = stmt.QueryRow(delegateName).Scan(&count); err != nil {
+		if err == sql.ErrNoRows {
+			return "", indexprotocol.ErrNotExist
+		}
+		return "", errors.Wrap(err, "failed to execute get query")
+	}
+	rate := float64(count) / float64(epochCount)
+	return fmt.Sprintf("%0.2f", rate), nil
 }

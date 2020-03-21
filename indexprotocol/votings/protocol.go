@@ -233,6 +233,9 @@ func (p *Protocol) CreateTables(ctx context.Context) error {
 	if _, err := tx.Exec(fmt.Sprintf(createVotingMetaTable, VotingMetaTableName, EpochIndexName)); err != nil {
 		return err
 	}
+	if err := p.createKickoutListTable(); err != nil {
+		return err
+	}
 	return tx.Commit()
 }
 
@@ -246,6 +249,11 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 	height := blk.Height()
 	epochNumber := p.epochCtx.GetEpochNumber(height)
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
+	if epochNumber == height {
+		if err := p.updateKickoutListTable(indexCtx.ChainClient, epochNumber); err != nil {
+			return err
+		}
+	}
 	if indexCtx.ConsensusScheme == "ROLLDPOS" && height == p.epochCtx.GetEpochHeight(epochNumber) {
 		chainClient := indexCtx.ChainClient
 		electionClient := indexCtx.ElectionClient

@@ -10,6 +10,11 @@ type Query {
     action: Action
     topHolders(endEpochNumber: Int!, pagination: Pagination!):[TopHolder]!
     hermes2(startEpoch: Int!, epochCount: Int!): Hermes2
+    kickoutRate(startEpoch: Int!, epochCount: Int!, delegateName: String!): KickoutRate!
+}
+
+type KickoutRate{
+    rate:String!
 }
 
 type TopHolder{
