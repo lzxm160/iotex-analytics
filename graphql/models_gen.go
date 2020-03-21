@@ -125,6 +125,7 @@ type Delegate struct {
 	Bookkeeping  *Bookkeeping      `json:"bookkeeping"`
 	BucketInfo   *BucketInfoOutput `json:"bucketInfo"`
 	Staking      *StakingOutput    `json:"staking"`
+	KickoutRate  string            `json:"kickoutRate"`
 }
 
 type DelegateAmount struct {
@@ -186,10 +187,6 @@ type HermesDistribution struct {
 	VoterCount          int                   `json:"voterCount"`
 	WaiveServiceFee     bool                  `json:"waiveServiceFee"`
 	Refund              string                `json:"refund"`
-}
-
-type KickoutRate struct {
-	Rate string `json:"rate"`
 }
 
 type NumberOfActions struct {

@@ -160,6 +160,7 @@ type ComplexityRoot struct {
 	Delegate struct {
 		Bookkeeping  func(childComplexity int, percentage int, includeFoundationBonus bool) int
 		BucketInfo   func(childComplexity int) int
+		KickoutRate  func(childComplexity int) int
 		Productivity func(childComplexity int) int
 		Reward       func(childComplexity int) int
 		Staking      func(childComplexity int) int
@@ -221,10 +222,6 @@ type ComplexityRoot struct {
 		WaiveServiceFee     func(childComplexity int) int
 	}
 
-	KickoutRate struct {
-		Rate func(childComplexity int) int
-	}
-
 	NumberOfActions struct {
 		Count func(childComplexity int) int
 		Exist func(childComplexity int) int
@@ -249,7 +246,6 @@ type ComplexityRoot struct {
 		Hermes             func(childComplexity int, startEpoch int, epochCount int, rewardAddress string, waiverThreshold int) int
 		Hermes2            func(childComplexity int, startEpoch int, epochCount int) int
 		HermesAverageStats func(childComplexity int, startEpoch int, epochCount int, rewardAddress string) int
-		KickoutRate        func(childComplexity int, startEpoch int, epochCount int, delegateName string) int
 		TopHolders         func(childComplexity int, endEpochNumber int, pagination Pagination) int
 		Voting             func(childComplexity int, startEpoch int, epochCount int) int
 		Xrc20              func(childComplexity int) int
@@ -367,7 +363,6 @@ type QueryResolver interface {
 	Action(ctx context.Context) (*Action, error)
 	TopHolders(ctx context.Context, endEpochNumber int, pagination Pagination) ([]*TopHolder, error)
 	Hermes2(ctx context.Context, startEpoch int, epochCount int) (*Hermes2, error)
-	KickoutRate(ctx context.Context, startEpoch int, epochCount int, delegateName string) (*KickoutRate, error)
 }
 
 type executableSchema struct {
@@ -941,6 +936,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Delegate.BucketInfo(childComplexity), true
 
+	case "Delegate.KickoutRate":
+		if e.complexity.Delegate.KickoutRate == nil {
+			break
+		}
+
+		return e.complexity.Delegate.KickoutRate(childComplexity), true
+
 	case "Delegate.Productivity":
 		if e.complexity.Delegate.Productivity == nil {
 			break
@@ -1180,13 +1182,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.HermesDistribution.WaiveServiceFee(childComplexity), true
 
-	case "KickoutRate.Rate":
-		if e.complexity.KickoutRate.Rate == nil {
-			break
-		}
-
-		return e.complexity.KickoutRate.Rate(childComplexity), true
-
 	case "NumberOfActions.Count":
 		if e.complexity.NumberOfActions.Count == nil {
 			break
@@ -1304,18 +1299,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.HermesAverageStats(childComplexity, args["startEpoch"].(int), args["epochCount"].(int), args["rewardAddress"].(string)), true
-
-	case "Query.KickoutRate":
-		if e.complexity.Query.KickoutRate == nil {
-			break
-		}
-
-		args, err := ec.field_Query_kickoutRate_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.KickoutRate(childComplexity, args["startEpoch"].(int), args["epochCount"].(int), args["delegateName"].(string)), true
 
 	case "Query.TopHolders":
 		if e.complexity.Query.TopHolders == nil {
@@ -1851,11 +1834,6 @@ var parsedSchema = gqlparser.MustLoadSchema(
     action: Action
     topHolders(endEpochNumber: Int!, pagination: Pagination!):[TopHolder]!
     hermes2(startEpoch: Int!, epochCount: Int!): Hermes2
-    kickoutRate(startEpoch: Int!, epochCount: Int!, delegateName: String!): KickoutRate!
-}
-
-type KickoutRate{
-    rate:String!
 }
 
 type TopHolder{
@@ -1909,6 +1887,7 @@ type Delegate {
     bookkeeping(percentage: Int!, includeFoundationBonus: Boolean!): Bookkeeping
     bucketInfo: BucketInfoOutput
     staking: StakingOutput
+    kickoutRate: String!
 }
 
 type StakingOutput{
@@ -2584,36 +2563,6 @@ func (ec *executionContext) field_Query_hermes_args(ctx context.Context, rawArgs
 		}
 	}
 	args["waiverThreshold"] = arg3
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_kickoutRate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["startEpoch"]; ok {
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["startEpoch"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["epochCount"]; ok {
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["epochCount"] = arg1
-	var arg2 string
-	if tmp, ok := rawArgs["delegateName"]; ok {
-		arg2, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["delegateName"] = arg2
 	return args, nil
 }
 
@@ -4934,6 +4883,33 @@ func (ec *executionContext) _Delegate_staking(ctx context.Context, field graphql
 	return ec.marshalOStakingOutput2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐStakingOutput(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Delegate_kickoutRate(ctx context.Context, field graphql.CollectedField, obj *Delegate) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Delegate",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.KickoutRate, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _DelegateAmount_delegateName(ctx context.Context, field graphql.CollectedField, obj *DelegateAmount) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
@@ -5732,33 +5708,6 @@ func (ec *executionContext) _HermesDistribution_refund(ctx context.Context, fiel
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _KickoutRate_rate(ctx context.Context, field graphql.CollectedField, obj *KickoutRate) graphql.Marshaler {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
-	rctx := &graphql.ResolverContext{
-		Object:   "KickoutRate",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Rate, nil
-	})
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _NumberOfActions_exist(ctx context.Context, field graphql.CollectedField, obj *NumberOfActions) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
@@ -6255,40 +6204,6 @@ func (ec *executionContext) _Query_hermes2(ctx context.Context, field graphql.Co
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOHermes22ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐHermes2(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_kickoutRate(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
-	rctx := &graphql.ResolverContext{
-		Object:   "Query",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_kickoutRate_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().KickoutRate(rctx, args["startEpoch"].(int), args["epochCount"].(int), args["delegateName"].(string))
-	})
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*KickoutRate)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNKickoutRate2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐKickoutRate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -9337,6 +9252,11 @@ func (ec *executionContext) _Delegate(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._Delegate_bucketInfo(ctx, field, obj)
 		case "staking":
 			out.Values[i] = ec._Delegate_staking(ctx, field, obj)
+		case "kickoutRate":
+			out.Values[i] = ec._Delegate_kickoutRate(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9685,33 +9605,6 @@ func (ec *executionContext) _HermesDistribution(ctx context.Context, sel ast.Sel
 	return out
 }
 
-var kickoutRateImplementors = []string{"KickoutRate"}
-
-func (ec *executionContext) _KickoutRate(ctx context.Context, sel ast.SelectionSet, obj *KickoutRate) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, kickoutRateImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	invalid := false
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("KickoutRate")
-		case "rate":
-			out.Values[i] = ec._KickoutRate_rate(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalid = true
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalid {
-		return graphql.Null
-	}
-	return out
-}
-
 var numberOfActionsImplementors = []string{"NumberOfActions"}
 
 func (ec *executionContext) _NumberOfActions(ctx context.Context, sel ast.SelectionSet, obj *NumberOfActions) graphql.Marshaler {
@@ -9950,20 +9843,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_hermes2(ctx, field)
-				return res
-			})
-		case "kickoutRate":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_kickoutRate(ctx, field)
-				if res == graphql.Null {
-					invalid = true
-				}
 				return res
 			})
 		case "__type":
@@ -11258,20 +11137,6 @@ func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}
 
 func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
 	return graphql.MarshalInt(v)
-}
-
-func (ec *executionContext) marshalNKickoutRate2githubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐKickoutRate(ctx context.Context, sel ast.SelectionSet, v KickoutRate) graphql.Marshaler {
-	return ec._KickoutRate(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNKickoutRate2ᚖgithubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐKickoutRate(ctx context.Context, sel ast.SelectionSet, v *KickoutRate) graphql.Marshaler {
-	if v == nil {
-		if !ec.HasError(graphql.GetResolverContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._KickoutRate(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNPagination2githubᚗcomᚋiotexprojectᚋiotexᚑanalyticsᚋgraphqlᚐPagination(ctx context.Context, v interface{}) (Pagination, error) {

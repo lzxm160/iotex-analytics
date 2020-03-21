@@ -8,6 +8,7 @@ package votings
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/golang/protobuf/proto"
@@ -38,36 +39,25 @@ type (
 	}
 )
 
-func (p *Protocol) createKickoutListTable() error {
-	tx, err := p.Store.GetDB().Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+func (p *Protocol) createKickoutListTable(tx *sql.Tx) error {
 	if _, err := tx.Exec(fmt.Sprintf(createKickoutList, KickoutListTableName, EpochAddressIndexName)); err != nil {
 		return err
 	}
-	return tx.Commit()
+	return nil
 }
 
-func (p *Protocol) updateKickoutListTable(cli iotexapi.APIServiceClient, epochNum uint64) error {
+func (p *Protocol) updateKickoutListTable(cli iotexapi.APIServiceClient, epochNum uint64, tx *sql.Tx) error {
 	kickoutList, err := p.getKickoutList(cli, epochNum)
 	if err != nil {
 		return err
 	}
-	tx, err := p.Store.GetDB().Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
 	insertQuery := fmt.Sprintf(insertKickoutList, KickoutListTableName)
 	for _, k := range kickoutList.Blacklists {
 		if _, err := tx.Exec(insertQuery, epochNum, kickoutList.IntensityRate, k.Address, k.Count); err != nil {
 			return errors.Wrap(err, "failed to update kickout list table")
 		}
 	}
-
-	return tx.Commit()
+	return nil
 }
 
 func (p *Protocol) getKickoutList(cli iotexapi.APIServiceClient, epochNum uint64) (*iotextypes.KickoutCandidateList, error) {
