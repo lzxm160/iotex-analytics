@@ -27,7 +27,7 @@ const (
 	selectVotingMeta           = "SELECT * FROM %s where epoch_number >= ? AND epoch_number <= ?"
 	selectDelegate             = "SELECT delegate_name FROM %s WHERE operator_address=? ORDER BY epoch_number DESC LIMIT 1"
 	selectOperator             = "SELECT operator_address FROM %s WHERE delegate_name=? ORDER BY epoch_number DESC LIMIT 1"
-	selectOperatorOfEpoch      = "SELECT operator_address FROM %s WHERE delegate_name=? and epoch=?"
+	selectOperatorOfEpoch      = "SELECT operator_address FROM %s WHERE delegate_name=? and epoch_number=?"
 	selectKickoutExist         = "select * from %s where epoch_number=%d and address='%s'"
 	selectAppearingCount       = "select count(epoch_number) from %s where epoch_number>=%d and epoch_number<%d and delegate_name=?"
 )
