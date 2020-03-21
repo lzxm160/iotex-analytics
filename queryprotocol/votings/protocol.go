@@ -326,6 +326,8 @@ func (p *Protocol) GetKickoutRate(startEpoch int, epochCount int, delegateName s
 func (p *Protocol) getAppearingCount(db *sql.DB, startEpoch int, epochCount int, delegateName string) (count uint64, err error) {
 	getQuery := fmt.Sprintf(selectAppearingCount,
 		votings.VotingResultTableName, startEpoch, startEpoch+epochCount)
+	fmt.Println(getQuery)
+	fmt.Println(delegateName)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return
