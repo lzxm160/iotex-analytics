@@ -290,8 +290,11 @@ func (p *Protocol) GetKickoutRate(startEpoch int, epochCount int, delegateName s
 		return "", errors.New("votings protocol is unregistered")
 	}
 	db := p.indexer.Store.GetDB()
-	fmt.Println("before getKickoutCount")
-	kickoutCount, err := p.getKickoutCount(db, startEpoch, epochCount, delegateName)
+	address, err := p.GetOperatorAddress(delegateName)
+	if err != nil {
+		return "", err
+	}
+	kickoutCount, err := p.getKickoutCount(db, startEpoch, epochCount, address)
 	if err != nil {
 		return "", errors.New("get Kickout Count error")
 	}
@@ -335,14 +338,12 @@ func (p *Protocol) getKickoutCount(db *sql.DB, startEpoch int, epochCount int, d
 	}
 	fmt.Println(getQuery)
 	defer stmt.Close()
-	var c uint64
 	fmt.Println(delegateName)
-	if err = stmt.QueryRow(delegateName).Scan(&c); err != nil {
+	if err = stmt.QueryRow(delegateName).Scan(&count); err != nil {
 		if err == sql.ErrNoRows {
 			return 0, indexprotocol.ErrNotExist
 		}
 		return 0, errors.Wrap(err, "failed to execute get query")
 	}
-	count = c
 	return
 }
