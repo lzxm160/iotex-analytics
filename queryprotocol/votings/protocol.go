@@ -336,6 +336,7 @@ func (p *Protocol) getKickoutCount(db *sql.DB, startEpoch int, epochCount int, d
 	fmt.Println(getQuery)
 	defer stmt.Close()
 	var c uint64
+	fmt.Println(delegateName)
 	if err = stmt.QueryRow(delegateName).Scan(&c); err != nil {
 		if err == sql.ErrNoRows {
 			return 0, indexprotocol.ErrNotExist
