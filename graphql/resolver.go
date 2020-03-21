@@ -207,15 +207,15 @@ func (r *queryResolver) Delegate(ctx context.Context, startEpoch int, epochCount
 	if containField(requestedFields, "staking") {
 		g.Go(func() error { return r.getStaking(delegateResponse, startEpoch, epochCount, delegateName) })
 	}
-	if containField(requestedFields, "kickoutRate") {
-		g.Go(func() error { return r.KickoutRate(delegateResponse, startEpoch, epochCount, delegateName) })
+	if containField(requestedFields, "kickoutHistoricalRate") {
+		g.Go(func() error { return r.kickoutHistoricalRate(delegateResponse, startEpoch, epochCount, delegateName) })
 	}
 	return delegateResponse, g.Wait()
 }
 
-// KickoutRate handles the kickout rate
-func (r *queryResolver) KickoutRate(delegateResponse *Delegate, startEpoch int, epochCount int, delegateName string) (err error) {
-	delegateResponse.KickoutRate, err = r.VP.GetKickoutRate(startEpoch, epochCount, delegateName)
+// kickoutHistoricalRate handles the kickout rate
+func (r *queryResolver) kickoutHistoricalRate(delegateResponse *Delegate, startEpoch int, epochCount int, delegateName string) (err error) {
+	delegateResponse.KickoutHistoricalRate, err = r.VP.GetKickoutHistoricalRate(startEpoch, epochCount, delegateName)
 	return
 }
 

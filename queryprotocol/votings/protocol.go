@@ -286,8 +286,8 @@ func (p *Protocol) GetOperatorAddress(aliasName string) (string, error) {
 	return address, nil
 }
 
-//GetKickoutRate gets kickout rate
-func (p *Protocol) GetKickoutRate(startEpoch int, epochCount int, delegateName string) (string, error) {
+//GetKickoutHistoricalRate gets kickout rate
+func (p *Protocol) GetKickoutHistoricalRate(startEpoch int, epochCount int, delegateName string) (string, error) {
 	if _, ok := p.indexer.Registry.Find(votings.ProtocolID); !ok {
 		return "", errors.New("votings protocol is unregistered")
 	}
