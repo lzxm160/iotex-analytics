@@ -352,6 +352,7 @@ func (p *Protocol) getOperatorAddress(delegateName string, epoch int) (string, e
 
 	getQuery := fmt.Sprintf(selectOperatorOfEpoch,
 		votings.VotingResultTableName)
+	fmt.Println(getQuery, ":", delegateName, ":", epoch)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to prepare get query")
