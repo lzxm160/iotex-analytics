@@ -10,6 +10,8 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/iotexproject/iotex-analytics/queryprotocol"
+
 	"github.com/pkg/errors"
 
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
@@ -25,7 +27,8 @@ const (
 	selectVotingMeta           = "SELECT * FROM %s where epoch_number >= ? AND epoch_number <= ?"
 	selectDelegate             = "SELECT delegate_name FROM %s WHERE operator_address=? ORDER BY epoch_number DESC LIMIT 1"
 	selectOperator             = "SELECT operator_address FROM %s WHERE delegate_name=? ORDER BY epoch_number DESC LIMIT 1"
-	selectKickoutCount         = "select count(epoch_number) from %s where epoch_number>=%d and epoch_number<%d and address=?"
+	selectOperatorOfEpoch      = "SELECT operator_address FROM %s WHERE delegate_name=? and epoch=?"
+	selectKickoutExist         = "select * from %s where epoch_number=%d and address='%s'"
 	selectAppearingCount       = "select count(epoch_number) from %s where epoch_number>=%d and epoch_number<%d and delegate_name=?"
 )
 
@@ -290,20 +293,26 @@ func (p *Protocol) GetKickoutRate(startEpoch int, epochCount int, delegateName s
 		return "", errors.New("votings protocol is unregistered")
 	}
 	db := p.indexer.Store.GetDB()
-	address, err := p.GetOperatorAddress(delegateName)
-	if err != nil {
-		return "", err
-	}
-	kickoutCount, err := p.getKickoutCount(db, startEpoch, epochCount, address)
-	if err != nil {
-		return "", errors.New("get Kickout Count error")
-	}
-	fmt.Println("kickoutCount:", kickoutCount)
 	appearingCount, err := p.getAppearingCount(db, startEpoch, epochCount, delegateName)
 	if err != nil {
 		return "", errors.New("get Kickout Count error")
 	}
 	fmt.Println("appearingCount:", appearingCount)
+	kickoutCount := uint64(0)
+	for i := startEpoch; i < startEpoch+epochCount; i++ {
+		address, err := p.getOperatorAddress(delegateName, i)
+		if err != nil {
+			return "", err
+		}
+		exist, _ := queryprotocol.RowExists(db, fmt.Sprintf(selectKickoutExist,
+			votings.KickoutListTableName, address, i))
+		if exist {
+			kickoutCount++
+		}
+	}
+
+	fmt.Println("kickoutCount:", kickoutCount)
+
 	if appearingCount+kickoutCount == 0 {
 		return "0", nil
 	}
@@ -329,21 +338,28 @@ func (p *Protocol) getAppearingCount(db *sql.DB, startEpoch int, epochCount int,
 	return
 }
 
-func (p *Protocol) getKickoutCount(db *sql.DB, startEpoch int, epochCount int, delegateName string) (count uint64, err error) {
-	getQuery := fmt.Sprintf(selectKickoutCount,
-		votings.KickoutListTableName, startEpoch, startEpoch+epochCount)
+func (p *Protocol) getOperatorAddress(delegateName string, epoch int) (string, error) {
+	if _, ok := p.indexer.Registry.Find(votings.ProtocolID); !ok {
+		return "", errors.New("votings protocol is unregistered")
+
+	}
+	db := p.indexer.Store.GetDB()
+
+	getQuery := fmt.Sprintf(selectOperatorOfEpoch,
+		votings.VotingResultTableName)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
-		return
+		return "", errors.Wrap(err, "failed to prepare get query")
 	}
-	fmt.Println(getQuery)
 	defer stmt.Close()
-	fmt.Println(delegateName)
-	if err = stmt.QueryRow(delegateName).Scan(&count); err != nil {
+
+	var address string
+	if err = stmt.QueryRow(delegateName, epoch).Scan(&address); err != nil {
 		if err == sql.ErrNoRows {
-			return 0, indexprotocol.ErrNotExist
+			return "", indexprotocol.ErrNotExist
 		}
-		return 0, errors.Wrap(err, "failed to execute get query")
+		return "", errors.Wrap(err, "failed to execute get query")
 	}
-	return
+
+	return address, nil
 }
