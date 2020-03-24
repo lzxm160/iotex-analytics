@@ -302,8 +302,8 @@ func (p *Protocol) GetKickoutHistoricalRate(startEpoch int, epochCount int, dele
 		switch {
 		case errors.Cause(err) == indexprotocol.ErrNotExist:
 			continue
-		default:
-			return "", err
+		case err != nil:
+			return "0", err
 		}
 		exist, _ := queryprotocol.RowExists(db, fmt.Sprintf(selectKickoutExist,
 			votings.KickoutListTableName, i, address))
