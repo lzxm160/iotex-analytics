@@ -299,8 +299,11 @@ func (p *Protocol) GetKickoutHistoricalRate(startEpoch int, epochCount int, dele
 	kickoutCount := uint64(0)
 	for i := startEpoch; i < startEpoch+epochCount; i++ {
 		address, err := p.getOperatorAddress(delegateName, i)
-		if err != nil {
+		switch {
+		case errors.Cause(err) == indexprotocol.ErrNotExist:
 			continue
+		default:
+			return "", err
 		}
 		exist, _ := queryprotocol.RowExists(db, fmt.Sprintf(selectKickoutExist,
 			votings.KickoutListTableName, i, address))
