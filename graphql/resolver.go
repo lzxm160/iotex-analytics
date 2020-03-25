@@ -301,7 +301,7 @@ func (r *queryResolver) Xrc20(ctx context.Context) (*Xrc20, error) {
 	g, ctx := errgroup.WithContext(ctx)
 	if containField(requestedFields, "byContractAddress") {
 		g.Go(func() error {
-			return r.getXrcByContractAddress(ctx, actionResponse, "xrc20")
+			return r.getXrcByContractAddress(ctx, actionResponse)
 		})
 	}
 	if containField(requestedFields, "byAddress") {
@@ -333,7 +333,7 @@ func (r *queryResolver) Xrc721(ctx context.Context) (*Xrc721, error) {
 	g, ctx := errgroup.WithContext(ctx)
 	if containField(requestedFields, "byContractAddress") {
 		g.Go(func() error {
-			return r.getXrcByContractAddress(ctx, actionResponse, "xrc721")
+			return r.getXrcByContractAddress(ctx, actionResponse)
 		})
 	}
 	if containField(requestedFields, "byAddress") {
@@ -785,8 +785,8 @@ func (r *queryResolver) getEvmTransfersByAddress(ctx context.Context, actionResp
 	return nil
 }
 
-func (r *queryResolver) getXrcByContractAddress(ctx context.Context, actionResponse interface{}, xrcType string) error {
-	argsMap := parseFieldArguments(ctx, "byContractAddress", xrcType)
+func (r *queryResolver) getXrcByContractAddress(ctx context.Context, actionResponse interface{}) error {
+	argsMap := parseFieldArguments(ctx, "byContractAddress", "addresses")
 	address, err := getStringArg(argsMap, "address")
 	if err != nil {
 		return errors.Wrap(err, "failed to get address")
