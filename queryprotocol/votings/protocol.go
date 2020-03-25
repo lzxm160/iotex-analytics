@@ -296,6 +296,9 @@ func (p *Protocol) GetKickoutHistoricalRate(startEpoch int, epochCount int, dele
 	if err != nil {
 		return "0", errors.New("get Appearing Count error")
 	}
+	if appearingCount == 0 {
+		return "0", nil
+	}
 	kickoutCount := uint64(0)
 	for i := startEpoch; i < startEpoch+epochCount; i++ {
 		address, err := p.getOperatorAddress(delegateName, i)
@@ -311,8 +314,6 @@ func (p *Protocol) GetKickoutHistoricalRate(startEpoch int, epochCount int, dele
 			kickoutCount++
 		}
 	}
-	fmt.Println("kickoutCount:", kickoutCount)
-	fmt.Println("appearingCount:", appearingCount)
 	rate := float64(kickoutCount) / float64(appearingCount)
 	return fmt.Sprintf("%0.2f", rate), nil
 }
