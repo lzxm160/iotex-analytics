@@ -311,6 +311,8 @@ func (p *Protocol) GetKickoutHistoricalRate(startEpoch int, epochCount int, dele
 			kickoutCount++
 		}
 	}
+	fmt.Println("kickoutCount:", kickoutCount)
+	fmt.Println("appearingCount:", appearingCount)
 	rate := float64(kickoutCount) / float64(appearingCount)
 	return fmt.Sprintf("%0.2f", rate), nil
 }
