@@ -319,7 +319,7 @@ func (r *queryResolver) Xrc20(ctx context.Context) (*Xrc20, error) {
 	}
 	if containField(requestedFields, "tokenHolderAddresses") {
 		g.Go(func() error {
-			return r.xrcTokenHolderAddresses(ctx, actionResponse, "xrc20")
+			return r.xrcTokenHolderAddresses(ctx, actionResponse)
 		})
 	}
 	return actionResponse, g.Wait()
@@ -351,7 +351,7 @@ func (r *queryResolver) Xrc721(ctx context.Context) (*Xrc721, error) {
 	}
 	if containField(requestedFields, "tokenHolderAddresses") {
 		g.Go(func() error {
-			return r.xrcTokenHolderAddresses(ctx, actionResponse, "xrc721")
+			return r.xrcTokenHolderAddresses(ctx, actionResponse)
 		})
 	}
 	return actionResponse, g.Wait()
@@ -786,7 +786,7 @@ func (r *queryResolver) getEvmTransfersByAddress(ctx context.Context, actionResp
 }
 
 func (r *queryResolver) getXrcByContractAddress(ctx context.Context, actionResponse interface{}) error {
-	argsMap := parseFieldArguments(ctx, "byContractAddress", "addresses")
+	argsMap := parseFieldArguments(ctx, "byContractAddress", "xrc")
 	address, err := getStringArg(argsMap, "address")
 	if err != nil {
 		return errors.Wrap(err, "failed to get address")
@@ -901,8 +901,8 @@ func (r *queryResolver) getXrcByAddress(ctx context.Context, actionResponse inte
 	return nil
 }
 
-func (r *queryResolver) xrcTokenHolderAddresses(ctx context.Context, actionResponse interface{}, xrcType string) error {
-	argsMap := parseFieldArguments(ctx, "tokenHolderAddresses", xrcType)
+func (r *queryResolver) xrcTokenHolderAddresses(ctx context.Context, actionResponse interface{}) error {
+	argsMap := parseFieldArguments(ctx, "tokenHolderAddresses", "addresses")
 	addr, err := getStringArg(argsMap, "tokenAddress")
 	if err != nil {
 		return errors.Wrap(err, "failed to get address")
