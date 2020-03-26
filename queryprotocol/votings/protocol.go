@@ -326,12 +326,7 @@ func (p *Protocol) getAppearingCount(db *sql.DB, startEpoch int, epochCount int,
 		return
 	}
 	defer stmt.Close()
-	fmt.Println(getQuery, ":", delegateName)
 	if err = stmt.QueryRow(delegateName).Scan(&count); err != nil {
-		fmt.Println("stmt.QueryRow(delegateName).Scan(&count):", err)
-		if err == sql.ErrNoRows {
-			return 0, indexprotocol.ErrNotExist
-		}
 		return 0, errors.Wrap(err, "failed to execute get query")
 	}
 	return
