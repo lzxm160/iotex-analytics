@@ -1010,8 +1010,17 @@ func (r *queryResolver) getXrcByPage(ctx context.Context, actionResponse interfa
 	return nil
 }
 
-func (r *queryResolver) getXrcAddresses(ctx context.Context, actionResponse interface{}) error {
-	argsMap := parseFieldArguments(ctx, "xrc20Addresses", "")
+func (r *queryResolver) getXrcAddresses(ctx context.Context, actionResponse interface{}) (err error) {
+	var fieldName string
+	switch actionResponse.(type) {
+	case *Xrc721:
+		fieldName = "xrc721Addresses"
+	case *Xrc20:
+		fieldName = "xrc20Addresses"
+	default:
+		return errors.New("failed to convert type")
+	}
+	argsMap := parseFieldArguments(ctx, fieldName, "")
 	paginationMap, err := getPaginationArgs(argsMap)
 	if err != nil {
 		return errors.Wrap(err, "failed to get pagination arguments for get xrc20 addresses")
