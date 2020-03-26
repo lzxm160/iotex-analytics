@@ -800,18 +800,13 @@ func (r *queryResolver) getXrcByContractAddress(ctx context.Context, actionRespo
 	if err != nil {
 		return errors.Wrap(err, "failed to get address")
 	}
-
-	var offset, size uint64
-	paginationMap, err := getPaginationArgs(argsMap)
-	switch {
-	default:
-		offset = paginationMap["skip"]
-		size = paginationMap["first"]
-	case err == ErrPaginationNotFound:
-		offset = 0
-		size = DefaultPageSize
-	case err != nil:
-		return errors.Wrap(err, "failed to get pagination arguments for actions")
+	numPerPage, err := getIntArg(argsMap, "numPerPage")
+	if err != nil {
+		return errors.Wrap(err, "failed to get numPerPage")
+	}
+	page, err := getIntArg(argsMap, "page")
+	if err != nil {
+		return errors.Wrap(err, "failed to get page")
 	}
 	var (
 		xrcGetter getXrc
@@ -835,7 +830,7 @@ func (r *queryResolver) getXrcByContractAddress(ctx context.Context, actionRespo
 		return errors.Wrap(err, "failed to get contract transaction count")
 	}
 	output.Count = count
-	xrc20InfoList, err := xrcGetter(address, size, offset)
+	xrc20InfoList, err := xrcGetter(address, uint64(numPerPage), uint64(page))
 	switch {
 	case errors.Cause(err) == indexprotocol.ErrNotExist:
 		return nil
