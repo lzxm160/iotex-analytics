@@ -170,6 +170,7 @@ func (p *Protocol) GetActionsByType(actionType string, offset, size uint64) ([]*
 
 	db := p.indexer.Store.GetDB()
 	getQuery := fmt.Sprintf(selectActionHistoryByType, actions.ActionHistoryTableName, blocks.BlockHistoryTableName)
+	fmt.Println(getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")
