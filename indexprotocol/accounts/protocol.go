@@ -59,7 +59,7 @@ const (
 
 	selectIndexInfo = "SELECT COUNT(1) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = " +
 		"DATABASE() AND TABLE_NAME = '%s' AND INDEX_NAME = '%s'"
-	createIndex         = "CREATE INDEX %s ON %s (epoch_number, producer_name, expected_producer_name)"
+	createIndex         = "CREATE INDEX %s ON %s (action_hash)"
 	actionHashIndexName = "action_hash_index"
 )
 
