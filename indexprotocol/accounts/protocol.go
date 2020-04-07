@@ -115,9 +115,11 @@ func (p *Protocol) CreateTables(ctx context.Context) error {
 		return err
 	}
 	var exist uint64
+	fmt.Println(fmt.Sprintf(selectIndexInfo, BalanceHistoryTableName, actionHashIndexName))
 	if err := p.Store.GetDB().QueryRow(fmt.Sprintf(selectIndexInfo, BalanceHistoryTableName, actionHashIndexName)).Scan(&exist); err != nil {
 		return err
 	}
+	fmt.Println(fmt.Sprintf(createIndex, actionHashIndexName, BalanceHistoryTableName))
 	if exist == 0 {
 		if _, err := p.Store.GetDB().Exec(fmt.Sprintf(createIndex, actionHashIndexName, BalanceHistoryTableName)); err != nil {
 			return err
