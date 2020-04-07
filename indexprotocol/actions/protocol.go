@@ -42,7 +42,7 @@ const (
 	createActionHistoryToIndex   = "CREATE INDEX %s ON %s (`to`)"
 	createActionHistoryTypeIndex = "CREATE INDEX %s ON %s (`action_type`)"
 	createActionHistory          = "CREATE TABLE IF NOT EXISTS %s " +
-		"(action_type TEXT NOT NULL, action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, block_height DECIMAL(65, 0) NOT NULL, " +
+		"(action_type VARCHAR(64) NOT NULL, action_hash VARCHAR(64) NOT NULL, receipt_hash VARCHAR(64) NOT NULL UNIQUE, block_height DECIMAL(65, 0) NOT NULL, " +
 		"`from` VARCHAR(41) NOT NULL, `to` VARCHAR(41) NOT NULL, gas_price DECIMAL(65, 0) NOT NULL, gas_consumed DECIMAL(65, 0) NOT NULL, nonce DECIMAL(65, 0) NOT NULL, " +
 		"amount DECIMAL(65, 0) NOT NULL, receipt_status TEXT NOT NULL, PRIMARY KEY (action_hash), FOREIGN KEY (block_height) REFERENCES %s(block_height))"
 	selectActionHistory = "SELECT * FROM %s WHERE action_hash=?"
