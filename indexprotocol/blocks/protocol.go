@@ -150,9 +150,11 @@ func (p *Protocol) CreateTables(ctx context.Context) error {
 			return err
 		}
 	}
+	fmt.Println(fmt.Sprintf(selectBlockHistoryInfo, BlockHistoryTableName, blockHeightIndexName))
 	if err := p.Store.GetDB().QueryRow(fmt.Sprintf(selectBlockHistoryInfo, BlockHistoryTableName, blockHeightIndexName)).Scan(&exist); err != nil {
 		return err
 	}
+	fmt.Println(fmt.Sprintf(createBlockHeightIndex, blockHeightIndexName, BlockHistoryTableName))
 	if exist == 0 {
 		if _, err := p.Store.GetDB().Exec(fmt.Sprintf(createBlockHeightIndex, blockHeightIndexName, BlockHistoryTableName)); err != nil {
 			return err
