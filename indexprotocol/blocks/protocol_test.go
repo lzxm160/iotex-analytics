@@ -131,7 +131,7 @@ func TestProtocol(t *testing.T) {
 	readStateRequest = &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(poll.ProtocolID),
 		MethodName: []byte("ActiveBlockProducersByEpoch"),
-		Arguments:  [][]byte{strconv.FormatUint(uint64(2), 10)},
+		Arguments:  [][]byte{[]byte(strconv.FormatUint(uint64(2), 10))},
 	}
 	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
 		Data: data,
