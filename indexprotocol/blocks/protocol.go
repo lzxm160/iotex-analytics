@@ -336,7 +336,7 @@ func (p *Protocol) updateDelegates(
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(poll.ProtocolID),
 		MethodName: []byte("GetGravityChainStartHeight"),
-		Arguments:  [][]byte{byteutil.Uint64ToBytes(height)},
+		Arguments:  [][]byte{[]byte(strconv.FormatUint(height, 10))},
 	}
 	retryInterval := time.Duration(backoffInterval) * time.Minute
 	bo := backoff.WithMaxRetries(backoff.NewConstantBackOff(retryInterval), numOfRetry)
@@ -373,7 +373,7 @@ func (p *Protocol) updateDelegates(
 	readStateRequest = &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(poll.ProtocolID),
 		MethodName: []byte("ActiveBlockProducersByEpoch"),
-		Arguments:  [][]byte{byteutil.Uint64ToBytes(epochNumber)},
+		Arguments:  [][]byte{[]byte(strconv.FormatUint(epochNumber, 10))},
 	}
 	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
 	if err != nil {
