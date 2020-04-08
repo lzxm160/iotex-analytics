@@ -27,7 +27,6 @@ import (
 	"github.com/iotexproject/iotex-core/action/protocol/poll"
 	"github.com/iotexproject/iotex-core/blockchain/block"
 	"github.com/iotexproject/iotex-core/pkg/log"
-	"github.com/iotexproject/iotex-core/pkg/util/byteutil"
 	"github.com/iotexproject/iotex-election/carrier"
 	"github.com/iotexproject/iotex-election/committee"
 	"github.com/iotexproject/iotex-election/db"
@@ -537,7 +536,10 @@ func (p *Protocol) getGravityChainStartHeight(
 	if err != nil {
 		return uint64(0), errors.Wrap(err, "failed to get gravity chain start height")
 	}
-	gravityChainStartHeight := byteutil.BytesToUint64(readStateRes.GetData())
+	gravityChainStartHeight, err := strconv.ParseUint(string(readStateRes.GetData()), 10, 64)
+	if err != nil {
+		return uint64(0), err
+	}
 
 	return gravityChainStartHeight, nil
 }
