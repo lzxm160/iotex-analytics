@@ -349,6 +349,7 @@ func (p *Protocol) updateDelegates(
 		if err != nil {
 			return errors.Wrap(err, "failed to parse gravityChainStartHeight")
 		}
+		fmt.Println("gravityChainStartHeight:", gravityChainStartHeight)
 		if gravityChainStartHeight == 0 {
 			//retry to get chain start height again
 			return errors.New("waiting for fetching next timestamp in election service")
