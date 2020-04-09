@@ -362,6 +362,7 @@ func (p *Protocol) updateDelegates(
 		Offset: uint32(0),
 		Limit:  uint32(p.epochCtx.NumCandidateDelegates()),
 	}
+	fmt.Println(gravityChainStartHeight, ":", p.epochCtx.NumCandidateDelegates())
 	getCandidatesResponse, err := electionClient.GetCandidates(context.Background(), getCandidatesRequest)
 	if err != nil {
 		return errors.Wrap(err, "failed to get candidates from election service")
