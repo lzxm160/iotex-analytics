@@ -344,6 +344,7 @@ func (p *Protocol) updateDelegates(
 		if err != nil {
 			return err
 		}
+		fmt.Println("string(readStateRes.GetData():", string(readStateRes.GetData()))
 		gravityChainStartHeight, err := strconv.ParseUint(string(readStateRes.GetData()), 10, 64)
 		if err != nil {
 			return errors.Wrap(err, "failed to parse gravityChainStartHeight")
