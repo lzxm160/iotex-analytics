@@ -345,7 +345,7 @@ func (p *Protocol) updateDelegates(
 			return err
 		}
 		fmt.Println("string(readStateRes.GetData():", string(readStateRes.GetData()))
-		gravityChainStartHeight, err := strconv.ParseUint(string(readStateRes.GetData()), 10, 64)
+		gravityChainStartHeight, err = strconv.ParseUint(string(readStateRes.GetData()), 10, 64)
 		if err != nil {
 			return errors.Wrap(err, "failed to parse gravityChainStartHeight")
 		}
@@ -359,6 +359,7 @@ func (p *Protocol) updateDelegates(
 	if nerr != nil {
 		return errors.Wrap(nerr, "failed to get gravity chain start height by backoff")
 	}
+	fmt.Println("362:", gravityChainStartHeight)
 	getCandidatesRequest := &api.GetCandidatesRequest{
 		Height: strconv.Itoa(int(gravityChainStartHeight)),
 		Offset: uint32(0),
