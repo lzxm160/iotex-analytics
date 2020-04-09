@@ -627,7 +627,7 @@ func (r *queryResolver) getActionsByDates(ctx context.Context, actionResponse *A
 	}
 	count, err := r.AP.GetActionCountByDates(uint64(startDate), uint64(endDate))
 	if err != nil {
-		errors.Wrap(err, "get actions' count")
+		errors.Wrap(err, "get actions' count by dates")
 	}
 	actionInfoList, err := r.AP.GetActionsByDates(uint64(startDate), uint64(endDate), offset, size)
 	switch {

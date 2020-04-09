@@ -568,13 +568,13 @@ func (p *Protocol) GetXrc20HolderCount(addr string) (count int, err error) {
 
 // GetXrc20AddressesCount gets xrc20 holders's address
 func (p *Protocol) GetXrc20AddressesCount(addr string) (count int, err error) {
-	getQuery := fmt.Sprintf(selectTotalNumberOfHolders, actions.Xrc20HistoryTableName, addr)
+	getQuery := fmt.Sprintf(selectTotalNumberOfHolders, actions.Xrc20HistoryTableName)
 	return p.getCount(getQuery)
 }
 
 // GetXrc721AddressesCount gets xrc721 holders's address
 func (p *Protocol) GetXrc721AddressesCount(addr string) (count int, err error) {
-	getQuery := fmt.Sprintf(selectTotalNumberOfHolders, actions.Xrc721HistoryTableName, addr)
+	getQuery := fmt.Sprintf(selectTotalNumberOfHolders, actions.Xrc721HistoryTableName)
 	return p.getCount(getQuery)
 }
 
