@@ -9,6 +9,7 @@ package actions
 import (
 	"database/sql"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -834,12 +835,18 @@ func (p *Protocol) GetTotalSupply() (count string, err error) {
 		return
 	}
 	defer stmt.Close()
-
 	if err = stmt.QueryRow().Scan(&count); err != nil {
 		err = errors.Wrap(err, "failed to execute get query")
 		return
 	}
-	fmt.Println(count)
+	ret, ok := new(big.Int).SetString(count, 10)
+	if !ok {
+		err = errors.New("failed to format to big int:" + count)
+		return
+	}
+	if ret.Sign() < 0 {
+		count = ret.Abs(ret).String()
+	}
 	return
 }
 
