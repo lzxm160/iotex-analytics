@@ -7,13 +7,9 @@
 package actions
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
-	"math/big"
 	"strings"
-
-	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
@@ -58,7 +54,7 @@ const (
 	selectXrc20HistoryByPage   = "SELECT * FROM %s ORDER BY `timestamp` desc limit %d,%d"
 	selectAccountIncome        = "SELECT address,SUM(income) AS balance FROM %s WHERE epoch_number<=%d and address<>'' and address<>'%s' GROUP BY address ORDER BY balance DESC LIMIT %d,%d"
 	selectTotalNumberOfHolders = "SELECT COUNT(DISTINCT address) FROM %s WHERE address<>''"
-	selectTotalAccounts        = "SELECT DISTINCT address FROM %s WHERE address<>''"
+	selectTotalSupply          = "SELECT SUM(income) from %s WHERE epoch_number<>0 and address=''"
 )
 
 type activeAccount struct {
@@ -830,57 +826,20 @@ func (p *Protocol) GetTotalSupply() (count string, err error) {
 	if _, ok := p.indexer.Registry.Find(actions.ProtocolID); !ok {
 		return "0", errors.New("actions protocol is unregistered")
 	}
-	accounts, err := p.getTotalAccounts()
-	if err != nil {
-		return "0", errors.Wrap(err, "get total accounts")
-	}
-	for _, acc := range accounts {
-		b, err := p.getBalance(cli, acc)
-		fmt.Println(b, ":", err)
-	}
-	return
-}
-
-func (p *Protocol) getTotalAccounts() (ret []string, err error) {
 	db := p.indexer.Store.GetDB()
-	getQuery := fmt.Sprintf(selectTotalAccounts, accounts.AccountIncomeTableName)
+	getQuery := fmt.Sprintf(selectTotalSupply, accounts.AccountIncomeTableName)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to prepare get query")
+		err = errors.Wrap(err, "failed to prepare get query")
+		return
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to execute get query")
+	if err = stmt.QueryRow().Scan(&count); err != nil {
+		err = errors.Wrap(err, "failed to execute get query")
+		return
 	}
-	type countStruct struct {
-		Count int
-	}
-	var addr string
-	parsedRows, err := s.ParseSQLRows(rows, &addr)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse results")
-	}
-	ret = make([]string, 0)
-	for _, parsedRow := range parsedRows {
-		addr := parsedRow.(string)
-		ret = append(ret, addr)
-	}
-	return ret, nil
-}
-
-func (p *Protocol) getBalance(cli iotexapi.APIServiceClient, addr string) (balance *big.Int, err error) {
-	request := &iotexapi.GetAccountRequest{Address: addr}
-	out, err := cli.GetAccount(context.Background(), request)
-	if err != nil {
-		return nil, err
-	}
-	accountMeta := out.AccountMeta
-	balance, ok := new(big.Int).SetString(accountMeta.Balance, 10)
-	if !ok {
-		err = errors.New("api returns balance error:" + accountMeta.Balance)
-	}
+	fmt.Println(count)
 	return
 }
 
