@@ -54,8 +54,7 @@ const (
 	selectXrc20HistoryByPage   = "SELECT * FROM %s ORDER BY `timestamp` desc limit %d,%d"
 	selectAccountIncome        = "SELECT address,SUM(income) AS balance FROM %s WHERE epoch_number<=%d and address<>'' and address<>'%s' GROUP BY address ORDER BY balance DESC LIMIT %d,%d"
 	selectTotalNumberOfHolders = "SELECT COUNT(DISTINCT address) FROM %s WHERE address<>''"
-	selectTotalSupply          = "SELECT SUM(income) from %s WHERE address=''"
-	//selectTotalSupply          = "SELECT SUM(income) from %s WHERE epoch_number<>0 and address=''"
+	selectTotalSupply          = "SELECT SUM(income) from %s WHERE epoch_number<>0 and address=''"
 )
 
 type activeAccount struct {
