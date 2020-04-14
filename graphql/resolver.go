@@ -1212,7 +1212,7 @@ func (r *queryResolver) gettotalTransferredTokens(ctx context.Context, chainResp
 	if startEpoch < 1 || epochCount < 0 {
 		return errors.New("invalid start epoch number or epoch count for getting number of actions")
 	}
-
+	fmt.Println(startEpoch, ":", epochCount)
 	total, err := r.CP.GetTotalTransferredTokens(uint64(startEpoch), uint64(epochCount))
 	switch {
 	case errors.Cause(err) == indexprotocol.ErrNotExist:
