@@ -170,6 +170,7 @@ func (p *Protocol) GetTotalTransferredTokens(startEpoch uint64, epochCount uint6
 	}
 	endEpoch := startEpoch + epochCount - 1
 	getQuery := fmt.Sprintf(selectTotalTransferred, accounts.BalanceHistoryTableName)
+	fmt.Println(getQuery, ":", startEpoch, ":", endEpoch)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		err = errors.Wrap(err, "failed to prepare get query")
