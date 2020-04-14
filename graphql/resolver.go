@@ -1212,17 +1212,16 @@ func (r *queryResolver) gettotalTransferredTokens(ctx context.Context, chainResp
 	if startEpoch < 1 || epochCount < 0 {
 		return errors.New("invalid start epoch number or epoch count for getting number of actions")
 	}
-	//total, err = r.CP.GetNumberOfActions(uint64(startEpoch), uint64(epochCount))
-	//total, err := r.CP.GetTotalTransferredTokens(uint64(startEpoch), uint64(epochCount))
-	//switch {
-	//case errors.Cause(err) == indexprotocol.ErrNotExist:
-	//	chainResponse. = &NumberOfActions{Exist: false}
-	//	return nil
-	//case err != nil:
-	//	return errors.Wrap(err, "failed to get number of actions")
-	//}
-	//
-	//chainResponse.NumberOfActions = &NumberOfActions{Exist: true, Count: int(numberOfActions)}
+
+	total, err := r.CP.GetTotalTransferredTokens(uint64(startEpoch), uint64(epochCount))
+	switch {
+	case errors.Cause(err) == indexprotocol.ErrNotExist:
+		chainResponse.TotalTransferredTokens = "0"
+		return nil
+	case err != nil:
+		return errors.Wrap(err, "failed to get number of actions")
+	}
+	chainResponse.TotalTransferredTokens = total
 	return nil
 }
 
