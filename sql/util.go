@@ -9,6 +9,8 @@ package sql
 import (
 	"database/sql"
 	"reflect"
+
+	"github.com/pkg/errors"
 )
 
 // ParseSQLRows will parse the row
@@ -34,4 +36,20 @@ func ParseSQLRows(rows *sql.Rows, schema interface{}) ([]interface{}, error) {
 	}
 
 	return parsedRows, nil
+}
+
+// GetCount get result of query
+func GetCount(db *sql.DB, getQuery string) (count string, err error) {
+	stmt, err := db.Prepare(getQuery)
+	if err != nil {
+		err = errors.Wrap(err, "failed to prepare get query")
+		return
+	}
+	defer stmt.Close()
+
+	if err = stmt.QueryRow().Scan(&count); err != nil {
+		err = errors.Wrap(err, "failed to execute get query")
+		return
+	}
+	return
 }
