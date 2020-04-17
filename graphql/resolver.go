@@ -1584,14 +1584,15 @@ func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int
 		}
 		voterInfoList = append(voterInfoList, info)
 	}
-	count, err := r.HP.GetHermes2Count(harg, hermes2.SelectCountByDelegateName, delegateName)
+	count, total, err := r.HP.GetHermes2Count(harg, hermes2.SelectCountByDelegateName, delegateName)
 	if err != nil {
 		return errors.Wrap(err, "failed to get count of hermes distribution")
 	}
 	actionResponse.ByDelegate = &ByDelegateResponse{
-		Exist:         true,
-		VoterInfoList: voterInfoList,
-		Count:         count,
+		Exist:                   true,
+		VoterInfoList:           voterInfoList,
+		Count:                   count,
+		TotalRewardsDistributed: total,
 	}
 	return nil
 }
@@ -1642,16 +1643,32 @@ func (r *queryResolver) getHermes2ByVoter(ctx context.Context, startEpoch int, e
 		}
 		delegateInfoList = append(delegateInfoList, info)
 	}
-	count, err := r.HP.GetHermes2Count(harg, hermes2.SelectCountByVoterAddress, voterAddress)
+	count, total, err := r.HP.GetHermes2Count(harg, hermes2.SelectCountByVoterAddress, voterAddress)
 	if err != nil {
 		return errors.Wrap(err, "failed to get count of hermes distribution")
 	}
 	actionResponse.ByVoter = &ByVoterResponse{
-		Exist:            true,
-		DelegateInfoList: delegateInfoList,
-		Count:            count,
+		Exist:                true,
+		DelegateInfoList:     delegateInfoList,
+		Count:                count,
+		TotalRewardsReceived: total,
 	}
 	return nil
+}
+
+func (r *queryResolver) getHermes2HermesMeta(ctx context.Context, startEpoch int, epochCount int, actionResponse *Hermes2) (err error) {
+	actionResponse.HermesMeta = &HermesMeta{
+		Exist: false,
+	}
+	actionResponse.HermesMeta.NumberOfDelegates, actionResponse.HermesMeta.NumberOfRecipients, actionResponse.HermesMeta.TotalRewardsDistributed, err = r.HP.GetHermes2Meta(startEpoch, epochCount)
+	switch {
+	case errors.Cause(err) == indexprotocol.ErrNotExist:
+		return nil
+	case err != nil:
+		return errors.Wrap(err, "failed to get hermes meta info")
+	}
+	actionResponse.HermesMeta.Exist = true
+	return
 }
 
 // Hermes2 handles Hermes2 requests
@@ -1665,6 +1682,9 @@ func (r *queryResolver) Hermes2(ctx context.Context, startEpoch int, epochCount 
 	}
 	if containField(requestedFields, "byVoter") {
 		g.Go(func() error { return r.getHermes2ByVoter(ctx, startEpoch, epochCount, actionResponse) })
+	}
+	if containField(requestedFields, "hermesMeta") {
+		g.Go(func() error { return r.getHermes2HermesMeta(ctx, startEpoch, epochCount, actionResponse) })
 	}
 	return actionResponse, g.Wait()
 }
