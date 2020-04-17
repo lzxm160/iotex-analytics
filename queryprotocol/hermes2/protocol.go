@@ -33,7 +33,7 @@ const (
 	selectCount = "SELECT COUNT(*),SUM(amount) "
 
 	selectNumberOfDelegates       = "SELECT COUNT(DISTINCT delegate_name) FROM %s WHERE epoch_number >= ? AND epoch_number <= ?"
-	selectNumberOfRecipients      = "SELECT COUNT(DISTINCT `to`) FROM %s WHERE `from` = ? and `to`<>'' WHERE epoch_number >= ? AND epoch_number <= ?"
+	selectNumberOfRecipients      = "SELECT COUNT(DISTINCT `to`) FROM %s WHERE `from` = ? and `to`<>'' AND epoch_number >= ? AND epoch_number <= ?"
 	selectTotalRewardsDistributed = "SELECT SUM(amount) FROM " + fromJoinedTables
 )
 
