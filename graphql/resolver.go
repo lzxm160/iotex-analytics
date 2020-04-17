@@ -1641,14 +1641,15 @@ func (r *queryResolver) getHermes2ByVoter(ctx context.Context, startEpoch int, e
 		}
 		delegateInfoList = append(delegateInfoList, info)
 	}
-	count, _, err := r.HP.GetHermes2Count(harg, hermes2.SelectCountByVoterAddress, voterAddress)
+	count, total, err := r.HP.GetHermes2Count(harg, hermes2.SelectCountByVoterAddress, voterAddress)
 	if err != nil {
 		return errors.Wrap(err, "failed to get count of hermes distribution")
 	}
 	actionResponse.ByVoter = &ByVoterResponse{
-		Exist:            true,
-		DelegateInfoList: delegateInfoList,
-		Count:            count,
+		Exist:                true,
+		DelegateInfoList:     delegateInfoList,
+		Count:                count,
+		TotalRewardsReceived: total,
 	}
 	return nil
 }
