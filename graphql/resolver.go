@@ -1654,18 +1654,19 @@ func (r *queryResolver) getHermes2ByVoter(ctx context.Context, startEpoch int, e
 	return nil
 }
 
-func (r *queryResolver) getHermes2HermesMeta(ctx context.Context, startEpoch int, epochCount int, actionResponse *Hermes2) error {
-	numberOfDelegates, numberOfRecipients, totalRewardsDistributed, err := r.HP.GetHermes2Meta(startEpoch, epochCount)
-	if err != nil {
+func (r *queryResolver) getHermes2HermesMeta(ctx context.Context, startEpoch int, epochCount int, actionResponse *Hermes2) (err error) {
+	actionResponse.HermesMeta = &HermesMeta{
+		Exist: false,
+	}
+	actionResponse.HermesMeta.NumberOfDelegates, actionResponse.HermesMeta.NumberOfRecipients, actionResponse.HermesMeta.TotalRewardsDistributed, err = r.HP.GetHermes2Meta(startEpoch, epochCount)
+	switch {
+	case errors.Cause(err) == indexprotocol.ErrNotExist:
+		return nil
+	case err != nil:
 		return errors.Wrap(err, "failed to get hermes meta info")
 	}
-	actionResponse.HermesMeta = &HermesMeta{
-		Exist:                   true,
-		NumberOfDelegates:       numberOfDelegates,
-		NumberOfRecipients:      numberOfRecipients,
-		TotalRewardsDistributed: totalRewardsDistributed,
-	}
-	return nil
+	actionResponse.HermesMeta.Exist = true
+	return
 }
 
 // Hermes2 handles Hermes2 requests

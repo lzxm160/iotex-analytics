@@ -212,6 +212,9 @@ func (p *Protocol) getNumOfDelegates(startEpoch int, endEpoch int) (numberOfDele
 		err = errors.Wrap(err, "failed to execute get query")
 		return
 	}
+	if numberOfDelegates == 0 {
+		err = indexprotocol.ErrNotExist
+	}
 	return
 }
 
