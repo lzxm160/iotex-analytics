@@ -92,6 +92,9 @@ func (p *Protocol) GetHermes2ByDelegate(arg HermesArg, delegateName string) ([]*
 		return nil, errors.Wrap(err, "failed to execute get query")
 	}
 
+	fmt.Println(getQuery)
+	fmt.Println(arg.StartEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, arg.StartEpoch, endEpoch,
+		delegateName, arg.Offset, arg.Size)
 	var voterInfo VoterInfo
 	parsedRows, err := s.ParseSQLRows(rows, &voterInfo)
 	if err != nil {
@@ -155,6 +158,9 @@ func (p *Protocol) GetHermes2Count(arg HermesArg, selectQuery string, filter str
 	defer stmt.Close()
 
 	endEpoch := arg.StartEpoch + arg.EpochCount - 1
+	fmt.Println(getQuery)
+	fmt.Println(arg.StartEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, arg.StartEpoch, endEpoch,
+		filter)
 	if err = stmt.QueryRow(arg.StartEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, arg.StartEpoch, endEpoch,
 		filter).Scan(&count, &total); err != nil {
 		err = errors.Wrap(err, "failed to execute get query")
