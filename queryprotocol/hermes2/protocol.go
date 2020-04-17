@@ -155,7 +155,7 @@ func (p *Protocol) GetHermes2Count(arg HermesArg, selectQuery string, filter str
 	defer stmt.Close()
 
 	endEpoch := arg.StartEpoch + arg.EpochCount - 1
-	if err := stmt.QueryRow(arg.StartEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, arg.StartEpoch, endEpoch,
+	if err = stmt.QueryRow(arg.StartEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, arg.StartEpoch, endEpoch,
 		filter).Scan(&count, &total); err != nil {
 		err = errors.Wrap(err, "failed to execute get query")
 		return
