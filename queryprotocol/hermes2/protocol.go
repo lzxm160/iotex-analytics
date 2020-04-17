@@ -218,14 +218,15 @@ func (p *Protocol) getNumOfDelegates(startEpoch int, endEpoch int) (numberOfDele
 func (p *Protocol) getNumOfReceipts(startEpoch int, endEpoch int) (numberOfeceipts int, err error) {
 	db := p.indexer.Store.GetDB()
 	getQuery := fmt.Sprintf(selectNumberOfRecipients, accounts.BalanceHistoryTableName)
+	fmt.Println(getQuery)
+	fmt.Println(p.hermesConfig.MultiSendContractAddress, startEpoch, endEpoch)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		err = errors.Wrap(err, "failed to prepare get query")
 		return
 	}
 	defer stmt.Close()
-	fmt.Println(getQuery)
-	fmt.Println(p.hermesConfig.MultiSendContractAddress, startEpoch, endEpoch)
+
 	if err = stmt.QueryRow(p.hermesConfig.MultiSendContractAddress, startEpoch, endEpoch).Scan(&numberOfeceipts); err != nil {
 		err = errors.Wrap(err, "failed to execute get query")
 		return
