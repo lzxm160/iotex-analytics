@@ -1385,6 +1385,19 @@ func containField(requestedFields []string, field string) bool {
 	return false
 }
 
+func haveField(ctx context.Context, field string) bool {
+	fields := graphql.CollectFieldsCtx(ctx, nil)
+	if len(fields) > 0 {
+		subFields := graphql.CollectFields(ctx, fields[0].Selections, nil)
+		for _, f := range subFields {
+			if f.Name == field {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func parseFieldArguments(ctx context.Context, fieldName string, selectedFieldName string) map[string]*ast.Value {
 	fields := graphql.CollectFieldsCtx(ctx, nil)
 	var field graphql.CollectedField
@@ -1563,35 +1576,41 @@ func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int
 		Offset:     offset,
 		Size:       size,
 	}
-
-	res, err := r.HP.GetHermes2ByDelegate(harg, delegateName)
-	switch {
-	case errors.Cause(err) == indexprotocol.ErrNotExist:
-		actionResponse.ByDelegate = &ByDelegateResponse{Exist: false}
-		return nil
-	case err != nil:
-		return errors.Wrap(err, "failed to get hermes distribution by delegate name")
-	}
 	voterInfoList := make([]*VoterInfo, 0)
-	for _, voterInfo := range res {
-		info := &VoterInfo{
-			VoterAddress: voterInfo.VoterAddress,
-			FromEpoch:    int(voterInfo.FromEpoch),
-			ToEpoch:      int(voterInfo.ToEpoch),
-			Amount:       voterInfo.Amount,
-			ActionHash:   voterInfo.ActionHash,
-			Timestamp:    voterInfo.Timestamp,
+	if haveField(ctx, "voterInfoList") {
+		res, err := r.HP.GetHermes2ByDelegate(harg, delegateName)
+		switch {
+		case errors.Cause(err) == indexprotocol.ErrNotExist:
+			actionResponse.ByDelegate = &ByDelegateResponse{Exist: false}
+			return nil
+		case err != nil:
+			return errors.Wrap(err, "failed to get hermes distribution by delegate name")
 		}
-		voterInfoList = append(voterInfoList, info)
+		for _, voterInfo := range res {
+			info := &VoterInfo{
+				VoterAddress: voterInfo.VoterAddress,
+				FromEpoch:    int(voterInfo.FromEpoch),
+				ToEpoch:      int(voterInfo.ToEpoch),
+				Amount:       voterInfo.Amount,
+				ActionHash:   voterInfo.ActionHash,
+				Timestamp:    voterInfo.Timestamp,
+			}
+			voterInfoList = append(voterInfoList, info)
+		}
 	}
-	count, err := r.HP.GetHermes2Count(harg, hermes2.SelectCountByDelegateName, delegateName)
-	if err != nil {
-		return errors.Wrap(err, "failed to get count of hermes distribution")
+	var count int
+	var total string
+	if haveField(ctx, "count") || haveField(ctx, "totalRewardsDistributed") {
+		count, total, err = r.HP.GetHermes2Count(harg, hermes2.SelectCountByDelegateName, delegateName)
+		if err != nil {
+			return errors.Wrap(err, "failed to get count of hermes distribution")
+		}
 	}
 	actionResponse.ByDelegate = &ByDelegateResponse{
-		Exist:         true,
-		VoterInfoList: voterInfoList,
-		Count:         count,
+		Exist:                   true,
+		VoterInfoList:           voterInfoList,
+		Count:                   count,
+		TotalRewardsDistributed: total,
 	}
 	return nil
 }
@@ -1621,37 +1640,58 @@ func (r *queryResolver) getHermes2ByVoter(ctx context.Context, startEpoch int, e
 		Offset:     offset,
 		Size:       size,
 	}
-
-	res, err := r.HP.GetHermes2ByVoter(harg, voterAddress)
-	switch {
-	case errors.Cause(err) == indexprotocol.ErrNotExist:
-		actionResponse.ByVoter = &ByVoterResponse{Exist: false}
-		return nil
-	case err != nil:
-		return errors.Wrap(err, "failed to get hermes distribution by voter address")
-	}
 	delegateInfoList := make([]*DelegateInfo, 0)
-	for _, delegateInfo := range res {
-		info := &DelegateInfo{
-			DelegateName: delegateInfo.DelegateName,
-			FromEpoch:    int(delegateInfo.FromEpoch),
-			ToEpoch:      int(delegateInfo.ToEpoch),
-			Amount:       delegateInfo.Amount,
-			ActionHash:   delegateInfo.ActionHash,
-			Timestamp:    delegateInfo.Timestamp,
+	if haveField(ctx, "delegateInfoList") {
+		res, err := r.HP.GetHermes2ByVoter(harg, voterAddress)
+		switch {
+		case errors.Cause(err) == indexprotocol.ErrNotExist:
+			actionResponse.ByVoter = &ByVoterResponse{Exist: false}
+			return nil
+		case err != nil:
+			return errors.Wrap(err, "failed to get hermes distribution by voter address")
 		}
-		delegateInfoList = append(delegateInfoList, info)
+		for _, delegateInfo := range res {
+			info := &DelegateInfo{
+				DelegateName: delegateInfo.DelegateName,
+				FromEpoch:    int(delegateInfo.FromEpoch),
+				ToEpoch:      int(delegateInfo.ToEpoch),
+				Amount:       delegateInfo.Amount,
+				ActionHash:   delegateInfo.ActionHash,
+				Timestamp:    delegateInfo.Timestamp,
+			}
+			delegateInfoList = append(delegateInfoList, info)
+		}
 	}
-	count, err := r.HP.GetHermes2Count(harg, hermes2.SelectCountByVoterAddress, voterAddress)
-	if err != nil {
-		return errors.Wrap(err, "failed to get count of hermes distribution")
+	var count int
+	var total string
+	if haveField(ctx, "count") || haveField(ctx, "totalRewardsReceived") {
+		count, total, err = r.HP.GetHermes2Count(harg, hermes2.SelectCountByVoterAddress, voterAddress)
+		if err != nil {
+			return errors.Wrap(err, "failed to get count of hermes distribution")
+		}
 	}
 	actionResponse.ByVoter = &ByVoterResponse{
-		Exist:            true,
-		DelegateInfoList: delegateInfoList,
-		Count:            count,
+		Exist:                true,
+		DelegateInfoList:     delegateInfoList,
+		Count:                count,
+		TotalRewardsReceived: total,
 	}
 	return nil
+}
+
+func (r *queryResolver) getHermes2HermesMeta(ctx context.Context, startEpoch int, epochCount int, actionResponse *Hermes2) (err error) {
+	actionResponse.HermesMeta = &HermesMeta{
+		Exist: false,
+	}
+	actionResponse.HermesMeta.NumberOfDelegates, actionResponse.HermesMeta.NumberOfRecipients, actionResponse.HermesMeta.TotalRewardsDistributed, err = r.HP.GetHermes2Meta(startEpoch, epochCount)
+	switch {
+	case errors.Cause(err) == indexprotocol.ErrNotExist:
+		return nil
+	case err != nil:
+		return errors.Wrap(err, "failed to get hermes meta info")
+	}
+	actionResponse.HermesMeta.Exist = true
+	return
 }
 
 // Hermes2 handles Hermes2 requests
@@ -1665,6 +1705,9 @@ func (r *queryResolver) Hermes2(ctx context.Context, startEpoch int, epochCount 
 	}
 	if containField(requestedFields, "byVoter") {
 		g.Go(func() error { return r.getHermes2ByVoter(ctx, startEpoch, epochCount, actionResponse) })
+	}
+	if containField(requestedFields, "hermesMeta") {
+		g.Go(func() error { return r.getHermes2HermesMeta(ctx, startEpoch, epochCount, actionResponse) })
 	}
 	return actionResponse, g.Wait()
 }
