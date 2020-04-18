@@ -1641,30 +1641,35 @@ func (r *queryResolver) getHermes2ByVoter(ctx context.Context, startEpoch int, e
 		Offset:     offset,
 		Size:       size,
 	}
-
-	res, err := r.HP.GetHermes2ByVoter(harg, voterAddress)
-	switch {
-	case errors.Cause(err) == indexprotocol.ErrNotExist:
-		actionResponse.ByVoter = &ByVoterResponse{Exist: false}
-		return nil
-	case err != nil:
-		return errors.Wrap(err, "failed to get hermes distribution by voter address")
-	}
 	delegateInfoList := make([]*DelegateInfo, 0)
-	for _, delegateInfo := range res {
-		info := &DelegateInfo{
-			DelegateName: delegateInfo.DelegateName,
-			FromEpoch:    int(delegateInfo.FromEpoch),
-			ToEpoch:      int(delegateInfo.ToEpoch),
-			Amount:       delegateInfo.Amount,
-			ActionHash:   delegateInfo.ActionHash,
-			Timestamp:    delegateInfo.Timestamp,
+	if haveField(ctx, "delegateInfoList") {
+		res, err := r.HP.GetHermes2ByVoter(harg, voterAddress)
+		switch {
+		case errors.Cause(err) == indexprotocol.ErrNotExist:
+			actionResponse.ByVoter = &ByVoterResponse{Exist: false}
+			return nil
+		case err != nil:
+			return errors.Wrap(err, "failed to get hermes distribution by voter address")
 		}
-		delegateInfoList = append(delegateInfoList, info)
+		for _, delegateInfo := range res {
+			info := &DelegateInfo{
+				DelegateName: delegateInfo.DelegateName,
+				FromEpoch:    int(delegateInfo.FromEpoch),
+				ToEpoch:      int(delegateInfo.ToEpoch),
+				Amount:       delegateInfo.Amount,
+				ActionHash:   delegateInfo.ActionHash,
+				Timestamp:    delegateInfo.Timestamp,
+			}
+			delegateInfoList = append(delegateInfoList, info)
+		}
 	}
-	count, total, err := r.HP.GetHermes2Count(harg, hermes2.SelectCountByVoterAddress, voterAddress)
-	if err != nil {
-		return errors.Wrap(err, "failed to get count of hermes distribution")
+	var count int
+	var total string
+	if haveField(ctx, "count") || haveField(ctx, "totalRewardsReceived") {
+		count, total, err = r.HP.GetHermes2Count(harg, hermes2.SelectCountByVoterAddress, voterAddress)
+		if err != nil {
+			return errors.Wrap(err, "failed to get count of hermes distribution")
+		}
 	}
 	actionResponse.ByVoter = &ByVoterResponse{
 		Exist:                true,
