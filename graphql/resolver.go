@@ -1577,6 +1577,7 @@ func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int
 	}
 	voterInfoList := make([]*VoterInfo, 0)
 	if haveField(ctx, "voterInfoList") {
+		fmt.Println("call GetHermes2ByDelegate")
 		res, err := r.HP.GetHermes2ByDelegate(harg, delegateName)
 		switch {
 		case errors.Cause(err) == indexprotocol.ErrNotExist:
@@ -1600,6 +1601,7 @@ func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int
 	var count int
 	var total string
 	if haveField(ctx, "count") || haveField(ctx, "totalRewardsDistributed") {
+		fmt.Println("call GetHermes2Count")
 		count, total, err = r.HP.GetHermes2Count(harg, hermes2.SelectCountByDelegateName, delegateName)
 		if err != nil {
 			return errors.Wrap(err, "failed to get count of hermes distribution")
