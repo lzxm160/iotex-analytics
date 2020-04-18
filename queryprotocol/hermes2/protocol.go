@@ -84,13 +84,13 @@ func NewProtocol(idx *indexservice.Indexer, cfg indexprotocol.HermesConfig) *Pro
 func (p *Protocol) GetHermes2ByDelegate(arg HermesArg, delegateName string) ([]*VoterInfo, error) {
 	db := p.indexer.Store.GetDB()
 	getQuery := fmt.Sprintf(selectHermesDistributionByDelegateName, accounts.BalanceHistoryTableName, actions.HermesContractTableName)
+	fmt.Println(getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
 	endEpoch := arg.StartEpoch + arg.EpochCount - 1
-	fmt.Println(getQuery)
 	fmt.Println(arg.StartEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, arg.StartEpoch, endEpoch,
 		delegateName, arg.Offset, arg.Size)
 
