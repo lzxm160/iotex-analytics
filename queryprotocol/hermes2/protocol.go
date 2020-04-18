@@ -196,7 +196,7 @@ func (p *Protocol) GetHermes2Meta(startEpoch int, epochCount int) (numberOfDeleg
 func (p *Protocol) getNumOfDelegates(startEpoch int, endEpoch int) (numberOfDelegates int, err error) {
 	db := p.indexer.Store.GetDB()
 	getQuery := fmt.Sprintf(selectNumberOfDelegates, actions.HermesContractTableName, startEpoch, endEpoch)
-	num, err := s.GetCount(db, getQuery)
+	num, err := s.QueryRow(db, getQuery)
 	if num == "0" {
 		err = indexprotocol.ErrNotExist
 		return
@@ -212,7 +212,7 @@ func (p *Protocol) getNumOfDelegates(startEpoch int, endEpoch int) (numberOfDele
 func (p *Protocol) getNumOfRecipients(startEpoch int, endEpoch int) (numberOfeceipts int, err error) {
 	db := p.indexer.Store.GetDB()
 	getQuery := fmt.Sprintf(selectNumberOfRecipients, accounts.BalanceHistoryTableName, p.hermesConfig.MultiSendContractAddress, startEpoch, endEpoch)
-	num, err := s.GetCount(db, getQuery)
+	num, err := s.QueryRow(db, getQuery)
 	if num == "0" {
 		err = indexprotocol.ErrNotExist
 		return
@@ -228,7 +228,7 @@ func (p *Protocol) getNumOfRecipients(startEpoch int, endEpoch int) (numberOfece
 func (p *Protocol) getTotalRewardsDistributed(startEpoch int, endEpoch int) (totalRewardsDistributed string, err error) {
 	db := p.indexer.Store.GetDB()
 	getQuery := fmt.Sprintf(selectTotalRewardsDistributed, accounts.BalanceHistoryTableName, startEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, actions.HermesContractTableName, startEpoch, endEpoch)
-	totalRewardsDistributed, err = s.GetCount(db, getQuery)
+	totalRewardsDistributed, err = s.QueryRow(db, getQuery)
 	if totalRewardsDistributed == "0" {
 		err = indexprotocol.ErrNotExist
 		return
