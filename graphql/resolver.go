@@ -1539,9 +1539,11 @@ func ethAddrToIoAddr(ethAddr string) (string, error) {
 }
 
 func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int, epochCount int, actionResponse *Hermes2) error {
-	requestedFields := graphql.CollectAllFields(ctx)
-	for _, f := range requestedFields {
-		fmt.Println(f)
+	fields := graphql.CollectFieldsCtx(ctx, nil)
+	fmt.Println(fields[0].Name)
+	fields = graphql.CollectFields(ctx, fields[0].Selections, nil)
+	for _, f := range fields {
+		fmt.Println(f.Name)
 	}
 	argsMap := parseFieldArguments(ctx, "byDelegate", "voterInfoList")
 	delegateName, err := getStringArg(argsMap, "delegateName")
