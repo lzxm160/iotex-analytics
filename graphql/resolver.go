@@ -1387,11 +1387,12 @@ func containField(requestedFields []string, field string) bool {
 
 func haveField(ctx context.Context, field string) bool {
 	fields := graphql.CollectFieldsCtx(ctx, nil)
-	fields = graphql.CollectFields(ctx, fields[0].Selections, nil)
-	for _, f := range fields {
-		fmt.Println(f.Name)
-		if f.Name == field {
-			return true
+	if len(fields) > 0 {
+		subFields := graphql.CollectFields(ctx, fields[0].Selections, nil)
+		for _, f := range subFields {
+			if f.Name == field {
+				return true
+			}
 		}
 	}
 	return false
