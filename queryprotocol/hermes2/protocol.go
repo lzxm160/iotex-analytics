@@ -34,7 +34,7 @@ const (
 	selectCount = "SELECT COUNT(*),SUM(amount) "
 
 	selectNumberOfDelegates       = "SELECT COUNT(DISTINCT delegate_name) FROM %s WHERE epoch_number >= %d AND epoch_number <= %d"
-	selectNumberOfRecipients      = "SELECT COUNT(DISTINCT `to`) FROM %s WHERE `from` = '%s' and `to`<>'' AND epoch_number >= %d AND epoch_number <= %d"
+	selectNumberOfRecipients      = "SELECT COUNT(DISTINCT `to`) FROM %s WHERE `from` = '%s' AND epoch_number >= %d AND epoch_number <= %d"
 	selectTotalRewardsDistributed = "SELECT SUM(amount) FROM (SELECT * FROM %s WHERE epoch_number >= %d AND epoch_number <= %d AND `from` = '%s') AS t1 INNER JOIN (SELECT * FROM %s WHERE epoch_number >= %d AND epoch_number <= %d) AS t2 ON t1.action_hash = t2.action_hash"
 )
 
@@ -177,7 +177,7 @@ func (p *Protocol) GetHermes2Meta(startEpoch int, epochCount int) (numberOfDeleg
 		err = errors.Wrap(err, "get num of delegates")
 		return
 	}
-	numberOfRecipients, err = p.getNumOfReceipts(startEpoch, endEpoch)
+	numberOfRecipients, err = p.getNumOfRecipients(startEpoch, endEpoch)
 	if err != nil {
 		err = errors.Wrap(err, "get num of receipts")
 		return
@@ -206,7 +206,7 @@ func (p *Protocol) getNumOfDelegates(startEpoch int, endEpoch int) (numberOfDele
 	return
 }
 
-func (p *Protocol) getNumOfReceipts(startEpoch int, endEpoch int) (numberOfeceipts int, err error) {
+func (p *Protocol) getNumOfRecipients(startEpoch int, endEpoch int) (numberOfeceipts int, err error) {
 	db := p.indexer.Store.GetDB()
 	getQuery := fmt.Sprintf(selectNumberOfRecipients, accounts.BalanceHistoryTableName, p.hermesConfig.MultiSendContractAddress, startEpoch, endEpoch)
 	num, err := s.GetCount(db, getQuery)

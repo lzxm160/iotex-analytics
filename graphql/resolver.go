@@ -1539,6 +1539,7 @@ func ethAddrToIoAddr(ethAddr string) (string, error) {
 }
 
 func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int, epochCount int, actionResponse *Hermes2) error {
+	requestedFields := graphql.CollectAllFields(ctx)
 	argsMap := parseFieldArguments(ctx, "byDelegate", "voterInfoList")
 	delegateName, err := getStringArg(argsMap, "delegateName")
 	if err != nil {
@@ -1563,30 +1564,35 @@ func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int
 		Offset:     offset,
 		Size:       size,
 	}
-
-	res, err := r.HP.GetHermes2ByDelegate(harg, delegateName)
-	switch {
-	case errors.Cause(err) == indexprotocol.ErrNotExist:
-		actionResponse.ByDelegate = &ByDelegateResponse{Exist: false}
-		return nil
-	case err != nil:
-		return errors.Wrap(err, "failed to get hermes distribution by delegate name")
-	}
 	voterInfoList := make([]*VoterInfo, 0)
-	for _, voterInfo := range res {
-		info := &VoterInfo{
-			VoterAddress: voterInfo.VoterAddress,
-			FromEpoch:    int(voterInfo.FromEpoch),
-			ToEpoch:      int(voterInfo.ToEpoch),
-			Amount:       voterInfo.Amount,
-			ActionHash:   voterInfo.ActionHash,
-			Timestamp:    voterInfo.Timestamp,
+	if containField(requestedFields, "voterInfoList") {
+		res, err := r.HP.GetHermes2ByDelegate(harg, delegateName)
+		switch {
+		case errors.Cause(err) == indexprotocol.ErrNotExist:
+			actionResponse.ByDelegate = &ByDelegateResponse{Exist: false}
+			return nil
+		case err != nil:
+			return errors.Wrap(err, "failed to get hermes distribution by delegate name")
 		}
-		voterInfoList = append(voterInfoList, info)
+		for _, voterInfo := range res {
+			info := &VoterInfo{
+				VoterAddress: voterInfo.VoterAddress,
+				FromEpoch:    int(voterInfo.FromEpoch),
+				ToEpoch:      int(voterInfo.ToEpoch),
+				Amount:       voterInfo.Amount,
+				ActionHash:   voterInfo.ActionHash,
+				Timestamp:    voterInfo.Timestamp,
+			}
+			voterInfoList = append(voterInfoList, info)
+		}
 	}
-	count, total, err := r.HP.GetHermes2Count(harg, hermes2.SelectCountByDelegateName, delegateName)
-	if err != nil {
-		return errors.Wrap(err, "failed to get count of hermes distribution")
+	var count int
+	var total string
+	if containField(requestedFields, "voterInfoList") {
+		count, total, err = r.HP.GetHermes2Count(harg, hermes2.SelectCountByDelegateName, delegateName)
+		if err != nil {
+			return errors.Wrap(err, "failed to get count of hermes distribution")
+		}
 	}
 	actionResponse.ByDelegate = &ByDelegateResponse{
 		Exist:                   true,
