@@ -89,8 +89,11 @@ func (p *Protocol) GetHermes2ByDelegate(arg HermesArg, delegateName string) ([]*
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-
 	endEpoch := arg.StartEpoch + arg.EpochCount - 1
+	fmt.Println(getQuery)
+	fmt.Println(arg.StartEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, arg.StartEpoch, endEpoch,
+		delegateName, arg.Offset, arg.Size)
+
 	rows, err := stmt.Query(arg.StartEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, arg.StartEpoch, endEpoch,
 		delegateName, arg.Offset, arg.Size)
 	if err != nil {
