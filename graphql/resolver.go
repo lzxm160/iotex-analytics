@@ -1386,10 +1386,12 @@ func containField(requestedFields []string, field string) bool {
 }
 
 func haveField(ctx context.Context, parent, subfield string) bool {
+	// top level
 	fields := graphql.CollectFieldsCtx(ctx, nil)
 	for _, f := range fields {
 		if f.Name == parent {
 			fmt.Println("parent:", f.Name)
+			// sub level
 			subFields := graphql.CollectFields(ctx, f.Selections, nil)
 			for _, sub := range subFields {
 				if sub.Name == subfield {
@@ -1605,6 +1607,8 @@ func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int
 	var count int
 	var total string
 	if haveField(ctx, "byDelegate", "count") || haveField(ctx, "byDelegate", "totalRewardsDistributed") {
+		fmt.Println("have count:", haveField(ctx, "byDelegate", "count"))
+		fmt.Println("have totalRewardsDistributed:", haveField(ctx, "byDelegate", "totalRewardsDistributed"))
 		count, total, err = r.HP.GetHermes2Count(harg, hermes2.SelectCountByDelegateName, delegateName)
 		if err != nil {
 			return errors.Wrap(err, "failed to get count of hermes distribution")
