@@ -1387,6 +1387,9 @@ func containField(requestedFields []string, field string) bool {
 
 func haveField(ctx context.Context, field string) bool {
 	fields := graphql.CollectFieldsCtx(ctx, nil)
+	for _, f := range fields {
+		fmt.Println("graphql.CollectFieldsCtx:", f.Name)
+	}
 	if len(fields) > 0 {
 		subFields := graphql.CollectFields(ctx, fields[0].Selections, nil)
 		for _, f := range subFields {
