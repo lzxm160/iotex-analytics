@@ -1,9 +1,7 @@
 package hermes2
 
 import (
-	"database/sql"
 	"fmt"
-	"strconv"
 
 	"github.com/pkg/errors"
 
@@ -187,14 +185,18 @@ func (p *Protocol) GetHermes2Meta(startEpoch int, epochCount int) (numberOfDeleg
 func (p *Protocol) getNumOfDelegates(startEpoch int, endEpoch int) (numberOfDelegates int, err error) {
 	db := p.indexer.Store.GetDB()
 	getQuery := fmt.Sprintf(selectNumberOfDelegates, actions.HermesContractTableName, startEpoch, endEpoch)
-	num, err := queryHermesMeta(db, getQuery)
-	if num == "0" {
-		err = indexprotocol.ErrNotExist
+	stmt, err := db.Prepare(getQuery)
+	if err != nil {
+		err = errors.Wrap(err, "failed to prepare get query")
 		return
 	}
-	numberOfDelegates, err = strconv.Atoi(num)
-	if err != nil {
-		err = errors.Wrap(err, "str conv:"+num)
+	defer stmt.Close()
+	if err = stmt.QueryRow().Scan(&numberOfDelegates); err != nil {
+		err = errors.Wrap(err, "failed to execute get query")
+		return
+	}
+	if numberOfDelegates == 0 {
+		err = indexprotocol.ErrNotExist
 		return
 	}
 	return
@@ -210,21 +212,6 @@ func (p *Protocol) getNumOfRecipientsTotalRewardsDistributed(startEpoch int, end
 	}
 	defer stmt.Close()
 	if err = stmt.QueryRow(startEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, startEpoch, endEpoch).Scan(&count, &totalRewardsDistributed); err != nil {
-		err = errors.Wrap(err, "failed to execute get query")
-		return
-	}
-	return
-}
-
-func queryHermesMeta(db *sql.DB, getQuery string) (ret string, err error) {
-	stmt, err := db.Prepare(getQuery)
-	if err != nil {
-		err = errors.Wrap(err, "failed to prepare get query")
-		return
-	}
-	defer stmt.Close()
-
-	if err = stmt.QueryRow().Scan(&ret); err != nil {
 		err = errors.Wrap(err, "failed to execute get query")
 		return
 	}
