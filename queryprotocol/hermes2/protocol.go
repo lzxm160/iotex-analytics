@@ -202,7 +202,7 @@ func (p *Protocol) getNumOfDelegates(startEpoch int, endEpoch int) (numberOfDele
 
 func (p *Protocol) getNumOfRecipientsTotalRewardsDistributed(startEpoch int, endEpoch int) (count int, totalRewardsDistributed string, err error) {
 	db := p.indexer.Store.GetDB()
-	getQuery := fmt.Sprintf(accounts.BalanceHistoryTableName, actions.HermesContractTableName)
+	getQuery := fmt.Sprintf(selectTotalRewardsDistributed, accounts.BalanceHistoryTableName, actions.HermesContractTableName)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		err = errors.Wrap(err, "failed to prepare get query")
