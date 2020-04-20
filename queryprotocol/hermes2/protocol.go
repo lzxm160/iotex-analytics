@@ -32,12 +32,9 @@ const (
 	voterFilter                            = "WHERE `to` = ? "
 	selectHermesDistributionByVoterAddress = selectDelegate + fromJoinedTables + voterFilter + timeOrdering
 
-	selectCount = "SELECT COUNT(*),SUM(amount) "
-
-	joinedTable                   = "(SELECT * FROM %s WHERE epoch_number >= %d AND epoch_number <= %d AND `from` = '%s') AS t1 INNER JOIN (SELECT * FROM %s WHERE epoch_number >= %d AND epoch_number <= %d) AS t2 ON t1.action_hash = t2.action_hash"
+	selectCount                   = "SELECT COUNT(*),SUM(amount) "
 	selectNumberOfDelegates       = "SELECT COUNT(DISTINCT delegate_name) FROM %s WHERE epoch_number >= %d AND epoch_number <= %d"
-	selectNumberOfRecipients      = "SELECT COUNT(DISTINCT `to`) FROM " + joinedTable
-	selectTotalRewardsDistributed = "SELECT SUM(amount) FROM " + joinedTable
+	selectTotalRewardsDistributed = "SELECT COUNT(DISTINCT `to`),SUM(amount) FROM " + fromJoinedTables
 )
 
 // HermesArg defines Hermes request parameters
@@ -179,12 +176,7 @@ func (p *Protocol) GetHermes2Meta(startEpoch int, epochCount int) (numberOfDeleg
 		err = errors.Wrap(err, "get num of delegates")
 		return
 	}
-	numberOfRecipients, err = p.getNumOfRecipients(startEpoch, endEpoch)
-	if err != nil {
-		err = errors.Wrap(err, "get num of receipts")
-		return
-	}
-	totalRewardsDistributed, err = p.getTotalRewardsDistributed(startEpoch, endEpoch)
+	numberOfRecipients, totalRewardsDistributed, err = p.getNumOfRecipientsTotalRewardsDistributed(startEpoch, endEpoch)
 	if err != nil {
 		err = errors.Wrap(err, "get num of total rewards distributed")
 		return
@@ -208,28 +200,17 @@ func (p *Protocol) getNumOfDelegates(startEpoch int, endEpoch int) (numberOfDele
 	return
 }
 
-func (p *Protocol) getNumOfRecipients(startEpoch int, endEpoch int) (numberOfeceipts int, err error) {
+func (p *Protocol) getNumOfRecipientsTotalRewardsDistributed(startEpoch int, endEpoch int) (count int, totalRewardsDistributed string, err error) {
 	db := p.indexer.Store.GetDB()
-	getQuery := fmt.Sprintf(selectNumberOfRecipients, accounts.BalanceHistoryTableName, startEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, actions.HermesContractTableName, startEpoch, endEpoch)
-	num, err := queryHermesMeta(db, getQuery)
-	if num == "0" {
-		err = indexprotocol.ErrNotExist
-		return
-	}
-	numberOfeceipts, err = strconv.Atoi(num)
+	getQuery := fmt.Sprintf(accounts.BalanceHistoryTableName, actions.HermesContractTableName)
+	stmt, err := db.Prepare(getQuery)
 	if err != nil {
-		err = errors.Wrap(err, "str conv:"+num)
+		err = errors.Wrap(err, "failed to prepare get query")
 		return
 	}
-	return
-}
-
-func (p *Protocol) getTotalRewardsDistributed(startEpoch int, endEpoch int) (totalRewardsDistributed string, err error) {
-	db := p.indexer.Store.GetDB()
-	getQuery := fmt.Sprintf(selectTotalRewardsDistributed, accounts.BalanceHistoryTableName, startEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, actions.HermesContractTableName, startEpoch, endEpoch)
-	totalRewardsDistributed, err = queryHermesMeta(db, getQuery)
-	if totalRewardsDistributed == "0" {
-		err = indexprotocol.ErrNotExist
+	defer stmt.Close()
+	if err = stmt.QueryRow(startEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, startEpoch, endEpoch).Scan(&count, &totalRewardsDistributed); err != nil {
+		err = errors.Wrap(err, "failed to execute get query")
 		return
 	}
 	return
