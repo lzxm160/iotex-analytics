@@ -1385,16 +1385,16 @@ func containField(requestedFields []string, field string) bool {
 	return false
 }
 
-func haveField(ctx context.Context, field string) bool {
+func haveField(ctx context.Context, parent, subfield string) bool {
 	fields := graphql.CollectFieldsCtx(ctx, nil)
 	for _, f := range fields {
-		fmt.Println("graphql.CollectFieldsCtx:", f.Name)
-	}
-	if len(fields) > 0 {
-		subFields := graphql.CollectFields(ctx, fields[0].Selections, nil)
-		for _, f := range subFields {
-			if f.Name == field {
-				return true
+		if f.Name == parent {
+			fmt.Println("parent:", f.Name)
+			subFields := graphql.CollectFields(ctx, f.Selections, nil)
+			for _, sub := range subFields {
+				if sub.Name == subfield {
+					return true
+				}
 			}
 		}
 	}
@@ -1582,7 +1582,7 @@ func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int
 	}
 	actionResponse.ByDelegate = &ByDelegateResponse{Exist: false}
 	voterInfoList := make([]*VoterInfo, 0)
-	if haveField(ctx, "voterInfoList") {
+	if haveField(ctx, "byDelegate", "voterInfoList") {
 		res, err := r.HP.GetHermes2ByDelegate(harg, delegateName)
 		switch {
 		case errors.Cause(err) == indexprotocol.ErrNotExist:
@@ -1604,7 +1604,7 @@ func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int
 	}
 	var count int
 	var total string
-	if haveField(ctx, "count") || haveField(ctx, "totalRewardsDistributed") {
+	if haveField(ctx, "byDelegate", "count") || haveField(ctx, "byDelegate", "totalRewardsDistributed") {
 		count, total, err = r.HP.GetHermes2Count(harg, hermes2.SelectCountByDelegateName, delegateName)
 		if err != nil {
 			return errors.Wrap(err, "failed to get count of hermes distribution")
@@ -1650,7 +1650,7 @@ func (r *queryResolver) getHermes2ByVoter(ctx context.Context, startEpoch int, e
 	}
 	actionResponse.ByVoter = &ByVoterResponse{Exist: false}
 	delegateInfoList := make([]*DelegateInfo, 0)
-	if haveField(ctx, "delegateInfoList") {
+	if haveField(ctx, "byVoter", "delegateInfoList") {
 		res, err := r.HP.GetHermes2ByVoter(harg, voterAddress)
 		switch {
 		case errors.Cause(err) == indexprotocol.ErrNotExist:
@@ -1672,7 +1672,7 @@ func (r *queryResolver) getHermes2ByVoter(ctx context.Context, startEpoch int, e
 	}
 	var count int
 	var total string
-	if haveField(ctx, "count") || haveField(ctx, "totalRewardsReceived") {
+	if haveField(ctx, "byVoter", "count") || haveField(ctx, "byVoter", "totalRewardsReceived") {
 		count, total, err = r.HP.GetHermes2Count(harg, hermes2.SelectCountByVoterAddress, voterAddress)
 		if err != nil {
 			return errors.Wrap(err, "failed to get count of hermes distribution")
