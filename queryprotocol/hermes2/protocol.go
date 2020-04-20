@@ -32,9 +32,9 @@ const (
 	voterFilter                            = "WHERE `to` = ? "
 	selectHermesDistributionByVoterAddress = selectDelegate + fromJoinedTables + voterFilter + timeOrdering
 
-	selectCount                   = "SELECT COUNT(*),SUM(amount) "
-	selectNumberOfDelegates       = "SELECT COUNT(DISTINCT delegate_name) FROM %s WHERE epoch_number >= %d AND epoch_number <= %d"
-	selectTotalRewardsDistributed = "SELECT COUNT(DISTINCT `to`),SUM(amount) FROM " + fromJoinedTables
+	selectCount                                  = "SELECT COUNT(*),SUM(amount) "
+	selectNumberOfDelegates                      = "SELECT COUNT(DISTINCT delegate_name) FROM %s WHERE epoch_number >= %d AND epoch_number <= %d"
+	selectNumOfRecipientsTotalRewardsDistributed = "SELECT COUNT(DISTINCT `to`),SUM(amount) " + fromJoinedTables
 )
 
 // HermesArg defines Hermes request parameters
@@ -202,7 +202,7 @@ func (p *Protocol) getNumOfDelegates(startEpoch int, endEpoch int) (numberOfDele
 
 func (p *Protocol) getNumOfRecipientsTotalRewardsDistributed(startEpoch int, endEpoch int) (count int, totalRewardsDistributed string, err error) {
 	db := p.indexer.Store.GetDB()
-	getQuery := fmt.Sprintf(selectTotalRewardsDistributed, accounts.BalanceHistoryTableName, actions.HermesContractTableName)
+	getQuery := fmt.Sprintf(selectNumOfRecipientsTotalRewardsDistributed, accounts.BalanceHistoryTableName, actions.HermesContractTableName)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		err = errors.Wrap(err, "failed to prepare get query")
