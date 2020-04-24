@@ -160,6 +160,7 @@ func InsertVoteBuckets(tableName string, driverName committee.DRIVERTYPE, record
 	case committee.SQLITE:
 		stmt, err = tx.Prepare(fmt.Sprintf(InsertVoteBucketsQuery, tableName))
 	case committee.MYSQL:
+		fmt.Println(fmt.Sprintf(InsertVoteBucketsQueryMySql, tableName))
 		stmt, err = tx.Prepare(fmt.Sprintf(InsertVoteBucketsQueryMySql, tableName))
 	default:
 		return nil, errors.New("wrong driver type")
@@ -196,6 +197,16 @@ func InsertVoteBuckets(tableName string, driverName committee.DRIVERTYPE, record
 		ct := time.Unix(bucket.CreateTime.Seconds, int64(bucket.CreateTime.Nanos))
 		sst := time.Unix(bucket.StakeStartTime.Seconds, int64(bucket.StakeStartTime.Nanos))
 		ust := time.Unix(bucket.UnstakeStartTime.Seconds, int64(bucket.UnstakeStartTime.Nanos))
+		fmt.Println(hex.EncodeToString(h[:]),
+			bucket.Index,
+			candAddr.Bytes(),
+			ownerAddr.Bytes(),
+			[]byte(bucket.StakedAmount),
+			duration.Bytes(),
+			ct.Unix(),
+			sst.Unix(),
+			ust.Unix(),
+			bucket.AutoStake)
 		if _, err = stmt.Exec(
 			hex.EncodeToString(h[:]),
 			bucket.Index,
