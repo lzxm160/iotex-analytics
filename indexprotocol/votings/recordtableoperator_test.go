@@ -33,7 +33,6 @@ func TestXX(t *testing.T) {
 	require.NoError(err)
 	tx, err := p.Store.GetDB().Begin()
 	require.NoError(err)
-	defer tx.Rollback()
 	bucketTableOperator, err := NewBucketTableOperator("stakingV2_bucket", committee.MYSQL)
 	require.NoError(err)
 	require.NoError(bucketTableOperator.CreateTables(tx))
