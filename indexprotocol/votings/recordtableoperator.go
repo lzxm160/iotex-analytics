@@ -214,9 +214,9 @@ func InsertVoteBuckets(tableName string, driverName committee.DRIVERTYPE, record
 			ownerAddr.Bytes(),
 			[]byte(bucket.StakedAmount),
 			duration.Bytes(),
-			ct.Unix(),
-			sst.Unix(),
-			ust.Unix(),
+			ct,
+			sst,
+			ust,
 			bucket.AutoStake,
 		); err != nil {
 			return nil, err
