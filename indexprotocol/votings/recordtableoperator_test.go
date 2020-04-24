@@ -19,7 +19,7 @@ const (
 
 func TestXX(t *testing.T) {
 	require := require.New(t)
-	store := s.NewMySQL(connectStr, dbName)
+	store := s.NewMySQL(localconnectStr, localdbName)
 	require.NoError(store.Start(context.Background()))
 	p, err := NewProtocol(store, epochctx.NewEpochCtx(36, 24, 15), indexprotocol.GravityChain{}, indexprotocol.Poll{
 		VoteThreshold:        "100000000000000000000",
