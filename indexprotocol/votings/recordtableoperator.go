@@ -28,7 +28,7 @@ func NewBucketTableOperator(tableName string, driverName committee.DRIVERTYPE) (
 	case committee.SQLITE:
 		creation = "CREATE TABLE IF NOT EXISTS %s (id INTEGER PRIMARY KEY AUTOINCREMENT, hash TEXT UNIQUE, index DECIMAL(65, 0), candidate BLOB, owner BLOB, staked_amount BLOB, staked_duration TEXT, create_time TIMESTAMP NULL DEFAULT NULL, stake_start_time TIMESTAMP NULL DEFAULT NULL, unstake_start_time TIMESTAMP NULL DEFAULT NULL, auto_stake INTEGER)"
 	case committee.MYSQL:
-		creation = "CREATE TABLE IF NOT EXISTS %s (id INTEGER PRIMARY KEY AUTO_INCREMENT, hash VARCHAR(64) UNIQUE, index DECIMAL(65, 0), candidate BLOB, owner BLOB, staked_amount BLOB, staked_duration TEXT, create_time TIMESTAMP NULL DEFAULT NULL, stake_start_time TIMESTAMP NULL DEFAULT NULL, unstake_start_time TIMESTAMP NULL DEFAULT NULL, auto_stake INTEGER)"
+		creation = "CREATE TABLE IF NOT EXISTS %s (id INTEGER PRIMARY KEY AUTO_INCREMENT, hash VARCHAR(64) UNIQUE, `index` DECIMAL(65, 0), candidate BLOB, owner BLOB, staked_amount BLOB, staked_duration TEXT, create_time TIMESTAMP NULL DEFAULT NULL, stake_start_time TIMESTAMP NULL DEFAULT NULL, unstake_start_time TIMESTAMP NULL DEFAULT NULL, auto_stake INTEGER)"
 	default:
 		return nil, errors.New("Wrong driver type")
 	}
