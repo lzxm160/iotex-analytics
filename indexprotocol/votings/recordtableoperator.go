@@ -62,7 +62,7 @@ func NewCandidateTableOperator(tableName string, driverName committee.DRIVERTYPE
 }
 
 // VoteBucketRecordQuery is query to return vote buckets by ids
-const VoteBucketRecordQuery = "SELECT id, index, candidate, owner, staked_amount, staked_duration, create_time, stake_start_time, unstake_start_time, auto_stake FROM %s WHERE id IN (%s)"
+const VoteBucketRecordQuery = "SELECT id, `index`, candidate, owner, staked_amount, staked_duration, create_time, stake_start_time, unstake_start_time, auto_stake FROM %s WHERE id IN (%s)"
 
 // QueryVoteBuckets returns vote buckets by ids
 func QueryVoteBuckets(tableName string, frequencies map[int64]int, sdb *sql.DB, tx *sql.Tx) (interface{}, error) {
@@ -144,7 +144,7 @@ func QueryVoteBuckets(tableName string, frequencies map[int64]int, sdb *sql.DB, 
 
 // InsertVoteBucketsQuery is query to insert vote buckets
 const InsertVoteBucketsQuery = "INSERT OR IGNORE INTO %s (hash, index, candidate, owner, staked_amount, staked_duration, create_time, stake_start_time, unstake_start_time, auto_stake) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-const InsertVoteBucketsQueryMySql = "INSERT IGNORE INTO %s (hash, index, candidate, owner, staked_amount, staked_duration, create_time, stake_start_time, unstake_start_time, auto_stake) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+const InsertVoteBucketsQueryMySql = "INSERT IGNORE INTO %s (hash, `index`, candidate, owner, staked_amount, staked_duration, create_time, stake_start_time, unstake_start_time, auto_stake) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 // InsertVoteBuckets inserts vote bucket records into table by tx
 func InsertVoteBuckets(tableName string, driverName committee.DRIVERTYPE, records interface{}, tx *sql.Tx) (frequencies map[hash.Hash256]int, err error) {
