@@ -2,11 +2,7 @@ package votings
 
 import (
 	"context"
-	"fmt"
 	"testing"
-
-	"github.com/golang/protobuf/ptypes/timestamp"
-	staking "github.com/iotexproject/iotex-analytics/indexprotocol/votings/stakingpb"
 
 	"github.com/iotexproject/iotex-analytics/epochctx"
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
@@ -38,27 +34,27 @@ func TestXX(t *testing.T) {
 	require.NoError(err)
 	require.NoError(bucketTableOperator.CreateTables(tx))
 
-	buckets := []*staking.Bucket{
-		&staking.Bucket{
-			Index:            10,
-			CandidateAddress: "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
-			StakedAmount:     "20000",
-			StakedDuration:   10,
-			CreateTime:       &timestamp.Timestamp{Seconds: int64(123), Nanos: int32(456)},
-			StakeStartTime:   &timestamp.Timestamp{Seconds: int64(789), Nanos: int32(123)},
-			UnstakeStartTime: &timestamp.Timestamp{Seconds: int64(654), Nanos: int32(321)},
-			AutoStake:        false,
-			Owner:            "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
-		},
-	}
+	//buckets := []*staking.Bucket{
+	//	&staking.Bucket{
+	//		Index:            10,
+	//		CandidateAddress: "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+	//		StakedAmount:     "20000",
+	//		StakedDuration:   10,
+	//		CreateTime:       &timestamp.Timestamp{Seconds: int64(123), Nanos: int32(456)},
+	//		StakeStartTime:   &timestamp.Timestamp{Seconds: int64(789), Nanos: int32(123)},
+	//		UnstakeStartTime: &timestamp.Timestamp{Seconds: int64(654), Nanos: int32(321)},
+	//		AutoStake:        false,
+	//		Owner:            "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+	//	},
+	//}
 	//f, err := InsertVoteBuckets("stakingV2_bucket", committee.MYSQL, buckets, tx)
 	//require.NoError(err)
 	//for k, v := range f {
 	//	fmt.Println(hex.EncodeToString(k[:]), v)
 	//}
-	require.NoError(bucketTableOperator.Put(1, buckets, tx))
-	ret, err := bucketTableOperator.Get(1, p.Store.GetDB(), tx)
-	candidates, ok := ret.([]*staking.Bucket)
-	require.True(ok)
-	fmt.Println(candidates[0])
+	//require.NoError(bucketTableOperator.Put(1, buckets, tx))
+	//ret, err := bucketTableOperator.Get(1, p.Store.GetDB(), tx)
+	//candidates, ok := ret.([]*staking.Bucket)
+	//require.True(ok)
+	//fmt.Println(candidates[0])
 }
