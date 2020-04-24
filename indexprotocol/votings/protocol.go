@@ -551,12 +551,15 @@ func (p *Protocol) getNativeBucket(
 	}
 	getNativeBucketRes, err := chainClient.GetElectionBuckets(context.Background(), getNativeBucketRequest)
 	if err != nil {
+		fmt.Println("GetElectionBuckets:", err)
 		if strings.Contains(err.Error(), db.ErrNotExist.Error()) {
+			fmt.Println("native buckets is empty")
 			log.L().Info("when call GetElectionBuckets, native buckets is empty")
 			return nil, nil
 		}
 		return nil, errors.Wrap(err, "failed to get native buckets from API")
 	}
+	fmt.Println("getNativeBucketRes.GetBuckets():", len(getNativeBucketRes.GetBuckets()))
 	var buckets []*types.Bucket
 	for _, bucketPb := range getNativeBucketRes.GetBuckets() {
 		voter := make([]byte, len(bucketPb.GetVoter()))
