@@ -58,6 +58,7 @@ func TestXX(t *testing.T) {
 	//}
 	require.NoError(bucketTableOperator.Put(1, buckets, tx))
 	ret, err := bucketTableOperator.Get(1, p.Store.GetDB(), tx)
+	require.NoError(err)
 	candidates, ok := ret.([]*staking.Bucket)
 	require.True(ok)
 	fmt.Println(candidates[0])
