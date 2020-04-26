@@ -266,15 +266,15 @@ func QueryCandidates(tableName string, frequencies map[int64]int, sdb *sql.DB, t
 		if err := rows.Scan(&id, &owner, &operator, &reward, &name, &votes, &selfStakeBucketIdx, &selfStake); err != nil {
 			return nil, err
 		}
-		ownerAddr, err := address.FromBytes(owner)
+		ownerAddr, err := address.FromString(string(owner))
 		if err != nil {
 			return nil, err
 		}
-		operatorAddr, err := address.FromBytes(operator)
+		operatorAddr, err := address.FromString(string(operator))
 		if err != nil {
 			return nil, err
 		}
-		rewardAddr, err := address.FromBytes(reward)
+		rewardAddr, err := address.FromString(string(reward))
 		if err != nil {
 			return nil, err
 		}
