@@ -38,12 +38,12 @@ const (
 
 type (
 	bucket struct {
-		id                                           int64
-		index                                        uint64
-		owner, candidate, stakedAmount               []byte
-		stakedDuration                               string
-		createTime, stakeStartTime, unstakeStartTime time.Time
-		autoStake                                    int64
+		Id                                           int64
+		Index                                        uint64
+		Owner, Candidate, StakedAmount               []byte
+		StakedDuration                               string
+		CreateTime, StakeStartTime, UnstakeStartTime time.Time
+		AutoStake                                    int64
 	}
 )
 
@@ -104,34 +104,34 @@ func QueryVoteBuckets(tableName string, frequencies map[int64]int, sdb *sql.DB, 
 		if !ok {
 			return nil, errors.New("failed to convert")
 		}
-		duration, err := strconv.ParseUint(b.stakedDuration, 10, 32)
+		duration, err := strconv.ParseUint(b.StakedDuration, 10, 32)
 		if err != nil {
 			return nil, err
 		}
-		createTime, err := ptypes.TimestampProto(b.createTime)
+		createTime, err := ptypes.TimestampProto(b.CreateTime)
 		if err != nil {
 			return nil, err
 		}
-		stakeTime, err := ptypes.TimestampProto(b.stakeStartTime)
+		stakeTime, err := ptypes.TimestampProto(b.StakeStartTime)
 		if err != nil {
 			return nil, err
 		}
-		unstakeTime, err := ptypes.TimestampProto(b.unstakeStartTime)
+		unstakeTime, err := ptypes.TimestampProto(b.UnstakeStartTime)
 		if err != nil {
 			return nil, err
 		}
 		bucket := &iotextypes.VoteBucket{
-			Index:            b.index,
-			CandidateAddress: string(b.candidate),
-			Owner:            string(b.owner),
-			StakedAmount:     string(b.stakedAmount),
+			Index:            b.Index,
+			CandidateAddress: string(b.Candidate),
+			Owner:            string(b.Owner),
+			StakedAmount:     string(b.StakedAmount),
 			StakedDuration:   uint32(duration),
 			CreateTime:       createTime,
 			StakeStartTime:   stakeTime,
 			UnstakeStartTime: unstakeTime,
-			AutoStake:        b.autoStake == 1,
+			AutoStake:        b.AutoStake == 1,
 		}
-		for i := frequencies[b.id]; i > 0; i-- {
+		for i := frequencies[b.Id]; i > 0; i-- {
 			buckets = append(buckets, bucket)
 		}
 	}

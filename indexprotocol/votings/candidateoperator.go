@@ -32,10 +32,10 @@ const (
 
 type (
 	candidateStruct struct {
-		id                                   int64
-		owner, operator, reward, name, votes []byte
-		self_stake_bucket_idx                uint64
-		self_stake                           []byte
+		Id                                   int64
+		Owner, Operator, Reward, Name, Votes []byte
+		Self_stake_bucket_idx                uint64
+		Self_stake                           []byte
 	}
 )
 
@@ -97,15 +97,15 @@ func QueryCandidates(tableName string, frequencies map[int64]int, sdb *sql.DB, t
 			return nil, errors.New("failed to convert")
 		}
 		candidate := &iotextypes.CandidateV2{
-			OwnerAddress:       string(cs.owner),
-			OperatorAddress:    string(cs.operator),
-			RewardAddress:      string(cs.reward),
-			Name:               string(cs.name),
-			TotalWeightedVotes: string(cs.votes),
-			SelfStakeBucketIdx: cs.self_stake_bucket_idx,
-			SelfStakingTokens:  string(cs.self_stake),
+			OwnerAddress:       string(cs.Owner),
+			OperatorAddress:    string(cs.Operator),
+			RewardAddress:      string(cs.Reward),
+			Name:               string(cs.Name),
+			TotalWeightedVotes: string(cs.Votes),
+			SelfStakeBucketIdx: cs.Self_stake_bucket_idx,
+			SelfStakingTokens:  string(cs.Self_stake),
 		}
-		for i := frequencies[cs.id]; i > 0; i-- {
+		for i := frequencies[cs.Id]; i > 0; i-- {
 			candidates = append(candidates, candidate)
 		}
 	}
