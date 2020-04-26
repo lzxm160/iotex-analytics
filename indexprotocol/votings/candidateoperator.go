@@ -103,7 +103,7 @@ func QueryCandidates(tableName string, frequencies map[int64]int, sdb *sql.DB, t
 
 // InsertCandidates inserts candidate records into table by tx
 func InsertCandidates(tableName string, driverName committee.DRIVERTYPE, records interface{}, tx *sql.Tx) (frequencies map[hash.Hash256]int, err error) {
-	candidates, ok := records.([]*iotextypes.CandidateV2)
+	candidates, ok := records.(*iotextypes.CandidateListV2)
 	if !ok {
 		return nil, errors.Errorf("Unexpected type %s", reflect.TypeOf(records))
 	}
@@ -126,7 +126,7 @@ func InsertCandidates(tableName string, driverName committee.DRIVERTYPE, records
 		}
 	}()
 	frequencies = make(map[hash.Hash256]int)
-	for _, candidate := range candidates {
+	for _, candidate := range candidates.Candidates {
 		var h hash.Hash256
 		if h, err = hashCandidate(candidate); err != nil {
 			return nil, err

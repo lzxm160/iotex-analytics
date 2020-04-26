@@ -128,7 +128,7 @@ func QueryVoteBuckets(tableName string, frequencies map[int64]int, sdb *sql.DB, 
 
 // InsertVoteBuckets inserts vote bucket records into table by tx
 func InsertVoteBuckets(tableName string, driverName committee.DRIVERTYPE, records interface{}, tx *sql.Tx) (frequencies map[hash.Hash256]int, err error) {
-	buckets, ok := records.([]*iotextypes.VoteBucket)
+	buckets, ok := records.(*iotextypes.VoteBucketList)
 	if !ok {
 		return nil, errors.Errorf("invalid record type %s, *types.Bucket expected", reflect.TypeOf(records))
 	}
@@ -155,7 +155,7 @@ func InsertVoteBuckets(tableName string, driverName committee.DRIVERTYPE, record
 		}
 	}()
 	frequencies = make(map[hash.Hash256]int)
-	for _, bucket := range buckets {
+	for _, bucket := range buckets.Buckets {
 		h, err := hashBucket(bucket)
 		if err != nil {
 			return nil, err
