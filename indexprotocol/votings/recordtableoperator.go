@@ -64,6 +64,7 @@ func NewCandidateTableOperator(tableName string, driverName committee.DRIVERTYPE
 // VoteBucketRecordQuery is query to return vote buckets by ids
 const VoteBucketRecordQuery = "SELECT id, `index`, candidate, owner, staked_amount, staked_duration, create_time, stake_start_time, unstake_start_time, auto_stake FROM %s WHERE id IN (%s)"
 
+//&id, &index, &candidate, &owner, &stakedAmount, &stakedDuration, &createTime, &stakeStartTime, &unstakeStartTime, &autoStake
 // QueryVoteBuckets returns vote buckets by ids
 func QueryVoteBuckets(tableName string, frequencies map[int64]int, sdb *sql.DB, tx *sql.Tx) (interface{}, error) {
 	var (
@@ -220,7 +221,7 @@ func InsertVoteBuckets(tableName string, driverName committee.DRIVERTYPE, record
 			candAddr.Bytes(),
 			ownerAddr.Bytes(),
 			[]byte(bucket.StakedAmount),
-			duration.Bytes(),
+			duration.String(),
 			ct,
 			sst,
 			ust,
