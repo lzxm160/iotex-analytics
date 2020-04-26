@@ -61,6 +61,8 @@ func TestXX(t *testing.T) {
 	}()
 	require.NoError(bucketTableOperator.Put(2, buckets, tx))
 	tx.Commit()
+	tx, err = p.Store.GetDB().Begin()
+	require.NoError(err)
 	ret, err := bucketTableOperator.Get(2, p.Store.GetDB(), tx)
 	require.NoError(err)
 	candidates, ok := ret.([]*staking.Bucket)
