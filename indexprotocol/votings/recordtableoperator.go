@@ -96,7 +96,7 @@ func QueryVoteBuckets(tableName string, frequencies map[int64]int, sdb *sql.DB, 
 			return nil, err
 		}
 
-		fmt.Println(id, index, candidate, owner, stakedAmount, stakedDuration, createTime, stakeStartTime, unstakeStartTime, autoStake)
+		fmt.Println(id, index, hex.EncodeToString(candidate), hex.EncodeToString(owner), string(stakedAmount), stakedDuration, createTime, stakeStartTime, unstakeStartTime, autoStake)
 
 		candAddr, err := address.FromBytes(candidate)
 		if err != nil {
@@ -123,7 +123,10 @@ func QueryVoteBuckets(tableName string, frequencies map[int64]int, sdb *sql.DB, 
 		if err != nil {
 			return nil, err
 		}
-		amount := big.NewInt(0).SetBytes(stakedAmount)
+		amount, ok := big.NewInt(0).SetString(string(stakedAmount), 10)
+		if !ok {
+			return nil, errors.New("error parse stakedAmount")
+		}
 		bucket := &staking.Bucket{
 			Index:            index,
 			CandidateAddress: candAddr.String(),
@@ -203,8 +206,8 @@ func InsertVoteBuckets(tableName string, driverName committee.DRIVERTYPE, record
 		ust := time.Unix(bucket.UnstakeStartTime.Seconds, int64(bucket.UnstakeStartTime.Nanos))
 		fmt.Println(hex.EncodeToString(h[:]),
 			bucket.Index,
-			candAddr.Bytes(),
-			ownerAddr.Bytes(),
+			hex.EncodeToString(candAddr.Bytes()),
+			hex.EncodeToString(ownerAddr.Bytes()),
 			[]byte(bucket.StakedAmount),
 			duration.Bytes(),
 			ct.Unix(),
