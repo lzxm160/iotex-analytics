@@ -162,6 +162,7 @@ func (p *Protocol) GetHermes2Count(arg HermesArg, selectQuery string, filter str
 		err = errors.Wrap(err, "failed to execute get query")
 		return
 	}
+	fmt.Println("total:", total)
 	return
 }
 

@@ -1680,6 +1680,7 @@ func (r *queryResolver) getHermes2ByVoter(ctx context.Context, startEpoch int, e
 			return nil
 		}
 	}
+
 	actionResponse.ByVoter = &ByVoterResponse{
 		Exist:                true,
 		DelegateInfoList:     delegateInfoList,
