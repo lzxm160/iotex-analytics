@@ -1,6 +1,7 @@
 package hermes2
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -158,6 +159,10 @@ func (p *Protocol) GetHermes2Count(arg HermesArg, selectQuery string, filter str
 	endEpoch := arg.StartEpoch + arg.EpochCount - 1
 	if err = stmt.QueryRow(arg.StartEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, arg.StartEpoch, endEpoch,
 		filter).Scan(&count, &total); err != nil {
+		if err == sql.ErrNoRows {
+			err = indexprotocol.ErrNotExist
+			return
+		}
 		err = errors.Wrap(err, "failed to execute get query")
 		return
 	}
