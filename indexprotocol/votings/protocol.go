@@ -18,17 +18,14 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
-	"github.com/iotexproject/iotex-proto/golang/iotextypes"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/iotexproject/iotex-core/action/protocol/poll"
 	"github.com/iotexproject/iotex-core/blockchain/block"
@@ -40,6 +37,7 @@ import (
 	"github.com/iotexproject/iotex-election/types"
 	"github.com/iotexproject/iotex-election/util"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
+	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 
 	"github.com/iotexproject/iotex-analytics/contract"
 	"github.com/iotexproject/iotex-analytics/epochctx"
@@ -272,7 +270,7 @@ func (p *Protocol) Initialize(context.Context, *sql.Tx, *indexprotocol.Genesis) 
 func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block) error {
 	height := blk.Height()
 	if height >= p.epochCtx.FairbankHeight() {
-		return p.stakingV2(ctx)
+		return p.stakingV2(ctx, height)
 	}
 	epochNumber := p.epochCtx.GetEpochNumber(height)
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
@@ -866,20 +864,20 @@ func (p *Protocol) getDelegateRewardPortions(stakingAddress common.Address, grav
 	return
 }
 
-func (p *Protocol) stakingV2(ctx context.Context) (err error) {
+func (p *Protocol) stakingV2(ctx context.Context, height uint64) (err error) {
 	fmt.Println("stakingv2 start")
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
 	chainClient := indexCtx.ChainClient
-	if err = p.updateVoteBucketV2(chainClient); err != nil {
+	if err = p.updateVoteBucketV2(chainClient, height); err != nil {
 		return
 	}
-	if err = p.updateCandidateV2(chainClient); err != nil {
+	if err = p.updateCandidateV2(chainClient, height); err != nil {
 		return
 	}
 	return nil
 }
 
-func (p *Protocol) updateVoteBucketV2(chainClient iotexapi.APIServiceClient) (err error) {
+func (p *Protocol) updateVoteBucketV2(chainClient iotexapi.APIServiceClient, height uint64) (err error) {
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(poll.ProtocolID),
 		MethodName: []byte(strconv.FormatInt(int64(iotexapi.ReadStakingDataMethod_BUCKETS), 10)),
@@ -900,11 +898,11 @@ func (p *Protocol) updateVoteBucketV2(chainClient iotexapi.APIServiceClient) (er
 	}
 
 	for _, b := range voteBucketList.Buckets {
-		fmt.Println("voteBucketList.Buckets:", b)
+		fmt.Println("voteBucketList.Buckets:", b, height)
 	}
 	////////////////////////////////
 	tx, err := p.Store.GetDB().Begin()
-	err = p.nativeV2BucketTableOperator.Put(3, voteBucketList, tx)
+	err = p.nativeV2BucketTableOperator.Put(height, voteBucketList, tx)
 	if err != nil {
 		return
 	}
@@ -913,7 +911,7 @@ func (p *Protocol) updateVoteBucketV2(chainClient iotexapi.APIServiceClient) (er
 	return nil
 }
 
-func (p *Protocol) updateCandidateV2(chainClient iotexapi.APIServiceClient) (err error) {
+func (p *Protocol) updateCandidateV2(chainClient iotexapi.APIServiceClient, height uint64) (err error) {
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(poll.ProtocolID),
 		MethodName: []byte(strconv.FormatInt(int64(iotexapi.ReadStakingDataMethod_CANDIDATES), 10)),
@@ -934,10 +932,10 @@ func (p *Protocol) updateCandidateV2(chainClient iotexapi.APIServiceClient) (err
 	}
 
 	for _, b := range candidateList.Candidates {
-		fmt.Println("candidateList.Candidates:", b)
+		fmt.Println("candidateList.Candidates:", b, height)
 	}
 	tx, err := p.Store.GetDB().Begin()
-	err = p.nativeV2CandidateTableOperator.Put(3, candidateList, tx)
+	err = p.nativeV2CandidateTableOperator.Put(height, candidateList, tx)
 	if err != nil {
 		return
 	}
