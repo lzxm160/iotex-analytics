@@ -10,6 +10,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/iotexproject/iotex-analytics/indexprotocol"
+
+	s "github.com/iotexproject/iotex-analytics/sql"
+
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 
 	"github.com/golang/protobuf/proto"
@@ -65,7 +69,6 @@ func NewBucketTableOperator(tableName string, driverName committee.DRIVERTYPE) (
 
 // QueryVoteBuckets returns vote buckets by ids
 func QueryVoteBuckets(tableName string, frequencies map[int64]int, sdb *sql.DB, tx *sql.Tx) (ret interface{}, err error) {
-
 	size := 0
 	ids := make([]int64, 0, len(frequencies))
 	for id, f := range frequencies {
@@ -81,12 +84,25 @@ func QueryVoteBuckets(tableName string, frequencies map[int64]int, sdb *sql.DB, 
 	if err != nil {
 		return nil, err
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	defer rows.Close()
-	buckets := make([]*iotextypes.VoteBucket, 0, size)
 	var b bucket
-	for rows.Next() {
-		if err := rows.Scan(&b); err != nil {
-			return nil, err
+	parsedRows, err := s.ParseSQLRows(rows, &b)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse results")
+	}
+
+	if len(parsedRows) == 0 {
+		return nil, indexprotocol.ErrNotExist
+	}
+
+	buckets := make([]*iotextypes.VoteBucket, 0)
+	for _, parsedRow := range parsedRows {
+		b, ok := parsedRow.(*bucket)
+		if !ok {
+			return nil, errors.New("failed to convert")
 		}
 		duration, err := strconv.ParseUint(b.stakedDuration, 10, 32)
 		if err != nil {
@@ -118,9 +134,6 @@ func QueryVoteBuckets(tableName string, frequencies map[int64]int, sdb *sql.DB, 
 		for i := frequencies[b.id]; i > 0; i-- {
 			buckets = append(buckets, bucket)
 		}
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
 	}
 
 	return &iotextypes.VoteBucketList{Buckets: buckets}, nil

@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/iotexproject/iotex-analytics/indexprotocol"
+	s "github.com/iotexproject/iotex-analytics/sql"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 
@@ -58,7 +61,6 @@ func NewCandidateTableOperator(tableName string, driverName committee.DRIVERTYPE
 
 // QueryCandidates get all candidates by ids
 func QueryCandidates(tableName string, frequencies map[int64]int, sdb *sql.DB, tx *sql.Tx) (ret interface{}, err error) {
-	var cs candidateStruct
 	size := 0
 	ids := make([]int64, 0, len(frequencies))
 	for id, f := range frequencies {
@@ -74,12 +76,25 @@ func QueryCandidates(tableName string, frequencies map[int64]int, sdb *sql.DB, t
 	if err != nil {
 		return
 	}
+	if err = rows.Err(); err != nil {
+		return
+	}
 	defer rows.Close()
+	var cs candidateStruct
+	parsedRows, err := s.ParseSQLRows(rows, &cs)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse results")
+	}
 
-	candidates := make([]*iotextypes.CandidateV2, 0, size)
-	for rows.Next() {
-		if err := rows.Scan(&cs); err != nil {
-			return nil, err
+	if len(parsedRows) == 0 {
+		return nil, indexprotocol.ErrNotExist
+	}
+
+	candidates := make([]*iotextypes.CandidateV2, 0)
+	for _, parsedRow := range parsedRows {
+		cs, ok := parsedRow.(*candidateStruct)
+		if !ok {
+			return nil, errors.New("failed to convert")
 		}
 		candidate := &iotextypes.CandidateV2{
 			OwnerAddress:       string(cs.owner),
@@ -93,9 +108,6 @@ func QueryCandidates(tableName string, frequencies map[int64]int, sdb *sql.DB, t
 		for i := frequencies[cs.id]; i > 0; i-- {
 			candidates = append(candidates, candidate)
 		}
-	}
-	if err = rows.Err(); err != nil {
-		return
 	}
 
 	return &iotextypes.CandidateListV2{Candidates: candidates}, nil
