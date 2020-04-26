@@ -95,6 +95,9 @@ func QueryVoteBuckets(tableName string, frequencies map[int64]int, sdb *sql.DB, 
 		if err := rows.Scan(&id, &index, &candidate, &owner, &stakedAmount, &stakedDuration, &createTime, &stakeStartTime, &unstakeStartTime, &autoStake); err != nil {
 			return nil, err
 		}
+
+		fmt.Println(id, index, candidate, owner, stakedAmount, stakedDuration, createTime, stakeStartTime, unstakeStartTime, autoStake)
+
 		candAddr, err := address.FromBytes(candidate)
 		if err != nil {
 			return nil, err
@@ -103,6 +106,7 @@ func QueryVoteBuckets(tableName string, frequencies map[int64]int, sdb *sql.DB, 
 		if err != nil {
 			return nil, err
 		}
+
 		duration, err := strconv.ParseUint(stakedDuration, 10, 32)
 		if err != nil {
 			return nil, err
