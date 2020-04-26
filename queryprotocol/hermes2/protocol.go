@@ -30,8 +30,8 @@ const (
 	voterFilter                            = "WHERE `to` = ? "
 	selectHermesDistributionByVoterAddress = selectDelegate + fromJoinedTables + voterFilter + timeOrdering
 
-	selectCount      = "SELECT COUNT(*),IFNULL(SUM(amount),0) AS total "
-	selectHermesMeta = "SELECT COUNT(DISTINCT delegate_name), COUNT(DISTINCT `to`), IFNULL(SUM(amount),0) AS total" + fromJoinedTables
+	selectCount      = "SELECT COUNT(*),IFNULL(SUM(amount),0) "
+	selectHermesMeta = "SELECT COUNT(DISTINCT delegate_name), COUNT(DISTINCT `to`), IFNULL(SUM(amount),0) " + fromJoinedTables
 )
 
 // HermesArg defines Hermes request parameters
@@ -145,7 +145,7 @@ func (p *Protocol) GetHermes2ByVoter(arg HermesArg, voterAddress string) ([]*Del
 }
 
 // GetHermes2Count gets the count of Hermes distributions
-func (p *Protocol) GetHermes2Count(arg HermesArg, selectQuery string, filter string) (count int, total int, err error) {
+func (p *Protocol) GetHermes2Count(arg HermesArg, selectQuery string, filter string) (count int, total string, err error) {
 	db := p.indexer.Store.GetDB()
 	getQuery := fmt.Sprintf(selectQuery, accounts.BalanceHistoryTableName, actions.HermesContractTableName)
 	stmt, err := db.Prepare(getQuery)
@@ -156,13 +156,11 @@ func (p *Protocol) GetHermes2Count(arg HermesArg, selectQuery string, filter str
 	defer stmt.Close()
 
 	endEpoch := arg.StartEpoch + arg.EpochCount - 1
-	fmt.Println(getQuery)
-	fmt.Println(arg.StartEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, arg.StartEpoch, endEpoch, filter)
-	if err = stmt.QueryRow(arg.StartEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, arg.StartEpoch, endEpoch, filter).Scan(&count, &total); err != nil {
+	if err = stmt.QueryRow(arg.StartEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, arg.StartEpoch, endEpoch,
+		filter).Scan(&count, &total); err != nil {
 		err = errors.Wrap(err, "failed to execute get query")
 		return
 	}
-	fmt.Println("total:", total)
 	return
 }
 
