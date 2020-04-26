@@ -1606,14 +1606,9 @@ func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int
 	var total string
 	if haveField(ctx, "byDelegate", "count") || haveField(ctx, "byDelegate", "totalRewardsDistributed") {
 		count, total, err = r.HP.GetHermes2Count(harg, hermes2.SelectCountByDelegateName, delegateName)
-		switch {
-		case errors.Cause(err) == indexprotocol.ErrNotExist:
-			return nil
-		case err != nil:
+		if err != nil {
 			return errors.Wrap(err, "failed to get count of hermes distribution")
 		}
-
-		// this one make sure exist is false
 		if count == 0 {
 			return nil
 		}

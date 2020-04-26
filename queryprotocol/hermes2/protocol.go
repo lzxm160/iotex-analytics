@@ -1,7 +1,6 @@
 package hermes2
 
 import (
-	"database/sql"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -31,8 +30,8 @@ const (
 	voterFilter                            = "WHERE `to` = ? "
 	selectHermesDistributionByVoterAddress = selectDelegate + fromJoinedTables + voterFilter + timeOrdering
 
-	selectCount      = "SELECT COUNT(*),SUM(amount) "
-	selectHermesMeta = "SELECT COUNT(DISTINCT delegate_name), COUNT(DISTINCT `to`), SUM(amount) " + fromJoinedTables
+	selectCount      = "SELECT COUNT(*),IFNULL(SUM(amount),0) "
+	selectHermesMeta = "SELECT COUNT(DISTINCT delegate_name), COUNT(DISTINCT `to`), IFNULL(SUM(amount),0) " + fromJoinedTables
 )
 
 // HermesArg defines Hermes request parameters
@@ -155,17 +154,10 @@ func (p *Protocol) GetHermes2Count(arg HermesArg, selectQuery string, filter str
 		return
 	}
 	defer stmt.Close()
-	fmt.Println(getQuery)
 
 	endEpoch := arg.StartEpoch + arg.EpochCount - 1
-	fmt.Println(arg.StartEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, arg.StartEpoch, endEpoch,
-		filter)
 	if err = stmt.QueryRow(arg.StartEpoch, endEpoch, p.hermesConfig.MultiSendContractAddress, arg.StartEpoch, endEpoch,
 		filter).Scan(&count, &total); err != nil {
-		if err == sql.ErrNoRows {
-			err = indexprotocol.ErrNotExist
-			return
-		}
 		err = errors.Wrap(err, "failed to execute get query")
 		return
 	}
