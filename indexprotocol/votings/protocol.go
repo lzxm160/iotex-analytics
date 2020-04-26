@@ -904,7 +904,7 @@ func (p *Protocol) updateVoteBucketV2(chainClient iotexapi.APIServiceClient) (er
 	}
 	////////////////////////////////
 	tx, err := p.Store.GetDB().Begin()
-	err = p.nativeV2BucketTableOperator.Put(3, voteBucketList.Buckets, tx)
+	err = p.nativeV2BucketTableOperator.Put(3, voteBucketList, tx)
 	if err != nil {
 		return
 	}
@@ -937,7 +937,7 @@ func (p *Protocol) updateCandidateV2(chainClient iotexapi.APIServiceClient) (err
 		fmt.Println("voteBucketList.Buckets:", b)
 	}
 	tx, err := p.Store.GetDB().Begin()
-	err = p.nativeV2BucketTableOperator.Put(3, candidateList.Candidates, tx)
+	err = p.nativeV2BucketTableOperator.Put(3, candidateList, tx)
 	if err != nil {
 		return
 	}
