@@ -1603,7 +1603,7 @@ func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int
 		}
 	}
 	var count int
-	var total string
+	var total int
 	if haveField(ctx, "byDelegate", "count") || haveField(ctx, "byDelegate", "totalRewardsDistributed") {
 		count, total, err = r.HP.GetHermes2Count(harg, hermes2.SelectCountByDelegateName, delegateName)
 		if err != nil {
@@ -1617,7 +1617,7 @@ func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int
 		Exist:                   true,
 		VoterInfoList:           voterInfoList,
 		Count:                   count,
-		TotalRewardsDistributed: total,
+		TotalRewardsDistributed: fmt.Sprintf("%d", total),
 	}
 	return nil
 }
@@ -1670,7 +1670,7 @@ func (r *queryResolver) getHermes2ByVoter(ctx context.Context, startEpoch int, e
 		}
 	}
 	var count int
-	var total string
+	var total int
 	if haveField(ctx, "byVoter", "count") || haveField(ctx, "byVoter", "totalRewardsReceived") {
 		count, total, err = r.HP.GetHermes2Count(harg, hermes2.SelectCountByVoterAddress, voterAddress)
 		if err != nil {
@@ -1684,7 +1684,7 @@ func (r *queryResolver) getHermes2ByVoter(ctx context.Context, startEpoch int, e
 		Exist:                true,
 		DelegateInfoList:     delegateInfoList,
 		Count:                count,
-		TotalRewardsReceived: total,
+		TotalRewardsReceived: fmt.Sprintf("%d", total),
 	}
 	return nil
 }

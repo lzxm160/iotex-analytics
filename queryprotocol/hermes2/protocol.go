@@ -145,7 +145,7 @@ func (p *Protocol) GetHermes2ByVoter(arg HermesArg, voterAddress string) ([]*Del
 }
 
 // GetHermes2Count gets the count of Hermes distributions
-func (p *Protocol) GetHermes2Count(arg HermesArg, selectQuery string, filter string) (count int, total string, err error) {
+func (p *Protocol) GetHermes2Count(arg HermesArg, selectQuery string, filter string) (count int, total int, err error) {
 	db := p.indexer.Store.GetDB()
 	getQuery := fmt.Sprintf(selectQuery, accounts.BalanceHistoryTableName, actions.HermesContractTableName)
 	stmt, err := db.Prepare(getQuery)
