@@ -42,7 +42,7 @@ func TestXX(t *testing.T) {
 			Index:            10,
 			CandidateAddress: "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
 			StakedAmount:     "20000",
-			StakedDuration:   10,
+			StakedDuration:   20,
 			CreateTime:       &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(456)},
 			StakeStartTime:   &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(123)},
 			UnstakeStartTime: &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(321)},
@@ -59,11 +59,11 @@ func TestXX(t *testing.T) {
 	//	fmt.Println("rollback happens")
 	//	tx.Rollback()
 	//}()
-	require.NoError(bucketTableOperator.Put(2, buckets, tx))
+	require.NoError(bucketTableOperator.Put(3, buckets, tx))
 	tx.Commit()
 	tx, err = p.Store.GetDB().Begin()
 	require.NoError(err)
-	ret, err := bucketTableOperator.Get(2, p.Store.GetDB(), tx)
+	ret, err := bucketTableOperator.Get(3, p.Store.GetDB(), tx)
 	require.NoError(err)
 	candidates, ok := ret.([]*staking.Bucket)
 	require.True(ok)
