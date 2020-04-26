@@ -209,7 +209,7 @@ func InsertVoteBuckets(tableName string, driverName committee.DRIVERTYPE, record
 			hex.EncodeToString(candAddr.Bytes()),
 			hex.EncodeToString(ownerAddr.Bytes()),
 			bucket.StakedAmount,
-			duration.Bytes(),
+			duration.String(),
 			ct.Unix(),
 			sst.Unix(),
 			ust.Unix(),
