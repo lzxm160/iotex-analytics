@@ -1609,7 +1609,7 @@ func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int
 		if err != nil {
 			return errors.Wrap(err, "failed to get count of hermes distribution")
 		}
-		actionResponse.ByVoter.TotalRewardsReceived = total
+		actionResponse.ByDelegate.TotalRewardsDistributed = total
 		if count == 0 {
 			return nil
 		}
