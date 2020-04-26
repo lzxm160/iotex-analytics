@@ -454,6 +454,7 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 func (p *Protocol) getVotingInfo(tx *sql.Tx, lastEpoch uint64) (map[string][]string, map[string]*big.Int, error) {
 	// get voting results
 	getQuery := fmt.Sprintf(selectVotingResult, votings.VotingResultTableName)
+	fmt.Println(getQuery)
 	rows, err := tx.Query(getQuery, lastEpoch)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to get voting result query")
