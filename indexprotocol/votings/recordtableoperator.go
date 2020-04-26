@@ -106,7 +106,7 @@ func QueryVoteBuckets(tableName string, frequencies map[int64]int, sdb *sql.DB, 
 		if err != nil {
 			return nil, err
 		}
-
+		fmt.Println("stakedDuration:", stakedDuration)
 		duration, err := strconv.ParseUint(stakedDuration, 10, 32)
 		if err != nil {
 			return nil, err
