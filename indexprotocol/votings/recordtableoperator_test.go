@@ -55,7 +55,12 @@ func TestXX(t *testing.T) {
 	//for k, v := range f {
 	//	fmt.Println(hex.EncodeToString(k[:]), v)
 	//}
+	defer func() {
+		fmt.Println("rollback happens")
+		tx.Rollback()
+	}()
 	require.NoError(bucketTableOperator.Put(2, buckets, tx))
+	tx.Commit()
 	ret, err := bucketTableOperator.Get(2, p.Store.GetDB(), tx)
 	require.NoError(err)
 	candidates, ok := ret.([]*staking.Bucket)
