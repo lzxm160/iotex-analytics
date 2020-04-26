@@ -18,11 +18,17 @@ import (
 	"strings"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	"github.com/iotexproject/iotex-proto/golang/iotextypes"
+
 	staking "github.com/iotexproject/iotex-analytics/indexprotocol/votings/stakingpb"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
 
@@ -268,7 +274,7 @@ func (p *Protocol) Initialize(context.Context, *sql.Tx, *indexprotocol.Genesis) 
 func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block) error {
 	height := blk.Height()
 	if height >= p.epochCtx.FairbankHeight() {
-		return p.stakingV2()
+		return p.stakingV2(ctx)
 	}
 	epochNumber := p.epochCtx.GetEpochNumber(height)
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
@@ -862,8 +868,33 @@ func (p *Protocol) getDelegateRewardPortions(stakingAddress common.Address, grav
 	return
 }
 
-func (p *Protocol) stakingV2() (err error) {
+func (p *Protocol) stakingV2(ctx context.Context) (err error) {
 	fmt.Println("stakingv2 start")
+	indexCtx := indexcontext.MustGetIndexCtx(ctx)
+	chainClient := indexCtx.ChainClient
+	readStateRequest := &iotexapi.ReadStateRequest{
+		ProtocolID: []byte(poll.ProtocolID),
+		MethodName: []byte(strconv.FormatInt(int64(iotexapi.ReadStakingDataMethod_BUCKETS), 10)),
+		Arguments:  [][]byte{[]byte(strconv.FormatUint(0, 10)), []byte(strconv.FormatUint(100, 10))},
+	}
+	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
+	if status.Code(err) == codes.NotFound {
+		fmt.Println("ReadStakingDataMethod_BUCKETS not found")
+	}
+	if err != nil && status.Code(err) != codes.NotFound {
+		return err
+	}
+
+	voteBucketList := &iotextypes.VoteBucketList{}
+	if err := proto.Unmarshal(readStateRes.GetData(), voteBucketList); err != nil {
+		return errors.Wrap(err, "failed to unmarshal candidate")
+	}
+
+	for _, b := range voteBucketList.Buckets {
+		fmt.Println("voteBucketList.Buckets:", b)
+	}
+
+	////////////////////////////////
 	tx, err := p.Store.GetDB().Begin()
 	candidates := []*staking.Candidate{
 		&staking.Candidate{
