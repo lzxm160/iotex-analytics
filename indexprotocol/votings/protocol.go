@@ -934,10 +934,10 @@ func (p *Protocol) updateCandidateV2(chainClient iotexapi.APIServiceClient) (err
 	}
 
 	for _, b := range candidateList.Candidates {
-		fmt.Println("voteBucketList.Buckets:", b)
+		fmt.Println("candidateList.Candidates:", b)
 	}
 	tx, err := p.Store.GetDB().Begin()
-	err = p.nativeV2BucketTableOperator.Put(3, candidateList, tx)
+	err = p.nativeV2CandidateTableOperator.Put(3, candidateList, tx)
 	if err != nil {
 		return
 	}
