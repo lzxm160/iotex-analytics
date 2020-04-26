@@ -18,6 +18,8 @@ import (
 	"strings"
 	"time"
 
+	staking "github.com/iotexproject/iotex-analytics/indexprotocol/votings/stakingpb"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -136,17 +138,19 @@ type (
 
 // Protocol defines the protocol of indexing blocks
 type Protocol struct {
-	Store                     s.Store
-	bucketTableOperator       committee.Operator
-	registrationTableOperator committee.Operator
-	nativeBucketTableOperator committee.Operator
-	timeTableOperator         *committee.TimeTableOperator
-	epochCtx                  *epochctx.EpochCtx
-	GravityChainCfg           indexprotocol.GravityChain
-	SkipManifiedCandidate     bool
-	VoteThreshold             *big.Int
-	ScoreThreshold            *big.Int
-	SelfStakingThreshold      *big.Int
+	Store                          s.Store
+	bucketTableOperator            committee.Operator
+	registrationTableOperator      committee.Operator
+	nativeV2BucketTableOperator    committee.Operator
+	nativeV2CandidateTableOperator committee.Operator
+	nativeBucketTableOperator      committee.Operator
+	timeTableOperator              *committee.TimeTableOperator
+	epochCtx                       *epochctx.EpochCtx
+	GravityChainCfg                indexprotocol.GravityChain
+	SkipManifiedCandidate          bool
+	VoteThreshold                  *big.Int
+	ScoreThreshold                 *big.Int
+	SelfStakingThreshold           *big.Int
 }
 
 // NewProtocol creates a new protocol
@@ -163,6 +167,14 @@ func NewProtocol(store s.Store, epochCtx *epochctx.EpochCtx, gravityChainCfg ind
 	if err != nil {
 		return nil, err
 	}
+	nativeV2BucketTableOperator, err := NewBucketTableOperator("stakingV2_bucket", committee.MYSQL)
+	if err != nil {
+		return nil, err
+	}
+	nativeV2CandidateTableOperator, err := NewCandidateTableOperator("stakingV2_candidate", committee.MYSQL)
+	if err != nil {
+		return nil, err
+	}
 	voteThreshold, ok := new(big.Int).SetString(pollCfg.VoteThreshold, 10)
 	if !ok {
 		return nil, errors.New("Invalid vote threshold")
@@ -176,17 +188,19 @@ func NewProtocol(store s.Store, epochCtx *epochctx.EpochCtx, gravityChainCfg ind
 		return nil, errors.New("Invalid self staking threshold")
 	}
 	return &Protocol{
-		Store:                     store,
-		bucketTableOperator:       bucketTableOperator,
-		registrationTableOperator: registrationTableOperator,
-		nativeBucketTableOperator: nativeBucketTableOperator,
-		timeTableOperator:         committee.NewTimeTableOperator("mint_time", committee.MYSQL),
-		epochCtx:                  epochCtx,
-		GravityChainCfg:           gravityChainCfg,
-		VoteThreshold:             voteThreshold,
-		ScoreThreshold:            scoreThreshold,
-		SelfStakingThreshold:      selfStakingThreshold,
-		SkipManifiedCandidate:     pollCfg.SkipManifiedCandidate,
+		Store:                          store,
+		bucketTableOperator:            bucketTableOperator,
+		registrationTableOperator:      registrationTableOperator,
+		nativeBucketTableOperator:      nativeBucketTableOperator,
+		nativeV2BucketTableOperator:    nativeV2BucketTableOperator,
+		nativeV2CandidateTableOperator: nativeV2CandidateTableOperator,
+		timeTableOperator:              committee.NewTimeTableOperator("mint_time", committee.MYSQL),
+		epochCtx:                       epochCtx,
+		GravityChainCfg:                gravityChainCfg,
+		VoteThreshold:                  voteThreshold,
+		ScoreThreshold:                 scoreThreshold,
+		SelfStakingThreshold:           selfStakingThreshold,
+		SkipManifiedCandidate:          pollCfg.SkipManifiedCandidate,
 	}, nil
 }
 
@@ -208,6 +222,13 @@ func (p *Protocol) CreateTables(ctx context.Context) error {
 		return err
 	}
 	if err = p.timeTableOperator.CreateTables(tx); err != nil {
+		return err
+	}
+	//staking v2
+	if err = p.nativeV2BucketTableOperator.CreateTables(tx); err != nil {
+		return err
+	}
+	if err = p.nativeV2CandidateTableOperator.CreateTables(tx); err != nil {
 		return err
 	}
 	// create voting result table
@@ -246,6 +267,9 @@ func (p *Protocol) Initialize(context.Context, *sql.Tx, *indexprotocol.Genesis) 
 // HandleBlock handles blocks
 func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block) error {
 	height := blk.Height()
+	if height >= p.epochCtx.FairbankHeight() {
+		return p.stakingV2()
+	}
 	epochNumber := p.epochCtx.GetEpochNumber(height)
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
 	if indexCtx.ConsensusScheme == "ROLLDPOS" && height == p.epochCtx.GetEpochHeight(epochNumber) {
@@ -836,6 +860,38 @@ func (p *Protocol) getDelegateRewardPortions(stakingAddress common.Address, grav
 		err = errors.Wrap(err, "failed to get delegate reward portions")
 	}
 	return
+}
+
+func (p *Protocol) stakingV2() (err error) {
+	fmt.Println("stakingv2 start")
+	tx, err := p.Store.GetDB().Begin()
+	candidates := []*staking.Candidate{
+		&staking.Candidate{
+			OwnerAddress:       "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+			OperatorAddress:    "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+			RewardAddress:      "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+			Name:               "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+			Votes:              "5555",
+			SelfStakeBucketIdx: 232323,
+			SelfStake:          "666666",
+		},
+	}
+	err = p.nativeV2CandidateTableOperator.Put(3, candidates, tx)
+	if err != nil {
+		return
+	}
+	tx.Commit()
+	tx, err = p.Store.GetDB().Begin()
+	ret, err := p.nativeV2CandidateTableOperator.Get(3, p.Store.GetDB(), tx)
+	if err != nil {
+		return
+	}
+	candidates, ok := ret.([]*staking.Candidate)
+	if !ok {
+		return errors.New("ret.([]*staking.Candidate)")
+	}
+	fmt.Println(candidates[0])
+	return nil
 }
 
 func to12Bytes(b []byte) [12]byte {

@@ -51,6 +51,7 @@ type Config struct {
 	NumSubEpochsDardanelles uint64                     `yaml:"numSubEpochsDardanelles"`
 	DardanellesHeight       uint64                     `yaml:"dardanellesHeight"`
 	DardanellesOn           bool                       `yaml:"dardanellesOn"`
+	FairbankHeight          uint64                     `yaml:"fairbankHeight"`
 	ConsensusScheme         string                     `yaml:"consensusScheme"`
 	RangeQueryLimit         uint64                     `yaml:"rangeQueryLimit"`
 	Genesis                 indexprotocol.Genesis      `yaml:"genesis"`
@@ -72,6 +73,7 @@ func NewIndexer(store s.Store, cfg Config) *Indexer {
 			cfg.NumDelegates,
 			cfg.NumSubEpochs,
 			epochctx.EnableDardanellesSubEpoch(cfg.DardanellesHeight, cfg.NumSubEpochsDardanelles),
+			epochctx.FairbankHeight(cfg.FairbankHeight),
 		),
 		hermesConfig: indexprotocol.HermesConfig{
 			HermesContractAddress:    cfg.HermesConfig.HermesContractAddress,
