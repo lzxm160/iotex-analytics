@@ -61,6 +61,7 @@ func TestXX(t *testing.T) {
 	fmt.Println(buckets[0])
 
 	// test candidate
+	fmt.Println("//////////////////////////////")
 	tx, err = p.Store.GetDB().Begin()
 	require.NoError(err)
 	candidateTableOperator, err := NewCandidateTableOperator("stakingV2_candidate", committee.MYSQL)
