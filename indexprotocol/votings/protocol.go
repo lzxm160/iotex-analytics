@@ -23,8 +23,6 @@ import (
 
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 
-	staking "github.com/iotexproject/iotex-analytics/indexprotocol/votings/stakingpb"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -872,16 +870,27 @@ func (p *Protocol) stakingV2(ctx context.Context) (err error) {
 	fmt.Println("stakingv2 start")
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
 	chainClient := indexCtx.ChainClient
+	if err = p.updateVoteBucketV2(chainClient); err != nil {
+		return
+	}
+	if err = p.updateCandidateV2(chainClient); err != nil {
+		return
+	}
+	return nil
+}
+
+func (p *Protocol) updateVoteBucketV2(chainClient iotexapi.APIServiceClient) (err error) {
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(poll.ProtocolID),
 		MethodName: []byte(strconv.FormatInt(int64(iotexapi.ReadStakingDataMethod_BUCKETS), 10)),
 		Arguments:  [][]byte{[]byte(strconv.FormatUint(0, 10)), []byte(strconv.FormatUint(100, 10))},
 	}
 	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
-	if status.Code(err) == codes.NotFound {
-		fmt.Println("ReadStakingDataMethod_BUCKETS not found")
-	}
-	if err != nil && status.Code(err) != codes.NotFound {
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			fmt.Println("ReadStakingDataMethod_BUCKETS not found")
+			return nil
+		}
 		return err
 	}
 
@@ -893,35 +902,46 @@ func (p *Protocol) stakingV2(ctx context.Context) (err error) {
 	for _, b := range voteBucketList.Buckets {
 		fmt.Println("voteBucketList.Buckets:", b)
 	}
-
 	////////////////////////////////
 	tx, err := p.Store.GetDB().Begin()
-	candidates := []*staking.Candidate{
-		&staking.Candidate{
-			OwnerAddress:       "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
-			OperatorAddress:    "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
-			RewardAddress:      "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
-			Name:               "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
-			Votes:              "5555",
-			SelfStakeBucketIdx: 232323,
-			SelfStake:          "666666",
-		},
-	}
-	err = p.nativeV2CandidateTableOperator.Put(3, candidates, tx)
+	err = p.nativeV2BucketTableOperator.Put(3, voteBucketList.Buckets, tx)
 	if err != nil {
 		return
 	}
 	tx.Commit()
-	tx, err = p.Store.GetDB().Begin()
-	ret, err := p.nativeV2CandidateTableOperator.Get(3, p.Store.GetDB(), tx)
+
+	return nil
+}
+
+func (p *Protocol) updateCandidateV2(chainClient iotexapi.APIServiceClient) (err error) {
+	readStateRequest := &iotexapi.ReadStateRequest{
+		ProtocolID: []byte(poll.ProtocolID),
+		MethodName: []byte(strconv.FormatInt(int64(iotexapi.ReadStakingDataMethod_CANDIDATES), 10)),
+		Arguments:  [][]byte{[]byte(strconv.FormatUint(0, 10)), []byte(strconv.FormatUint(100, 10))},
+	}
+	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			fmt.Println("ReadStakingDataMethod_BUCKETS not found")
+			return nil
+		}
+		return err
+	}
+
+	candidateList := &iotextypes.CandidateListV2{}
+	if err := proto.Unmarshal(readStateRes.GetData(), candidateList); err != nil {
+		return errors.Wrap(err, "failed to unmarshal VoteBucketList")
+	}
+
+	for _, b := range candidateList.Candidates {
+		fmt.Println("voteBucketList.Buckets:", b)
+	}
+	tx, err := p.Store.GetDB().Begin()
+	err = p.nativeV2BucketTableOperator.Put(3, candidateList.Candidates, tx)
 	if err != nil {
 		return
 	}
-	candidates, ok := ret.([]*staking.Candidate)
-	if !ok {
-		return errors.New("ret.([]*staking.Candidate)")
-	}
-	fmt.Println(candidates[0])
+	tx.Commit()
 	return nil
 }
 
