@@ -50,22 +50,40 @@ func TestXX(t *testing.T) {
 			Owner:            "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
 		},
 	}
-	//f, err := InsertVoteBuckets("stakingV2_bucket", committee.MYSQL, buckets, tx)
-	//require.NoError(err)
-	//for k, v := range f {
-	//	fmt.Println(hex.EncodeToString(k[:]), v)
-	//}
-	//defer func() {
-	//	fmt.Println("rollback happens")
-	//	tx.Rollback()
-	//}()
 	require.NoError(bucketTableOperator.Put(3, buckets, tx))
 	tx.Commit()
 	tx, err = p.Store.GetDB().Begin()
 	require.NoError(err)
 	ret, err := bucketTableOperator.Get(3, p.Store.GetDB(), tx)
 	require.NoError(err)
-	candidates, ok := ret.([]*staking.Bucket)
+	buckets, ok := ret.([]*staking.Bucket)
+	require.True(ok)
+	fmt.Println(buckets[0])
+
+	// test candidate
+	tx, err = p.Store.GetDB().Begin()
+	require.NoError(err)
+	candidateTableOperator, err := NewCandidateTableOperator("stakingV2_candidate", committee.MYSQL)
+	require.NoError(err)
+	require.NoError(candidateTableOperator.CreateTables(tx))
+	candidates := []*staking.Candidate{
+		&staking.Candidate{
+			OwnerAddress:       "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+			OperatorAddress:    "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+			RewardAddress:      "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+			Name:               "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+			Votes:              "5555",
+			SelfStakeBucketIdx: 232323,
+			SelfStake:          "666666",
+		},
+	}
+	require.NoError(candidateTableOperator.Put(3, candidates, tx))
+	tx.Commit()
+	tx, err = p.Store.GetDB().Begin()
+	require.NoError(err)
+	ret, err = candidateTableOperator.Get(3, p.Store.GetDB(), tx)
+	require.NoError(err)
+	candidates, ok = ret.([]*staking.Candidate)
 	require.True(ok)
 	fmt.Println(candidates[0])
 }
