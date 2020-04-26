@@ -887,7 +887,7 @@ func (p *Protocol) stakingV2(ctx context.Context) (err error) {
 
 	voteBucketList := &iotextypes.VoteBucketList{}
 	if err := proto.Unmarshal(readStateRes.GetData(), voteBucketList); err != nil {
-		return errors.Wrap(err, "failed to unmarshal candidate")
+		return errors.Wrap(err, "failed to unmarshal VoteBucketList")
 	}
 
 	for _, b := range voteBucketList.Buckets {
