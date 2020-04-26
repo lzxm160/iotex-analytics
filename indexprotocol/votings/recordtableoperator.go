@@ -283,9 +283,9 @@ func QueryCandidates(tableName string, frequencies map[int64]int, sdb *sql.DB, t
 			OperatorAddress:    operatorAddr.String(),
 			RewardAddress:      rewardAddr.String(),
 			Name:               string(name),
-			Votes:              big.NewInt(0).SetBytes(votes).String(),
+			Votes:              string(votes),
 			SelfStakeBucketIdx: selfStakeBucketIdx,
-			SelfStake:          big.NewInt(0).SetBytes(selfStake).String(),
+			SelfStake:          string(selfStake),
 		}
 		for i := frequencies[id]; i > 0; i-- {
 			candidates = append(candidates, candidate)
