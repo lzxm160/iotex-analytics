@@ -19,7 +19,6 @@ import (
 	"github.com/golang/protobuf/ptypes/timestamp"
 
 	"github.com/golang/mock/gomock"
-	"github.com/iotexproject/iotex-analytics/indexcontext"
 	"github.com/iotexproject/iotex-core/action/protocol/poll"
 	"github.com/iotexproject/iotex-core/test/mock/mock_apiserviceclient"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
@@ -40,22 +39,27 @@ func TestXX(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	chainClient := mock_apiserviceclient.NewMockServiceClient(ctrl)
-	ctx := indexcontext.WithIndexCtx(context.Background(), indexcontext.IndexCtx{
-		ChainClient:     chainClient,
-		ConsensusScheme: "ROLLDPOS",
-	})
+	//ctx := indexcontext.WithIndexCtx(context.Background(), indexcontext.IndexCtx{
+	//	ChainClient:     chainClient,
+	//	ConsensusScheme: "ROLLDPOS",
+	//})
 	mock(chainClient, t)
 
 	require := require.New(t)
 	store := s.NewMySQL(localconnectStr, localdbName)
 	require.NoError(store.Start(context.Background()))
+	cfg := indexprotocol.VoteWeightCalConsts{
+		DurationLg: 1.2,
+		AutoStake:  1,
+		SelfStake:  1.05,
+	}
 	p, err := NewProtocol(store, epochctx.NewEpochCtx(36, 24, 15), indexprotocol.GravityChain{}, indexprotocol.Poll{
 		VoteThreshold:        "100000000000000000000",
 		ScoreThreshold:       "0",
 		SelfStakingThreshold: "0",
-	})
+	}, cfg)
 	require.NoError(err)
-	require.NoError(p.stakingV2(ctx))
+	require.NoError(p.stakingV2(chainClient, 10000, 8888))
 
 	// checkout bucket if it's written right
 	tx, err := p.Store.GetDB().Begin()
