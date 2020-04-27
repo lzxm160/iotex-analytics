@@ -21,11 +21,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/iotexproject/iotex-core/action/protocol/poll"
 	"github.com/iotexproject/iotex-core/blockchain/block"
@@ -37,7 +34,6 @@ import (
 	"github.com/iotexproject/iotex-election/types"
 	"github.com/iotexproject/iotex-election/util"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
-	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 
 	"github.com/iotexproject/iotex-analytics/contract"
 	"github.com/iotexproject/iotex-analytics/epochctx"
@@ -149,6 +145,7 @@ type Protocol struct {
 	timeTableOperator              *committee.TimeTableOperator
 	epochCtx                       *epochctx.EpochCtx
 	GravityChainCfg                indexprotocol.GravityChain
+	voteCfg                        indexprotocol.VoteWeightCalConsts
 	SkipManifiedCandidate          bool
 	VoteThreshold                  *big.Int
 	ScoreThreshold                 *big.Int
@@ -156,7 +153,7 @@ type Protocol struct {
 }
 
 // NewProtocol creates a new protocol
-func NewProtocol(store s.Store, epochCtx *epochctx.EpochCtx, gravityChainCfg indexprotocol.GravityChain, pollCfg indexprotocol.Poll) (*Protocol, error) {
+func NewProtocol(store s.Store, epochCtx *epochctx.EpochCtx, gravityChainCfg indexprotocol.GravityChain, pollCfg indexprotocol.Poll, voteCfg indexprotocol.VoteWeightCalConsts) (*Protocol, error) {
 	bucketTableOperator, err := committee.NewBucketTableOperator("buckets", committee.MYSQL)
 	if err != nil {
 		return nil, err
@@ -199,6 +196,7 @@ func NewProtocol(store s.Store, epochCtx *epochctx.EpochCtx, gravityChainCfg ind
 		timeTableOperator:              committee.NewTimeTableOperator("mint_time", committee.MYSQL),
 		epochCtx:                       epochCtx,
 		GravityChainCfg:                gravityChainCfg,
+		voteCfg:                        voteCfg,
 		VoteThreshold:                  voteThreshold,
 		ScoreThreshold:                 scoreThreshold,
 		SelfStakingThreshold:           selfStakingThreshold,
@@ -269,27 +267,32 @@ func (p *Protocol) Initialize(context.Context, *sql.Tx, *indexprotocol.Genesis) 
 // HandleBlock handles blocks
 func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block) error {
 	height := blk.Height()
-	if height >= p.epochCtx.FairbankHeight() {
-		return p.stakingV2(ctx, height)
-	}
 	epochNumber := p.epochCtx.GetEpochNumber(height)
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
 	if indexCtx.ConsensusScheme == "ROLLDPOS" && height == p.epochCtx.GetEpochHeight(epochNumber) {
 		chainClient := indexCtx.ChainClient
 		electionClient := indexCtx.ElectionClient
-		var gravityHeight uint64
-		var err error
-		if epochNumber == 1 {
-			gravityHeight = p.GravityChainCfg.GravityChainStartHeight
-		} else {
-			prevEpochHeight := p.epochCtx.GetEpochHeight(epochNumber - 1)
-			gravityHeight, err = p.getGravityChainStartHeight(chainClient, prevEpochHeight)
+		// process staking v2
+		if height >= p.epochCtx.FairbankHeight() {
+			err := p.stakingV2(chainClient, height, epochNumber)
 			if err != nil {
-				return errors.Wrapf(err, "failed to get gravity height from chain service in epoch %d", epochNumber)
+				return errors.Wrapf(err, "failed to write staking v2 in epoch %d", epochNumber)
 			}
-		}
-		if err := p.putVotingTables(tx, electionClient, chainClient, epochNumber, height, gravityHeight); err != nil {
-			return errors.Wrapf(err, "failed to put data into voting tables in epoch %d", epochNumber)
+		} else {
+			var gravityHeight uint64
+			var err error
+			if epochNumber == 1 {
+				gravityHeight = p.GravityChainCfg.GravityChainStartHeight
+			} else {
+				prevEpochHeight := p.epochCtx.GetEpochHeight(epochNumber - 1)
+				gravityHeight, err = p.getGravityChainStartHeight(chainClient, prevEpochHeight)
+				if err != nil {
+					return errors.Wrapf(err, "failed to get gravity height from chain service in epoch %d", epochNumber)
+				}
+			}
+			if err := p.putVotingTables(tx, electionClient, chainClient, epochNumber, height, gravityHeight); err != nil {
+				return errors.Wrapf(err, "failed to put data into voting tables in epoch %d", epochNumber)
+			}
 		}
 		if err := p.updateProbationListTable(chainClient, epochNumber, tx); err != nil {
 			return errors.Wrapf(err, "failed to put data into probation tables in epoch %d", epochNumber)
@@ -735,6 +738,7 @@ func (p *Protocol) updateAggregateVoting(tx *sql.Tx, votes []*types.Vote, voteFl
 	}
 	return
 }
+
 func (p *Protocol) getLatestNativeMintTime(height uint64) (time.Time, error) {
 	db := p.Store.GetDB()
 	currentEpoch := p.epochCtx.GetEpochNumber(height)
@@ -862,85 +866,6 @@ func (p *Protocol) getDelegateRewardPortions(stakingAddress common.Address, grav
 		err = errors.Wrap(err, "failed to get delegate reward portions")
 	}
 	return
-}
-
-func (p *Protocol) stakingV2(ctx context.Context, height uint64) (err error) {
-	fmt.Println("stakingv2 start")
-	indexCtx := indexcontext.MustGetIndexCtx(ctx)
-	chainClient := indexCtx.ChainClient
-	if err = p.updateVoteBucketV2(chainClient, height); err != nil {
-		return
-	}
-	if err = p.updateCandidateV2(chainClient, height); err != nil {
-		return
-	}
-	return nil
-}
-
-func (p *Protocol) updateVoteBucketV2(chainClient iotexapi.APIServiceClient, height uint64) (err error) {
-	readStateRequest := &iotexapi.ReadStateRequest{
-		ProtocolID: []byte(poll.ProtocolID),
-		MethodName: []byte(strconv.FormatInt(int64(iotexapi.ReadStakingDataMethod_BUCKETS), 10)),
-		Arguments:  [][]byte{[]byte(strconv.FormatUint(0, 10)), []byte(strconv.FormatUint(100, 10))},
-	}
-	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
-	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			fmt.Println("ReadStakingDataMethod_BUCKETS not found")
-			return nil
-		}
-		return err
-	}
-
-	voteBucketList := &iotextypes.VoteBucketList{}
-	if err := proto.Unmarshal(readStateRes.GetData(), voteBucketList); err != nil {
-		return errors.Wrap(err, "failed to unmarshal VoteBucketList")
-	}
-
-	for _, b := range voteBucketList.Buckets {
-		fmt.Println("voteBucketList.Buckets:", b, height)
-	}
-	////////////////////////////////
-	tx, err := p.Store.GetDB().Begin()
-	err = p.nativeV2BucketTableOperator.Put(height, voteBucketList, tx)
-	if err != nil {
-		return
-	}
-	tx.Commit()
-
-	return nil
-}
-
-func (p *Protocol) updateCandidateV2(chainClient iotexapi.APIServiceClient, height uint64) (err error) {
-	readStateRequest := &iotexapi.ReadStateRequest{
-		ProtocolID: []byte(poll.ProtocolID),
-		MethodName: []byte(strconv.FormatInt(int64(iotexapi.ReadStakingDataMethod_CANDIDATES), 10)),
-		Arguments:  [][]byte{[]byte(strconv.FormatUint(0, 10)), []byte(strconv.FormatUint(100, 10))},
-	}
-	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
-	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			fmt.Println("ReadStakingDataMethod_BUCKETS not found")
-			return nil
-		}
-		return err
-	}
-
-	candidateList := &iotextypes.CandidateListV2{}
-	if err := proto.Unmarshal(readStateRes.GetData(), candidateList); err != nil {
-		return errors.Wrap(err, "failed to unmarshal VoteBucketList")
-	}
-
-	for _, b := range candidateList.Candidates {
-		fmt.Println("candidateList.Candidates:", b, height)
-	}
-	tx, err := p.Store.GetDB().Begin()
-	err = p.nativeV2CandidateTableOperator.Put(height, candidateList, tx)
-	if err != nil {
-		return
-	}
-	tx.Commit()
-	return nil
 }
 
 func to12Bytes(b []byte) [12]byte {
