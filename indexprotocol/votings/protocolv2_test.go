@@ -90,7 +90,7 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 		&iotextypes.VoteBucket{
 			Index:            10,
 			CandidateAddress: "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
-			StakedAmount:     "20000",
+			StakedAmount:     "30000",
 			StakedDuration:   20,
 			CreateTime:       &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(456)},
 			StakeStartTime:   &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(123)},
@@ -118,7 +118,7 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 			OperatorAddress:    "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
 			RewardAddress:      "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
 			Name:               "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
-			TotalWeightedVotes: "88888",
+			TotalWeightedVotes: "888886",
 			SelfStakeBucketIdx: 6666,
 			SelfStakingTokens:  "99999",
 		},
