@@ -44,7 +44,8 @@ func TestXX(t *testing.T) {
 	//	ConsensusScheme: "ROLLDPOS",
 	//})
 	mock(chainClient, t)
-
+	height := uint64(110000)
+	epochNumber := uint64(68888)
 	require := require.New(t)
 	store := s.NewMySQL(localconnectStr, localdbName)
 	require.NoError(store.Start(context.Background()))
@@ -59,12 +60,12 @@ func TestXX(t *testing.T) {
 		SelfStakingThreshold: "0",
 	}, cfg)
 	require.NoError(err)
-	require.NoError(p.stakingV2(chainClient, 10000, 8888))
+	require.NoError(p.stakingV2(chainClient, height, epochNumber))
 
 	// checkout bucket if it's written right
 	tx, err := p.Store.GetDB().Begin()
 	require.NoError(err)
-	ret, err := p.nativeV2BucketTableOperator.Get(3, p.Store.GetDB(), tx)
+	ret, err := p.nativeV2BucketTableOperator.Get(height, p.Store.GetDB(), tx)
 	require.NoError(err)
 	buckets, ok := ret.(*iotextypes.VoteBucketList)
 	require.True(ok)
@@ -72,7 +73,7 @@ func TestXX(t *testing.T) {
 
 	// checkout candidate if it's written right
 	fmt.Println("//////////////////////////////")
-	ret, err = p.nativeV2CandidateTableOperator.Get(3, p.Store.GetDB(), tx)
+	ret, err = p.nativeV2CandidateTableOperator.Get(height, p.Store.GetDB(), tx)
 	require.NoError(err)
 	candidates, ok := ret.(*iotextypes.CandidateListV2)
 	require.True(ok)

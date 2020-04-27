@@ -31,11 +31,11 @@ import (
 func (p *Protocol) stakingV2(chainClient iotexapi.APIServiceClient, height, epochNumber uint64) (err error) {
 	fmt.Println("stakingv2:", epochNumber)
 	tx, err := p.Store.GetDB().Begin()
-	voteBucketList, err := p.updateVoteBucketV2(tx, chainClient, height, epochNumber)
+	voteBucketList, err := p.updateVoteBucketV2(tx, chainClient, height)
 	if err != nil {
 		return
 	}
-	candidateList, err := p.updateCandidateV2(tx, chainClient, height, epochNumber)
+	candidateList, err := p.updateCandidateV2(tx, chainClient, height)
 	if err != nil {
 		return
 	}
@@ -53,7 +53,7 @@ func (p *Protocol) stakingV2(chainClient iotexapi.APIServiceClient, height, epoc
 	return
 }
 
-func (p *Protocol) updateVoteBucketV2(tx *sql.Tx, chainClient iotexapi.APIServiceClient, height uint64, epochNumber uint64) (voteBucketList *iotextypes.VoteBucketList, err error) {
+func (p *Protocol) updateVoteBucketV2(tx *sql.Tx, chainClient iotexapi.APIServiceClient, height uint64) (voteBucketList *iotextypes.VoteBucketList, err error) {
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(poll.ProtocolID),
 		MethodName: []byte(strconv.FormatInt(int64(iotexapi.ReadStakingDataMethod_BUCKETS), 10)),
@@ -77,7 +77,7 @@ func (p *Protocol) updateVoteBucketV2(tx *sql.Tx, chainClient iotexapi.APIServic
 	return
 }
 
-func (p *Protocol) updateCandidateV2(tx *sql.Tx, chainClient iotexapi.APIServiceClient, height uint64, epochNumber uint64) (candidateList *iotextypes.CandidateListV2, err error) {
+func (p *Protocol) updateCandidateV2(tx *sql.Tx, chainClient iotexapi.APIServiceClient, height uint64) (candidateList *iotextypes.CandidateListV2, err error) {
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(poll.ProtocolID),
 		MethodName: []byte(strconv.FormatInt(int64(iotexapi.ReadStakingDataMethod_CANDIDATES), 10)),
