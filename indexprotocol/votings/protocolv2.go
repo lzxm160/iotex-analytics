@@ -9,21 +9,23 @@ package votings
 import (
 	"context"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"math"
 	"math/big"
 	"strconv"
-
-	"github.com/iotexproject/iotex-analytics/indexprotocol"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/iotexproject/iotex-address/address"
 	"github.com/iotexproject/iotex-core/action/protocol/poll"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
+
+	"github.com/iotexproject/iotex-analytics/indexprotocol"
 )
 
 func (p *Protocol) stakingV2(chainClient iotexapi.APIServiceClient, height, epochNumber uint64) (err error) {
@@ -116,9 +118,11 @@ func (p *Protocol) updateVotingResultV2(tx *sql.Tx, candidates *iotextypes.Candi
 		// TODO wait for research
 		//stakingAddress := common.HexToAddress(address)
 		//blockRewardPortion, epochRewardPortion, foundationBonusPortion, err := p.getDelegateRewardPortions(stakingAddress, gravityHeight)
+		addr, err := address.FromString(candidate.OwnerAddress)
 		if err != nil {
 			return err
 		}
+		addressString := hex.EncodeToString(addr.Bytes())
 		if _, err = voteResultStmt.Exec(
 			epochNumber,
 			candidate.Name,
@@ -126,10 +130,10 @@ func (p *Protocol) updateVotingResultV2(tx *sql.Tx, candidates *iotextypes.Candi
 			candidate.RewardAddress,
 			candidate.TotalWeightedVotes,
 			candidate.SelfStakingTokens,
-			0, // TODO wait for research
-			0, // TODO wait for research
-			0, // TODO wait for research
-			candidate.OwnerAddress,
+			0,             // TODO wait for research
+			0,             // TODO wait for research
+			0,             // TODO wait for research
+			addressString, // type is varchar 40,change to ethereum hex address
 		); err != nil {
 			return err
 		}
