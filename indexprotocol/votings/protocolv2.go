@@ -264,30 +264,29 @@ func calculateVoteWeightV2(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.
 func filterCandidatesV2(
 	candidates *iotextypes.CandidateListV2,
 	unqualifiedList *iotextypes.ProbationCandidateList,
-	epochStartHeight uint64,
-) (ret *iotextypes.CandidateListV2, err error) {
-	// TODO rewrite this algrithom for staking v2
-	//candidatesMap := make(map[string]*types.Candidate)
-	//updatedVotingPower := make(map[string]*big.Int)
-	//intensityRate := float64(uint32(100)-unqualifiedList.IntensityRate) / float64(100)
-	//
-	//probationMap := make(map[string]uint32)
-	//for _, elem := range unqualifiedList.ProbationList {
-	//	probationMap[elem.Address] = elem.Count
-	//}
-	//for _, cand := range candidates.Candidates {
-	//	if _, ok := probationMap[cand.OperatorAddress]; ok {
-	//		// if it is an unqualified delegate, multiply the voting power with probation intensity rate
-	//		votingPower := new(big.Float).SetInt(cand.SelfStakingTokens)
-	//		newVotingPower, _ := votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
-	//		filterCand.SetScore(newVotingPower)
-	//	}
-	//}
-	// sort again with updated voting power
-	//sorted := util.Sort(updatedVotingPower, epochStartHeight)
-	//var verifiedCandidates []*types.Candidate
-	//for _, name := range sorted {
-	//	verifiedCandidates = append(verifiedCandidates, candidatesMap[name])
-	//}
-	return candidates, nil
+) (err error) {
+	// TODO check if this algrithom for staking v2
+	updatedVotingPower := make(map[string]*big.Int)
+	intensityRate := float64(uint32(100)-unqualifiedList.IntensityRate) / float64(100)
+	probationMap := make(map[string]uint32)
+	for _, elem := range unqualifiedList.ProbationList {
+		probationMap[elem.Address] = elem.Count
+	}
+	for _, cand := range candidates.Candidates {
+		if _, ok := probationMap[cand.OperatorAddress]; ok {
+			// if it is an unqualified delegate, multiply the voting power with probation intensity rate
+			votingPower, ok := new(big.Float).SetString(cand.TotalWeightedVotes)
+			if !ok {
+				return errors.New("total weighted votes convert error")
+			}
+			newVotingPower, _ := votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
+			updatedVotingPower[cand.OperatorAddress] = newVotingPower
+		}
+	}
+	for i, cand := range candidates.Candidates {
+		if newWeight, ok := updatedVotingPower[cand.OperatorAddress]; ok {
+			candidates.Candidates[i].TotalWeightedVotes = newWeight.String()
+		}
+	}
+	return nil
 }
