@@ -191,6 +191,18 @@ func (p *Protocol) updateVotingResultV2(tx *sql.Tx, candidates *iotextypes.Candi
 
 func (p *Protocol) updateAggregateVotingV2(tx *sql.Tx, votes *iotextypes.VoteBucketList, delegates *iotextypes.CandidateListV2, epochNumber uint64, probationList *iotextypes.ProbationCandidateList) (err error) {
 	// TODO check if it's need to filter probation again for staking v2
+	probationMap := make(map[string]uint32)
+	var intensityRate float64
+	if probationList != nil {
+		intensityRate = float64(uint32(100)-probationList.IntensityRate) / float64(100)
+		for _, delegate := range delegates.Candidates {
+			for _, elem := range probationList.ProbationList {
+				if elem.Address == delegate.OperatorAddress {
+					probationMap[delegate.Name] = elem.Count
+				}
+			}
+		}
+	}
 	//update aggregate voting table
 	sumOfWeightedVotes := make(map[aggregateKey]*big.Int)
 	totalVoted := big.NewInt(0)
@@ -200,7 +212,7 @@ func (p *Protocol) updateAggregateVotingV2(tx *sql.Tx, votes *iotextypes.VoteBuc
 			epochNumber:   epochNumber,
 			candidateName: vote.CandidateAddress,
 			voterAddress:  vote.Owner,
-			isNative:      true, //alway true for staking v2
+			isNative:      true, //alway true for staking v2,TODO check if it's right
 		}
 		// TODO check if it's right
 		weightedAmount := calculateVoteWeightV2(p.voteCfg, vote, false)
@@ -228,6 +240,11 @@ func (p *Protocol) updateAggregateVotingV2(tx *sql.Tx, votes *iotextypes.VoteBuc
 		}
 	}()
 	for key, val := range sumOfWeightedVotes {
+		if _, ok := probationMap[key.candidateName]; ok {
+			// filter based on probation
+			votingPower := new(big.Float).SetInt(val)
+			val, _ = votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
+		}
 		if _, err = aggregateStmt.Exec(
 			key.epochNumber,
 			key.candidateName,
