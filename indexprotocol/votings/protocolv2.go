@@ -89,6 +89,7 @@ func (p *Protocol) getCandidatesCountV2(chainClient iotexapi.APIServiceClient) (
 	count = uint32(10)
 	return
 }
+
 func (p *Protocol) getBucketsAllV2(chainClient iotexapi.APIServiceClient, bucketsCount uint32) (voteBucketListAll *iotextypes.VoteBucketList, err error) {
 	voteBucketListAll = &iotextypes.VoteBucketList{}
 	batch := bucketsCount / oneTimeReturnsBucketsCount
@@ -229,7 +230,6 @@ func (p *Protocol) updateVotingResultV2(tx *sql.Tx, candidates *iotextypes.Candi
 }
 
 func (p *Protocol) updateAggregateVotingV2(tx *sql.Tx, votes *iotextypes.VoteBucketList, delegates *iotextypes.CandidateListV2, epochNumber uint64, probationList *iotextypes.ProbationCandidateList) (err error) {
-	// TODO check if it's need to filter probation again for staking v2
 	probationMap := make(map[string]uint32)
 	var intensityRate float64
 	if probationList != nil {
@@ -253,7 +253,7 @@ func (p *Protocol) updateAggregateVotingV2(tx *sql.Tx, votes *iotextypes.VoteBuc
 			voterAddress:  vote.Owner,
 			isNative:      true, //alway true for staking v2,TODO check if it's right
 		}
-		// TODO check if it's right
+		// TODO check if it's right,code from iotex-core
 		weightedAmount := calculateVoteWeightV2(p.voteCfg, vote, false)
 		stakeAmount, ok := big.NewInt(0).SetString(vote.StakedAmount, 10)
 		if !ok {
