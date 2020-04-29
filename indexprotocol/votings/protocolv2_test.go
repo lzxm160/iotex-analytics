@@ -9,7 +9,6 @@ package votings
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/gogo/protobuf/proto"
@@ -17,7 +16,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
-	"github.com/iotexproject/iotex-core/action/protocol/poll"
 	"github.com/iotexproject/iotex-core/test/mock/mock_apiserviceclient"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
@@ -75,10 +73,21 @@ func TestXX(t *testing.T) {
 
 func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	require := require.New(t)
+	methodName := &iotexapi.ReadStakingDataMethod{
+		Method: iotexapi.ReadStakingDataMethod_BUCKETS,
+	}
+	methodNameBytes, _ := proto.Marshal(methodName)
+	arguments := &iotexapi.ReadStakingDataRequest_VoteBuckets{
+		Pagination: &iotexapi.PaginationParam{
+			Offset: 0,
+			Limit:  10,
+		},
+	}
+	argumentsBytes, _ := proto.Marshal(arguments)
 	readStateRequest := &iotexapi.ReadStateRequest{
-		ProtocolID: []byte(poll.ProtocolID),
-		MethodName: []byte(strconv.FormatInt(int64(iotexapi.ReadStakingDataMethod_BUCKETS), 10)),
-		Arguments:  [][]byte{[]byte(strconv.FormatUint(0, 10)), []byte(strconv.FormatUint(100, 10))},
+		ProtocolID: []byte(protocolID),
+		MethodName: methodNameBytes,
+		Arguments:  [][]byte{argumentsBytes},
 	}
 	buckets := []*iotextypes.VoteBucket{
 		&iotextypes.VoteBucket{
@@ -101,10 +110,21 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	}, nil)
 
 	// mock candidate
+	methodName = &iotexapi.ReadStakingDataMethod{
+		Method: iotexapi.ReadStakingDataMethod_CANDIDATES,
+	}
+	methodNameBytes, _ = proto.Marshal(methodName)
+	arguments2 := &iotexapi.ReadStakingDataRequest_Candidates{
+		Pagination: &iotexapi.PaginationParam{
+			Offset: 0,
+			Limit:  10,
+		},
+	}
+	argumentsBytes, _ = proto.Marshal(arguments2)
 	readStateRequest = &iotexapi.ReadStateRequest{
-		ProtocolID: []byte(poll.ProtocolID),
-		MethodName: []byte(strconv.FormatInt(int64(iotexapi.ReadStakingDataMethod_CANDIDATES), 10)),
-		Arguments:  [][]byte{[]byte(strconv.FormatUint(0, 10)), []byte(strconv.FormatUint(100, 10))},
+		ProtocolID: []byte(protocolID),
+		MethodName: methodNameBytes,
+		Arguments:  [][]byte{argumentsBytes},
 	}
 	candidates := []*iotextypes.CandidateV2{
 		&iotextypes.CandidateV2{
