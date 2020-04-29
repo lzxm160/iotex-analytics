@@ -36,15 +36,15 @@ func (p *Protocol) stakingV2(chainClient iotexapi.APIServiceClient, epochStarthe
 	if err != nil {
 		return errors.Wrap(err, "failed to get buckets count")
 	}
-	candidatesCount, err := p.getCandidateCountV2(chainClient)
+	candidatesCount, err := p.getCandidatesCountV2(chainClient)
 	if err != nil {
 		return errors.Wrap(err, "failed to get candidates count")
 	}
-	voteBucketList, err := p.getBucketV2(chainClient, 0, bucketsCount)
+	voteBucketList, err := p.getBucketsV2(chainClient, 0, bucketsCount)
 	if err != nil {
 		return errors.Wrap(err, "failed to get bucket")
 	}
-	candidateList, err := p.getCandidateV2(chainClient, 0, candidatesCount)
+	candidateList, err := p.getCandidatesV2(chainClient, 0, candidatesCount)
 	if err != nil {
 		return errors.Wrap(err, "failed to get bucket")
 	}
@@ -82,13 +82,13 @@ func (p *Protocol) getBucketsCountV2(chainClient iotexapi.APIServiceClient) (cou
 	return
 }
 
-func (p *Protocol) getCandidateCountV2(chainClient iotexapi.APIServiceClient) (count uint32, err error) {
+func (p *Protocol) getCandidatesCountV2(chainClient iotexapi.APIServiceClient) (count uint32, err error) {
 	// TODO waiting for iotex-core's api
 	count = uint32(10)
 	return
 }
 
-func (p *Protocol) getBucketV2(chainClient iotexapi.APIServiceClient, offset, limit uint32) (voteBucketList *iotextypes.VoteBucketList, err error) {
+func (p *Protocol) getBucketsV2(chainClient iotexapi.APIServiceClient, offset, limit uint32) (voteBucketList *iotextypes.VoteBucketList, err error) {
 	methodName := &iotexapi.ReadStakingDataMethod{
 		Method: iotexapi.ReadStakingDataMethod_BUCKETS,
 	}
@@ -120,7 +120,7 @@ func (p *Protocol) getBucketV2(chainClient iotexapi.APIServiceClient, offset, li
 	return
 }
 
-func (p *Protocol) getCandidateV2(chainClient iotexapi.APIServiceClient, offset, limit uint32) (candidateList *iotextypes.CandidateListV2, err error) {
+func (p *Protocol) getCandidatesV2(chainClient iotexapi.APIServiceClient, offset, limit uint32) (candidateList *iotextypes.CandidateListV2, err error) {
 	methodName := &iotexapi.ReadStakingDataMethod{
 		Method: iotexapi.ReadStakingDataMethod_CANDIDATES,
 	}

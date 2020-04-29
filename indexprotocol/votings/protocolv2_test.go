@@ -105,6 +105,7 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	vbl := &iotextypes.VoteBucketList{Buckets: buckets}
 	s, err := proto.Marshal(vbl)
 	require.NoError(err)
+	fmt.Println("len(one Bucket):", len(s))
 	first := chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
 		Data: s,
 	}, nil)
@@ -140,6 +141,7 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	cl := &iotextypes.CandidateListV2{Candidates: candidates}
 	s, err = proto.Marshal(cl)
 	require.NoError(err)
+	fmt.Println("len(one candidate):", len(s))
 	second := chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
 		Data: s,
 	}, nil)
