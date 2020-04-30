@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"reflect"
+	"time"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
@@ -33,7 +35,6 @@ const (
 )
 
 func (p *Protocol) stakingV2(chainClient iotexapi.APIServiceClient, epochStartheight, epochNumber uint64, probationList *iotextypes.ProbationCandidateList) (err error) {
-	fmt.Println("stakingv2:", epochNumber)
 	bucketsCount, err := p.getBucketsCountV2(chainClient)
 	if err != nil {
 		return errors.Wrap(err, "failed to get buckets count")
@@ -230,18 +231,7 @@ func (p *Protocol) updateVotingResultV2(tx *sql.Tx, candidates *iotextypes.Candi
 }
 
 func (p *Protocol) updateAggregateVotingV2(tx *sql.Tx, votes *iotextypes.VoteBucketList, delegates *iotextypes.CandidateListV2, epochNumber uint64, probationList *iotextypes.ProbationCandidateList) (err error) {
-	probationMap := make(map[string]uint32)
-	var intensityRate float64
-	if probationList != nil {
-		intensityRate = float64(uint32(100)-probationList.IntensityRate) / float64(100)
-		for _, delegate := range delegates.Candidates {
-			for _, elem := range probationList.ProbationList {
-				if elem.Address == delegate.OperatorAddress {
-					probationMap[delegate.Name] = elem.Count
-				}
-			}
-		}
-	}
+	intensityRate, probationMap := getProbationMap(delegates, probationList)
 	//update aggregate voting table
 	sumOfWeightedVotes := make(map[aggregateKey]*big.Int)
 	totalVoted := big.NewInt(0)
@@ -253,7 +243,7 @@ func (p *Protocol) updateAggregateVotingV2(tx *sql.Tx, votes *iotextypes.VoteBuc
 			voterAddress:  vote.Owner,
 			isNative:      true, //alway true for staking v2,TODO check if it's right
 		}
-		// TODO check if it's right,code from iotex-core
+		// TODO check if it's right,code copy from iotex-core
 		weightedAmount := calculateVoteWeightV2(p.voteCfg, vote, false)
 		stakeAmount, ok := big.NewInt(0).SetString(vote.StakedAmount, 10)
 		if !ok {
@@ -316,6 +306,50 @@ func (p *Protocol) updateAggregateVotingV2(tx *sql.Tx, votes *iotextypes.VoteBuc
 	return
 }
 
+func (p *Protocol) getBucketInfoByEpochV2(height, epochNum uint64, delegateName string) ([]*VotingInfo, error) {
+	ret, err := p.nativeV2BucketTableOperator.Get(height, p.Store.GetDB(), nil)
+	bucketList, ok := ret.(*iotextypes.VoteBucketList)
+	if !ok {
+		return nil, errors.Errorf("Unexpected type %s", reflect.TypeOf(ret))
+	}
+	can, err := p.nativeV2CandidateTableOperator.Get(height, p.Store.GetDB(), nil)
+	candidateList, ok := can.(*iotextypes.CandidateListV2)
+	if !ok {
+		return nil, errors.Errorf("Unexpected type %s", reflect.TypeOf(can))
+	}
+
+	// update weighted votes based on probation
+	pblist, err := p.getProbationList(epochNum)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get probation list from table")
+	}
+	intensityRate, probationMap := getProbationMapFromDB(candidateList, pblist)
+	var votinginfoList []*VotingInfo
+	for _, vote := range bucketList.Buckets {
+		if vote.CandidateAddress == delegateName {
+			weightedVotes := calculateVoteWeightV2(p.voteCfg, vote, false)
+			if _, ok := probationMap[vote.CandidateAddress]; ok {
+				// filter based on probation
+				votingPower := new(big.Float).SetInt(weightedVotes)
+				weightedVotes, _ = votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
+			}
+			votinginfo := &VotingInfo{
+				EpochNumber:       epochNum,
+				VoterAddress:      vote.Owner,
+				IsNative:          true, //always true for stakingv2,TODO check
+				Votes:             vote.StakedAmount,
+				WeightedVotes:     weightedVotes.Text(10),
+				RemainingDuration: remainingTime(vote).String(),
+				StartTime:         vote.StakeStartTime.String(),
+				Decay:             true, //always true for stakingv2,TODO check
+			}
+			votinginfoList = append(votinginfoList, votinginfo)
+		}
+	}
+	return votinginfoList, nil
+}
+
+// TODO check if this algrithom right for staking v2
 func calculateVoteWeightV2(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.VoteBucket, selfStake bool) *big.Int {
 	remainingTime := float64(v.StakedDuration)
 	weight := float64(1)
@@ -338,12 +372,11 @@ func calculateVoteWeightV2(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.
 	return weightedAmount
 }
 
-// filterCandidatesV2 returns filtered candidate list by given raw candidate and probation list
+// TODO check if this algrithom right for staking v2
 func filterCandidatesV2(
 	candidates *iotextypes.CandidateListV2,
 	unqualifiedList *iotextypes.ProbationCandidateList,
 ) (err error) {
-	// TODO check if this algrithom right for staking v2
 	intensityRate := float64(uint32(100)-unqualifiedList.IntensityRate) / float64(100)
 	probationMap := make(map[string]uint32)
 	for _, elem := range unqualifiedList.ProbationList {
@@ -361,4 +394,48 @@ func filterCandidatesV2(
 		}
 	}
 	return nil
+}
+
+// TODO check if this algrithom right for staking v2
+func remainingTime(bucket *iotextypes.VoteBucket) time.Duration {
+	now := time.Now()
+	startTime := time.Unix(bucket.StakeStartTime.Seconds, int64(bucket.StakeStartTime.Nanos))
+	if now.Before(startTime) {
+		return 0
+	}
+	endTime := startTime.Add(time.Duration(bucket.StakedDuration))
+	if endTime.After(now) {
+		return startTime.Add(time.Duration(bucket.StakedDuration)).Sub(now)
+	}
+	return 0
+}
+
+func getProbationMap(delegates *iotextypes.CandidateListV2, probationList *iotextypes.ProbationCandidateList) (intensityRate float64, probationMap map[string]uint32) {
+	probationMap = make(map[string]uint32)
+	if probationList != nil {
+		intensityRate = float64(uint32(100)-probationList.IntensityRate) / float64(100)
+		for _, delegate := range delegates.Candidates {
+			for _, elem := range probationList.ProbationList {
+				if elem.Address == delegate.OperatorAddress {
+					probationMap[delegate.Name] = elem.Count
+				}
+			}
+		}
+	}
+	return
+}
+
+func getProbationMapFromDB(candidateList *iotextypes.CandidateListV2, pblist []*ProbationList) (intensityRate float64, probationMap map[string]uint64) {
+	probationMap = make(map[string]uint64)
+	if pblist != nil {
+		for _, can := range candidateList.Candidates {
+			for _, pb := range pblist {
+				intensityRate = float64(uint64(100)-pb.IntensityRate) / float64(100)
+				if pb.Address == can.Name {
+					probationMap[can.Name] = pb.Count
+				}
+			}
+		}
+	}
+	return
 }

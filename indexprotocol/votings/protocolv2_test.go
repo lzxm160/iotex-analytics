@@ -10,6 +10,9 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
+
+	"github.com/golang/protobuf/ptypes"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/golang/mock/gomock"
@@ -51,12 +54,12 @@ func TestXX(t *testing.T) {
 		SelfStakingThreshold: "0",
 	}, cfg)
 	require.NoError(err)
+	require.NoError(p.CreateTables(context.Background()))
 	require.NoError(p.stakingV2(chainClient, height, epochNumber, nil))
 
 	// checkout bucket if it's written right
-	tx, err := p.Store.GetDB().Begin()
 	require.NoError(err)
-	ret, err := p.nativeV2BucketTableOperator.Get(height, p.Store.GetDB(), tx)
+	ret, err := p.nativeV2BucketTableOperator.Get(height, p.Store.GetDB(), nil)
 	require.NoError(err)
 	buckets, ok := ret.(*iotextypes.VoteBucketList)
 	require.True(ok)
@@ -64,11 +67,44 @@ func TestXX(t *testing.T) {
 
 	// checkout candidate if it's written right
 	fmt.Println("//////////////////////////////")
-	ret, err = p.nativeV2CandidateTableOperator.Get(height, p.Store.GetDB(), tx)
+	ret, err = p.nativeV2CandidateTableOperator.Get(height, p.Store.GetDB(), nil)
 	require.NoError(err)
 	candidates, ok := ret.(*iotextypes.CandidateListV2)
 	require.True(ok)
 	fmt.Println(candidates.Candidates[0])
+}
+
+func TestRemainingTime(t *testing.T) {
+	require := require.New(t)
+	// now is before start time
+	bucketTime := time.Now().Add(time.Duration(100))
+	timestamp, _ := ptypes.TimestampProto(bucketTime)
+	bucket := &iotextypes.VoteBucket{
+		StakeStartTime: timestamp,
+		StakedDuration: 100,
+	}
+	remaining := remainingTime(bucket)
+	require.Equal(0, remaining)
+
+	// now is between start time and starttime+stakedduration
+	bucketTime = time.Now()
+	timestamp, _ = ptypes.TimestampProto(bucketTime)
+	bucket = &iotextypes.VoteBucket{
+		StakeStartTime: timestamp,
+		StakedDuration: 100,
+	}
+	remaining = remainingTime(bucket)
+	require.True(remaining > 0)
+
+	// now is after starttime+stakedduration
+	bucketTime = time.Unix(time.Now().Unix()-200, 0)
+	timestamp, _ = ptypes.TimestampProto(bucketTime)
+	bucket = &iotextypes.VoteBucket{
+		StakeStartTime: timestamp,
+		StakedDuration: 100,
+	}
+	remaining = remainingTime(bucket)
+	require.Equal(0, remaining)
 }
 
 func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
