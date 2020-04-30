@@ -9,16 +9,16 @@ package votings
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
-	"github.com/golang/protobuf/ptypes"
-
 	"github.com/gogo/protobuf/proto"
 	"github.com/golang/mock/gomock"
+	"github.com/golang/protobuf/ptypes"
+	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/stretchr/testify/require"
 
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/iotexproject/iotex-core/test/mock/mock_apiserviceclient"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
@@ -115,7 +115,7 @@ func TestStakingV2(t *testing.T) {
 	bucketList, ok := ret.(*iotextypes.VoteBucketList)
 	require.True(ok)
 	fmt.Println(bucketList.Buckets[0])
-	require.Equal(buckets, bucketList.Buckets)
+	require.True(reflect.DeepEqual(buckets, bucketList.Buckets))
 	// checkout candidate if it's written right
 	fmt.Println("//////////////////////////////")
 	ret, err = p.nativeV2CandidateTableOperator.Get(height, p.Store.GetDB(), nil)
@@ -123,7 +123,7 @@ func TestStakingV2(t *testing.T) {
 	candidateList, ok := ret.(*iotextypes.CandidateListV2)
 	require.True(ok)
 	fmt.Println(candidateList.Candidates[0])
-	require.Equal(candidates, candidateList.Candidates)
+	require.True(reflect.DeepEqual(candidates, candidateList.Candidates))
 }
 
 func TestRemainingTime(t *testing.T) {
