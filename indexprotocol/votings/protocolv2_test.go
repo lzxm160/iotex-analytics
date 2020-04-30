@@ -9,7 +9,6 @@ package votings
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"testing"
 	"time"
 
@@ -125,9 +124,10 @@ func TestStakingV2(t *testing.T) {
 	require.NoError(err)
 	candidateList, ok := ret.(*iotextypes.CandidateListV2)
 	require.True(ok)
-	fmt.Println(candidates)
-	fmt.Println(candidateList.Candidates)
-	require.True(reflect.DeepEqual(candidates, candidateList.Candidates))
+
+	candidatesBytes, _ := proto.Marshal(&iotextypes.CandidateListV2{Candidates: candidates})
+	candidateListBytes, _ := proto.Marshal(candidateList)
+	require.EqualValues(candidatesBytes, candidateListBytes)
 }
 
 func TestRemainingTime(t *testing.T) {
