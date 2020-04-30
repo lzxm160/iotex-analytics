@@ -8,7 +8,6 @@ package votings
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -131,7 +130,16 @@ func TestStakingV2(t *testing.T) {
 	// case II: check getBucketInfoByEpochV2
 	bucketInfo, err := p.getBucketInfoByEpochV2(height, epochNumber, delegateName)
 	require.NoError(err)
-	fmt.Println(bucketInfo[0])
+	for _, b := range bucketInfo {
+		require.Equal("io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms", b.VoterAddress)
+		require.True(b.Decay)
+		require.Equal(epochNumber, b.EpochNumber)
+		require.True(b.IsNative)
+		require.Equal(86400, b.RemainingDuration)
+		require.Equal("1587864599", b.StartTime)
+		require.Equal("30000", b.Votes)
+		require.Equal("1587864599", b.WeightedVotes)
+	}
 }
 
 func TestRemainingTime(t *testing.T) {

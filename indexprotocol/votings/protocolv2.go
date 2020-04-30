@@ -312,7 +312,6 @@ func (p *Protocol) getBucketInfoByEpochV2(height, epochNum uint64, delegateName 
 	if !ok {
 		return nil, errors.Errorf("Unexpected type %s", reflect.TypeOf(ret))
 	}
-	fmt.Println(bucketList.Buckets)
 	can, err := p.nativeV2CandidateTableOperator.Get(height, p.Store.GetDB(), nil)
 	candidateList, ok := can.(*iotextypes.CandidateListV2)
 	if !ok {
@@ -325,13 +324,11 @@ func (p *Protocol) getBucketInfoByEpochV2(height, epochNum uint64, delegateName 
 			break
 		}
 	}
-	fmt.Println(candidateList.Candidates)
 	// update weighted votes based on probation
 	pblist, err := p.getProbationList(epochNum)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get probation list from table")
 	}
-	fmt.Println("len(pblist):", len(pblist))
 	intensityRate, probationMap := getProbationMapFromDB(candidateList, pblist)
 	var votinginfoList []*VotingInfo
 	for _, vote := range bucketList.Buckets {
