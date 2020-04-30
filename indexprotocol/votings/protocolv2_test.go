@@ -84,7 +84,7 @@ func TestRemainingTime(t *testing.T) {
 		StakedDuration: 100,
 	}
 	remaining := remainingTime(bucket)
-	require.Equal(0, remaining)
+	require.Equal(time.Duration(0), remaining)
 
 	// now is between start time and starttime+stakedduration
 	bucketTime = time.Now()
