@@ -406,6 +406,8 @@ func filterCandidatesV2(
 func remainingTime(bucket *iotextypes.VoteBucket) time.Duration {
 	now := time.Now()
 	startTime := time.Unix(bucket.StakeStartTime.Seconds, int64(bucket.StakeStartTime.Nanos))
+	fmt.Println("now.Unix()", now.Unix())
+	fmt.Println("startTime", startTime.Unix())
 	if now.Before(startTime) {
 		return 0
 	}
