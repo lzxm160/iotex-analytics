@@ -9,6 +9,7 @@ package votings
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 
@@ -139,7 +140,9 @@ func TestStakingV2(t *testing.T) {
 		require.True(b.Decay)
 		require.Equal(epochNumber, b.EpochNumber)
 		require.True(b.IsNative)
-		require.Equal(86400, b.RemainingDuration)
+		dur, err := strconv.ParseUint(b.RemainingDuration, 10, 64)
+		require.NoError(err)
+		require.True(dur <= uint64(86400))
 		require.Equal(fmt.Sprintf("%d", now.Unix()), b.StartTime)
 		require.Equal("30000", b.Votes)
 		require.Equal("1587864599", b.WeightedVotes)
