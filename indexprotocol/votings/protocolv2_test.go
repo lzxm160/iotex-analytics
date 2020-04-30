@@ -105,7 +105,7 @@ func TestRemainingTime(t *testing.T) {
 		StakedDuration: 100,
 	}
 	remaining = remainingTime(bucket)
-	require.Equal(0, remaining)
+	require.Equal(time.Duration(0), remaining)
 }
 
 func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
