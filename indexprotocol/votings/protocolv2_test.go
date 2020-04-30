@@ -94,6 +94,7 @@ func TestRemainingTime(t *testing.T) {
 		StakedDuration: 100,
 	}
 	remaining = remainingTime(bucket)
+	fmt.Println(remaining)
 	require.True(remaining > 0)
 
 	// now is after starttime+stakedduration
