@@ -106,8 +106,8 @@ func TestProtocol(t *testing.T) {
 		Data: data,
 	}, nil)
 	gomock.InOrder(
-		first,
 		second,
+		first,
 	)
 	timestamp, err := ptypes.TimestampProto(time.Unix(1000, 0))
 	require.NoError(err)
