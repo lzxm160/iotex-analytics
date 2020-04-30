@@ -29,8 +29,10 @@ import (
 )
 
 const (
-	localconnectStr = "root:123456@tcp(192.168.146.140:3306)/"
-	localdbName     = "analytics"
+	//localconnectStr = "root:123456@tcp(192.168.146.140:3306)/"
+	localconnectStr = connectStr
+	//localdbName     = "analytics"
+	localdbName = dbName
 )
 
 func TestStakingV2(t *testing.T) {
