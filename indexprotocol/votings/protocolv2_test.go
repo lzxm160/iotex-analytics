@@ -142,8 +142,6 @@ func TestStakingV2(t *testing.T) {
 		require.True(b.IsNative)
 		dur, err := strconv.ParseFloat(b.RemainingDuration, 64)
 		require.NoError(err)
-		fmt.Println(b.RemainingDuration)
-		fmt.Println(uint64(dur))
 		require.True(uint64(dur) <= uint64(86400))
 		require.Equal(fmt.Sprintf("%d", now.Unix()), b.StartTime)
 		require.Equal("30000", b.Votes)
