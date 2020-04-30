@@ -81,7 +81,7 @@ func TestRemainingTime(t *testing.T) {
 	timestamp, _ := ptypes.TimestampProto(bucketTime)
 	bucket := &iotextypes.VoteBucket{
 		StakeStartTime: timestamp,
-		StakedDuration: uint32(time.Second) * 100,
+		StakedDuration: 100,
 	}
 	remaining := remainingTime(bucket)
 	require.Equal(time.Duration(0), remaining)
@@ -91,7 +91,7 @@ func TestRemainingTime(t *testing.T) {
 	timestamp, _ = ptypes.TimestampProto(bucketTime)
 	bucket = &iotextypes.VoteBucket{
 		StakeStartTime: timestamp,
-		StakedDuration: uint32(time.Second) * 100,
+		StakedDuration: 100,
 	}
 	remaining = remainingTime(bucket)
 	fmt.Println(remaining)
@@ -102,7 +102,7 @@ func TestRemainingTime(t *testing.T) {
 	timestamp, _ = ptypes.TimestampProto(bucketTime)
 	bucket = &iotextypes.VoteBucket{
 		StakeStartTime: timestamp,
-		StakedDuration: uint32(time.Second) * 100,
+		StakedDuration: 100,
 	}
 	remaining = remainingTime(bucket)
 	require.Equal(0, remaining)

@@ -404,7 +404,7 @@ func remainingTime(bucket *iotextypes.VoteBucket) time.Duration {
 		return 0
 	}
 	fmt.Println(now.Unix(), startTime.Unix())
-	// StakedDuration type is uint32,so I guess it's unit is second
+	// StakedDuration type is uint32,so I guess it's unit is second,TODO make sure this right
 	endTime := startTime.Add(time.Duration(bucket.StakedDuration) * time.Second)
 	if endTime.After(now) {
 		return startTime.Add(time.Duration(bucket.StakedDuration) * time.Second).Sub(now)
