@@ -147,7 +147,7 @@ func TestStakingV2(t *testing.T) {
 		require.True(uint64(dur) <= uint64(86400))
 		require.Equal(fmt.Sprintf("%d", now.Unix()), b.StartTime)
 		require.Equal("30000", b.Votes)
-		require.Equal("1587864599", b.WeightedVotes)
+		require.Equal("30000", b.WeightedVotes)
 	}
 }
 
