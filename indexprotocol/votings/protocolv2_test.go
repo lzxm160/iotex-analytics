@@ -87,7 +87,7 @@ func TestRemainingTime(t *testing.T) {
 	require.Equal(time.Duration(0), remaining)
 
 	// now is between start time and starttime+stakedduration
-	bucketTime = time.Now()
+	bucketTime = time.Unix(time.Now().Unix()-10, 0)
 	timestamp, _ = ptypes.TimestampProto(bucketTime)
 	bucket = &iotextypes.VoteBucket{
 		StakeStartTime: timestamp,
