@@ -130,6 +130,9 @@ func TestStakingV2(t *testing.T) {
 	// case II: check getBucketInfoByEpochV2
 	bucketInfo, err := p.getBucketInfoByEpochV2(height, epochNumber, delegateName)
 	require.NoError(err)
+	require.Equal("io1l9vaqmanwj47tlrpv6etf3pwq0s0snsq4vxke2", bucketInfo[0].VoterAddress)
+	require.Equal("io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02", bucketInfo[1].VoterAddress)
+	require.Equal("io1vdtfpzkwpyngzvx7u2mauepnzja7kd5rryp0sg", bucketInfo[2].VoterAddress)
 	for _, b := range bucketInfo {
 		require.Equal("io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms", b.VoterAddress)
 		require.True(b.Decay)
@@ -137,7 +140,6 @@ func TestStakingV2(t *testing.T) {
 		require.True(b.IsNative)
 		require.Equal(86400, b.RemainingDuration)
 		require.Equal("1587864599", b.StartTime)
-		require.Equal("30000", b.Votes)
 		require.Equal("1587864599", b.WeightedVotes)
 	}
 }
