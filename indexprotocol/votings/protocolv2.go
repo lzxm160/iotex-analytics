@@ -318,6 +318,13 @@ func (p *Protocol) getBucketInfoByEpochV2(height, epochNum uint64, delegateName 
 	if !ok {
 		return nil, errors.Errorf("Unexpected type %s", reflect.TypeOf(can))
 	}
+	var candidateAddress string
+	for _, cand := range candidateList.Candidates {
+		if cand.Name == delegateName {
+			candidateAddress = cand.OwnerAddress
+			break
+		}
+	}
 	fmt.Println(candidateList.Candidates)
 	// update weighted votes based on probation
 	pblist, err := p.getProbationList(epochNum)
@@ -328,7 +335,7 @@ func (p *Protocol) getBucketInfoByEpochV2(height, epochNum uint64, delegateName 
 	intensityRate, probationMap := getProbationMapFromDB(candidateList, pblist)
 	var votinginfoList []*VotingInfo
 	for _, vote := range bucketList.Buckets {
-		if vote.CandidateAddress == delegateName {
+		if vote.CandidateAddress == candidateAddress {
 			weightedVotes := calculateVoteWeightV2(p.voteCfg, vote, false)
 			if _, ok := probationMap[vote.CandidateAddress]; ok {
 				// filter based on probation
