@@ -114,7 +114,8 @@ func TestStakingV2(t *testing.T) {
 	require.NoError(err)
 	bucketList, ok := ret.(*iotextypes.VoteBucketList)
 	require.True(ok)
-	fmt.Println(bucketList.Buckets[0])
+	fmt.Println(buckets)
+	fmt.Println(bucketList.Buckets)
 	require.True(reflect.DeepEqual(buckets, bucketList.Buckets))
 	// checkout candidate if it's written right
 	fmt.Println("//////////////////////////////")
@@ -122,7 +123,8 @@ func TestStakingV2(t *testing.T) {
 	require.NoError(err)
 	candidateList, ok := ret.(*iotextypes.CandidateListV2)
 	require.True(ok)
-	fmt.Println(candidateList.Candidates[0])
+	fmt.Println(candidates)
+	fmt.Println(candidateList.Candidates)
 	require.True(reflect.DeepEqual(candidates, candidateList.Candidates))
 }
 
@@ -181,7 +183,6 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	vbl := &iotextypes.VoteBucketList{Buckets: buckets}
 	s, err := proto.Marshal(vbl)
 	require.NoError(err)
-	fmt.Println("len(one Bucket):", len(s))
 	first := chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
 		Data: s,
 	}, nil)
@@ -207,7 +208,6 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	cl := &iotextypes.CandidateListV2{Candidates: candidates}
 	s, err = proto.Marshal(cl)
 	require.NoError(err)
-	fmt.Println("len(one candidate):", len(s))
 	second := chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
 		Data: s,
 	}, nil)
