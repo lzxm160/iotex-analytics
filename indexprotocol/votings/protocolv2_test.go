@@ -75,12 +75,13 @@ var (
 			OwnerAddress:       "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
 			OperatorAddress:    "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
 			RewardAddress:      "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
-			Name:               "xxxx",
+			Name:               delegateName,
 			TotalWeightedVotes: "888886",
 			SelfStakeBucketIdx: 6666,
 			SelfStakingTokens:  "99999",
 		},
 	}
+	delegateName = "xxxx"
 )
 
 func TestStakingV2(t *testing.T) {
@@ -107,19 +108,17 @@ func TestStakingV2(t *testing.T) {
 	require.NoError(p.CreateTables(context.Background()))
 	require.NoError(p.stakingV2(chainClient, height, epochNumber, nil))
 
-	// checkout bucket if it's written right
+	// case I: checkout bucket if it's written right
 	require.NoError(err)
 	ret, err := p.nativeV2BucketTableOperator.Get(height, p.Store.GetDB(), nil)
 	require.NoError(err)
 	bucketList, ok := ret.(*iotextypes.VoteBucketList)
 	require.True(ok)
-	//fmt.Println(buckets)
-	//fmt.Println(bucketList.Buckets)
 	bucketsBytes, _ := proto.Marshal(&iotextypes.VoteBucketList{Buckets: buckets})
 	bucketListBytes, _ := proto.Marshal(bucketList)
 	require.EqualValues(bucketsBytes, bucketListBytes)
-	// checkout candidate if it's written right
-	fmt.Println("//////////////////////////////")
+
+	// case II: checkout candidate if it's written right
 	ret, err = p.nativeV2CandidateTableOperator.Get(height, p.Store.GetDB(), nil)
 	require.NoError(err)
 	candidateList, ok := ret.(*iotextypes.CandidateListV2)
@@ -128,6 +127,11 @@ func TestStakingV2(t *testing.T) {
 	candidatesBytes, _ := proto.Marshal(&iotextypes.CandidateListV2{Candidates: candidates})
 	candidateListBytes, _ := proto.Marshal(candidateList)
 	require.EqualValues(candidatesBytes, candidateListBytes)
+
+	// case II: check getBucketInfoByEpochV2
+	bucketInfo, err := p.getBucketInfoByEpochV2(height, epochNumber, delegateName)
+	require.NoError(err)
+	fmt.Println(bucketInfo[0])
 }
 
 func TestRemainingTime(t *testing.T) {
