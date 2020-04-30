@@ -195,7 +195,7 @@ func TestFilterCandidatesV2(t *testing.T) {
 		},
 	}
 	require.NoError(filterCandidatesV2(cl, unqualifiedList))
-	fmt.Println(cl.Candidates[0].TotalWeightedVotes)
+	require.Equal(fmt.Sprintf("%d", 888886*0.9), cl.Candidates[0].TotalWeightedVotes)
 }
 
 func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {

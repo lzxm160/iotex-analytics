@@ -382,13 +382,11 @@ func filterCandidatesV2(
 	probationMap := make(map[string]uint32)
 	for _, elem := range unqualifiedList.ProbationList {
 		// TODO check if this count is not useful
-		fmt.Println(elem.Address)
 		probationMap[elem.Address] = elem.Count
 	}
 	for i, cand := range candidates.Candidates {
 		if _, ok := probationMap[cand.OperatorAddress]; ok {
 			// if it is an unqualified delegate, multiply the voting power with probation intensity rate
-			fmt.Println(cand.OperatorAddress)
 			votingPower, ok := new(big.Float).SetString(cand.TotalWeightedVotes)
 			if !ok {
 				return errors.New("total weighted votes convert error")
