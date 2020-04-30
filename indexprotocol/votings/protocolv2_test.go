@@ -8,6 +8,7 @@ package votings
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -34,15 +35,16 @@ const (
 )
 
 var (
+	now     = time.Now()
 	buckets = []*iotextypes.VoteBucket{
 		&iotextypes.VoteBucket{
 			Index:            10,
 			CandidateAddress: "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
 			StakedAmount:     "30000",
 			StakedDuration:   86400, // one day
-			CreateTime:       &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: 0},
-			StakeStartTime:   &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: 0},
-			UnstakeStartTime: &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: 0},
+			CreateTime:       &timestamp.Timestamp{Seconds: now.Unix(), Nanos: 0},
+			StakeStartTime:   &timestamp.Timestamp{Seconds: now.Unix(), Nanos: 0},
+			UnstakeStartTime: &timestamp.Timestamp{Seconds: now.Unix(), Nanos: 0},
 			AutoStake:        false,
 			Owner:            "io1l9vaqmanwj47tlrpv6etf3pwq0s0snsq4vxke2",
 		},
@@ -51,9 +53,9 @@ var (
 			CandidateAddress: "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
 			StakedAmount:     "30000",
 			StakedDuration:   86400,
-			CreateTime:       &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: 0},
-			StakeStartTime:   &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: 0},
-			UnstakeStartTime: &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: 0},
+			CreateTime:       &timestamp.Timestamp{Seconds: now.Unix(), Nanos: 0},
+			StakeStartTime:   &timestamp.Timestamp{Seconds: now.Unix(), Nanos: 0},
+			UnstakeStartTime: &timestamp.Timestamp{Seconds: now.Unix(), Nanos: 0},
 			AutoStake:        false,
 			Owner:            "io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02",
 		},
@@ -62,9 +64,9 @@ var (
 			CandidateAddress: "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
 			StakedAmount:     "30000",
 			StakedDuration:   86400,
-			CreateTime:       &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: 0},
-			StakeStartTime:   &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: 0},
-			UnstakeStartTime: &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: 0},
+			CreateTime:       &timestamp.Timestamp{Seconds: now.Unix(), Nanos: 0},
+			StakeStartTime:   &timestamp.Timestamp{Seconds: now.Unix(), Nanos: 0},
+			UnstakeStartTime: &timestamp.Timestamp{Seconds: now.Unix(), Nanos: 0},
 			AutoStake:        false,
 			Owner:            "io1vdtfpzkwpyngzvx7u2mauepnzja7kd5rryp0sg",
 		},
@@ -138,7 +140,7 @@ func TestStakingV2(t *testing.T) {
 		require.Equal(epochNumber, b.EpochNumber)
 		require.True(b.IsNative)
 		require.Equal(86400, b.RemainingDuration)
-		require.Equal("1587864599", b.StartTime)
+		require.Equal(fmt.Sprintf("%d", now.Unix()), b.StartTime)
 		require.Equal("30000", b.Votes)
 		require.Equal("1587864599", b.WeightedVotes)
 	}
