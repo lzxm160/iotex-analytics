@@ -157,7 +157,6 @@ func InsertVoteBuckets(tableName string, driverName committee.DRIVERTYPE, record
 	case committee.SQLITE:
 		stmt, err = tx.Prepare(fmt.Sprintf(InsertVoteBucketsQuery, tableName))
 	case committee.MYSQL:
-		fmt.Println(fmt.Sprintf(InsertVoteBucketsQueryMySql, tableName))
 		stmt, err = tx.Prepare(fmt.Sprintf(InsertVoteBucketsQueryMySql, tableName))
 	default:
 		return nil, errors.New("wrong driver type")
