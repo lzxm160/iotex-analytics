@@ -403,6 +403,8 @@ func remainingTime(bucket *iotextypes.VoteBucket) time.Duration {
 	if now.Before(startTime) {
 		return 0
 	}
+	fmt.Println(now, startTime.Unix())
+
 	endTime := startTime.Add(time.Duration(bucket.StakedDuration))
 	if endTime.After(now) {
 		return startTime.Add(time.Duration(bucket.StakedDuration)).Sub(now)
