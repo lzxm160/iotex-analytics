@@ -345,7 +345,7 @@ func (p *Protocol) getBucketInfoByEpochV2(height, epochNum uint64, delegateName 
 				IsNative:          true, //always true for stakingv2,TODO check
 				Votes:             vote.StakedAmount,
 				WeightedVotes:     weightedVotes.Text(10),
-				RemainingDuration: remainingTime(vote).String(),
+				RemainingDuration: fmt.Sprintf("%0.2f", remainingTime(vote).Seconds()),
 				StartTime:         vote.StakeStartTime.String(),
 				Decay:             true, //always true for stakingv2,TODO check
 			}
