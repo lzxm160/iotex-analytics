@@ -131,7 +131,6 @@ func (p *Protocol) getBucketsV2(chainClient iotexapi.APIServiceClient, offset, l
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
 			fmt.Println("ReadStakingDataMethod_BUCKETS not found")
-			return
 		}
 		return
 	}
@@ -182,7 +181,6 @@ func (p *Protocol) getCandidatesV2(chainClient iotexapi.APIServiceClient, offset
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
 			fmt.Println("ReadStakingDataMethod_BUCKETS not found")
-			return
 		}
 		return
 	}
@@ -365,12 +363,10 @@ func calculateVoteWeightV2(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.
 	}
 	if remainingTime > 0 {
 		weight += math.Log(math.Ceil(remainingTime/86400)*(1+m)) / math.Log(cfg.DurationLg) / 100
-		fmt.Println("weight +=", weight)
 	}
 	if selfStake {
 		weight *= cfg.SelfStake
 	}
-	fmt.Println("weight +=", weight)
 	amount, ok := new(big.Float).SetString(v.StakedAmount)
 	if !ok {
 		return big.NewInt(0)
@@ -407,8 +403,6 @@ func filterCandidatesV2(
 func remainingTime(bucket *iotextypes.VoteBucket) time.Duration {
 	now := time.Now()
 	startTime := time.Unix(bucket.StakeStartTime.Seconds, int64(bucket.StakeStartTime.Nanos))
-	fmt.Println("now.Unix()", now.Unix())
-	fmt.Println("startTime", startTime.Unix())
 	if now.Before(startTime) {
 		return 0
 	}
