@@ -116,7 +116,8 @@ func TestStakingV2(t *testing.T) {
 	require.True(ok)
 	fmt.Println(buckets)
 	fmt.Println(bucketList.Buckets)
-	require.True(reflect.DeepEqual(buckets, bucketList.Buckets))
+	//bucketsBytes, _ := proto.Marshal(&iotextypes.VoteBucketList{Buckets: buckets})
+	require.EqualValues(buckets, bucketList.Buckets)
 	// checkout candidate if it's written right
 	fmt.Println("//////////////////////////////")
 	ret, err = p.nativeV2CandidateTableOperator.Get(height, p.Store.GetDB(), nil)
