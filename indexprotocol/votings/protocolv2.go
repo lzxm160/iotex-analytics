@@ -382,6 +382,7 @@ func filterCandidatesV2(
 	probationMap := make(map[string]uint32)
 	for _, elem := range unqualifiedList.ProbationList {
 		// TODO check if this count is not useful
+		fmt.Println(elem.Address)
 		probationMap[elem.Address] = elem.Count
 	}
 	for i, cand := range candidates.Candidates {

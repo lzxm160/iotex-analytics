@@ -186,6 +186,7 @@ func TestFilterCandidatesV2(t *testing.T) {
 	require := require.New(t)
 	cl := &iotextypes.CandidateListV2{Candidates: candidates}
 	unqualifiedList := &iotextypes.ProbationCandidateList{
+		IntensityRate: 10,
 		ProbationList: []*iotextypes.ProbationCandidateList_Info{
 			&iotextypes.ProbationCandidateList_Info{
 				Address: "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
