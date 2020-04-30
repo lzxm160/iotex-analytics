@@ -365,11 +365,12 @@ func calculateVoteWeightV2(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.
 	}
 	if remainingTime > 0 {
 		weight += math.Log(math.Ceil(remainingTime/86400)*(1+m)) / math.Log(cfg.DurationLg) / 100
+		fmt.Println("weight +=", weight)
 	}
 	if selfStake {
 		weight *= cfg.SelfStake
 	}
-
+	fmt.Println("weight +=", weight)
 	amount, ok := new(big.Float).SetString(v.StakedAmount)
 	if !ok {
 		return big.NewInt(0)
