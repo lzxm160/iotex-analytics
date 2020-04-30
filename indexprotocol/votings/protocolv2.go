@@ -241,7 +241,7 @@ func (p *Protocol) updateAggregateVotingV2(tx *sql.Tx, votes *iotextypes.VoteBuc
 			voterAddress:  vote.Owner,
 			isNative:      true, //alway true for staking v2,TODO check if it's right
 		}
-		// TODO check if it's right,code copy from iotex-core
+
 		weightedAmount := calculateVoteWeightV2(p.voteCfg, vote, false)
 		stakeAmount, ok := big.NewInt(0).SetString(vote.StakedAmount, 10)
 		if !ok {
@@ -353,7 +353,6 @@ func (p *Protocol) getBucketInfoByEpochV2(height, epochNum uint64, delegateName 
 	return votinginfoList, nil
 }
 
-// TODO check if this algrithom right for staking v2
 func calculateVoteWeightV2(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.VoteBucket, selfStake bool) *big.Int {
 	remainingTime := float64(v.StakedDuration)
 	weight := float64(1)
@@ -375,7 +374,6 @@ func calculateVoteWeightV2(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.
 	return weightedAmount
 }
 
-// TODO check if this algrithom right for staking v2
 func filterCandidatesV2(
 	candidates *iotextypes.CandidateListV2,
 	unqualifiedList *iotextypes.ProbationCandidateList,
@@ -383,6 +381,7 @@ func filterCandidatesV2(
 	intensityRate := float64(uint32(100)-unqualifiedList.IntensityRate) / float64(100)
 	probationMap := make(map[string]uint32)
 	for _, elem := range unqualifiedList.ProbationList {
+		// TODO check if this count is not useful
 		probationMap[elem.Address] = elem.Count
 	}
 	for i, cand := range candidates.Candidates {
@@ -399,14 +398,12 @@ func filterCandidatesV2(
 	return nil
 }
 
-// TODO check if this algrithom right for staking v2
 func remainingTime(bucket *iotextypes.VoteBucket) time.Duration {
 	now := time.Now()
 	startTime := time.Unix(bucket.StakeStartTime.Seconds, int64(bucket.StakeStartTime.Nanos))
 	if now.Before(startTime) {
 		return 0
 	}
-	// StakedDuration type is uint32,so I guess it's unit is second,TODO make sure this right
 	endTime := startTime.Add(time.Duration(bucket.StakedDuration) * time.Second)
 	if endTime.After(now) {
 		return startTime.Add(time.Duration(bucket.StakedDuration) * time.Second).Sub(now)

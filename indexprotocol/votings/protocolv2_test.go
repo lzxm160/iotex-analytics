@@ -130,7 +130,7 @@ func TestStakingV2(t *testing.T) {
 	candidateListBytes, _ := proto.Marshal(candidateList)
 	require.EqualValues(candidatesBytes, candidateListBytes)
 
-	// case II: check getBucketInfoByEpochV2
+	// case III: check getBucketInfoByEpochV2
 	bucketInfo, err := p.getBucketInfoByEpochV2(height, epochNumber, delegateName)
 	require.NoError(err)
 	require.Equal("io1l9vaqmanwj47tlrpv6etf3pwq0s0snsq4vxke2", bucketInfo[0].VoterAddress)
@@ -180,6 +180,21 @@ func TestRemainingTime(t *testing.T) {
 	}
 	remaining = remainingTime(bucket)
 	require.Equal(time.Duration(0), remaining)
+}
+
+func TestFilterCandidatesV2(t *testing.T) {
+	require := require.New(t)
+	cl := &iotextypes.CandidateListV2{Candidates: candidates}
+	unqualifiedList := &iotextypes.ProbationCandidateList{
+		ProbationList: []*iotextypes.ProbationCandidateList_Info{
+			&iotextypes.ProbationCandidateList_Info{
+				Address: "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+				Count:   10,
+			},
+		},
+	}
+	require.NoError(filterCandidatesV2(cl, unqualifiedList))
+	fmt.Println(cl.Candidates[0].TotalWeightedVotes)
 }
 
 func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
