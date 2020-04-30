@@ -33,7 +33,7 @@ const (
 	localdbName     = "analytics"
 )
 
-func TestXX(t *testing.T) {
+func TestStakingV2(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	chainClient := mock_apiserviceclient.NewMockServiceClient(ctrl)
@@ -76,7 +76,7 @@ func TestXX(t *testing.T) {
 
 func TestRemainingTime(t *testing.T) {
 	require := require.New(t)
-	// now is before start time
+	// case I: now is before start time
 	bucketTime := time.Now().Add(time.Second * 100)
 	timestamp, _ := ptypes.TimestampProto(bucketTime)
 	bucket := &iotextypes.VoteBucket{
@@ -86,7 +86,7 @@ func TestRemainingTime(t *testing.T) {
 	remaining := remainingTime(bucket)
 	require.Equal(time.Duration(0), remaining)
 
-	// now is between start time and starttime+stakedduration
+	// case II: now is between start time and starttime+stakedduration
 	bucketTime = time.Unix(time.Now().Unix()-10, 0)
 	timestamp, _ = ptypes.TimestampProto(bucketTime)
 	bucket = &iotextypes.VoteBucket{
@@ -94,10 +94,9 @@ func TestRemainingTime(t *testing.T) {
 		StakedDuration: 100,
 	}
 	remaining = remainingTime(bucket)
-	fmt.Println(remaining)
 	require.True(remaining > 0)
 
-	// now is after starttime+stakedduration
+	// case III: now is after starttime+stakedduration
 	bucketTime = time.Unix(time.Now().Unix()-200, 0)
 	timestamp, _ = ptypes.TimestampProto(bucketTime)
 	bucket = &iotextypes.VoteBucket{
