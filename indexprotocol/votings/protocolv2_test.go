@@ -46,7 +46,7 @@ var (
 			StakeStartTime:   &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: 0},
 			UnstakeStartTime: &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: 0},
 			AutoStake:        false,
-			Owner:            "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+			Owner:            "io1l9vaqmanwj47tlrpv6etf3pwq0s0snsq4vxke2",
 		},
 		&iotextypes.VoteBucket{
 			Index:            11,
