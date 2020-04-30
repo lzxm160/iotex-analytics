@@ -29,10 +29,59 @@ import (
 )
 
 const (
-	//localconnectStr = "root:123456@tcp(192.168.146.140:3306)/"
-	localconnectStr = connectStr
-	//localdbName     = "analytics"
-	localdbName = dbName
+	localconnectStr = "root:123456@tcp(192.168.146.140:3306)/"
+	//localconnectStr = connectStr
+	localdbName = "analytics"
+	//localdbName = dbName
+)
+
+var (
+	buckets = []*iotextypes.VoteBucket{
+		&iotextypes.VoteBucket{
+			Index:            10,
+			CandidateAddress: "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+			StakedAmount:     "30000",
+			StakedDuration:   86400, // one day
+			CreateTime:       &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(456)},
+			StakeStartTime:   &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(123)},
+			UnstakeStartTime: &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(321)},
+			AutoStake:        false,
+			Owner:            "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+		},
+		&iotextypes.VoteBucket{
+			Index:            11,
+			CandidateAddress: "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+			StakedAmount:     "30000",
+			StakedDuration:   86400,
+			CreateTime:       &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(456)},
+			StakeStartTime:   &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(123)},
+			UnstakeStartTime: &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(321)},
+			AutoStake:        false,
+			Owner:            "io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02",
+		},
+		&iotextypes.VoteBucket{
+			Index:            12,
+			CandidateAddress: "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+			StakedAmount:     "30000",
+			StakedDuration:   86400,
+			CreateTime:       &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(456)},
+			StakeStartTime:   &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(123)},
+			UnstakeStartTime: &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(321)},
+			AutoStake:        false,
+			Owner:            "io1vdtfpzkwpyngzvx7u2mauepnzja7kd5rryp0sg",
+		},
+	}
+	candidates = []*iotextypes.CandidateV2{
+		&iotextypes.CandidateV2{
+			OwnerAddress:       "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+			OperatorAddress:    "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+			RewardAddress:      "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
+			Name:               "xxxx",
+			TotalWeightedVotes: "888886",
+			SelfStakeBucketIdx: 6666,
+			SelfStakingTokens:  "99999",
+		},
+	}
 )
 
 func TestStakingV2(t *testing.T) {
@@ -127,19 +176,7 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 		MethodName: methodNameBytes,
 		Arguments:  [][]byte{argumentsBytes},
 	}
-	buckets := []*iotextypes.VoteBucket{
-		&iotextypes.VoteBucket{
-			Index:            10,
-			CandidateAddress: "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
-			StakedAmount:     "30000",
-			StakedDuration:   20,
-			CreateTime:       &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(456)},
-			StakeStartTime:   &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(123)},
-			UnstakeStartTime: &timestamp.Timestamp{Seconds: int64(1587864599), Nanos: int32(321)},
-			AutoStake:        false,
-			Owner:            "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
-		},
-	}
+
 	vbl := &iotextypes.VoteBucketList{Buckets: buckets}
 	s, err := proto.Marshal(vbl)
 	require.NoError(err)
@@ -165,17 +202,7 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 		MethodName: methodNameBytes,
 		Arguments:  [][]byte{argumentsBytes},
 	}
-	candidates := []*iotextypes.CandidateV2{
-		&iotextypes.CandidateV2{
-			OwnerAddress:       "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
-			OperatorAddress:    "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
-			RewardAddress:      "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
-			Name:               "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
-			TotalWeightedVotes: "888886",
-			SelfStakeBucketIdx: 6666,
-			SelfStakingTokens:  "99999",
-		},
-	}
+
 	cl := &iotextypes.CandidateListV2{Candidates: candidates}
 	s, err = proto.Marshal(cl)
 	require.NoError(err)
