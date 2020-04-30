@@ -112,17 +112,18 @@ func TestStakingV2(t *testing.T) {
 	require.NoError(err)
 	ret, err := p.nativeV2BucketTableOperator.Get(height, p.Store.GetDB(), nil)
 	require.NoError(err)
-	buckets, ok := ret.(*iotextypes.VoteBucketList)
+	bucketList, ok := ret.(*iotextypes.VoteBucketList)
 	require.True(ok)
-	fmt.Println(buckets.Buckets[0])
-
+	fmt.Println(bucketList.Buckets[0])
+	require.Equal(buckets, bucketList)
 	// checkout candidate if it's written right
 	fmt.Println("//////////////////////////////")
 	ret, err = p.nativeV2CandidateTableOperator.Get(height, p.Store.GetDB(), nil)
 	require.NoError(err)
-	candidates, ok := ret.(*iotextypes.CandidateListV2)
+	candidateList, ok := ret.(*iotextypes.CandidateListV2)
 	require.True(ok)
-	fmt.Println(candidates.Candidates[0])
+	fmt.Println(candidateList.Candidates[0])
+	require.Equal(candidates, candidateList)
 }
 
 func TestRemainingTime(t *testing.T) {
