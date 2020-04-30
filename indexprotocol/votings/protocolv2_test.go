@@ -78,7 +78,7 @@ var (
 			OperatorAddress:    "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
 			RewardAddress:      "io1mflp9m6hcgm2qcghchsdqj3z3eccrnekx9p0ms",
 			Name:               delegateName,
-			TotalWeightedVotes: "888886",
+			TotalWeightedVotes: "10",
 			SelfStakeBucketIdx: 6666,
 			SelfStakingTokens:  "99999",
 		},
@@ -195,7 +195,7 @@ func TestFilterCandidatesV2(t *testing.T) {
 		},
 	}
 	require.NoError(filterCandidatesV2(cl, unqualifiedList))
-	require.Equal(fmt.Sprintf("%d", 888886*0.9), cl.Candidates[0].TotalWeightedVotes)
+	require.Equal("9", cl.Candidates[0].TotalWeightedVotes)
 }
 
 func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
