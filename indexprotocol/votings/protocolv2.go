@@ -346,7 +346,7 @@ func (p *Protocol) getBucketInfoByEpochV2(height, epochNum uint64, delegateName 
 				Votes:             vote.StakedAmount,
 				WeightedVotes:     weightedVotes.Text(10),
 				RemainingDuration: fmt.Sprintf("%0.2f", remainingTime(vote).Seconds()),
-				StartTime:         vote.StakeStartTime.String(),
+				StartTime:         fmt.Sprintf("%d", vote.StakeStartTime.Seconds),
 				Decay:             true, //always true for stakingv2,TODO check
 			}
 			votinginfoList = append(votinginfoList, votinginfo)
