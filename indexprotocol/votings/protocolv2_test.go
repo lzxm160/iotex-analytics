@@ -251,6 +251,8 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 
 	gomock.InOrder(
 		first,
+		first,
+		first,
 		second,
 	)
 }
