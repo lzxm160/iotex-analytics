@@ -210,18 +210,17 @@ func TestFilterCandidatesV2(t *testing.T) {
 }
 
 func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
+	// TODO need to add two getcount api
 	require := require.New(t)
-	methodName := &iotexapi.ReadStakingDataMethod{
+	methodNameBytes, _ := proto.Marshal(&iotexapi.ReadStakingDataMethod{
 		Method: iotexapi.ReadStakingDataMethod_BUCKETS,
-	}
-	methodNameBytes, _ := proto.Marshal(methodName)
-	arguments := &iotexapi.ReadStakingDataRequest_VoteBuckets{
+	})
+	argumentsBytes, _ := proto.Marshal(&iotexapi.ReadStakingDataRequest_VoteBuckets{
 		Pagination: &iotexapi.PaginationParam{
 			Offset: 0,
 			Limit:  10,
 		},
-	}
-	argumentsBytes, _ := proto.Marshal(arguments)
+	})
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(protocolID),
 		MethodName: methodNameBytes,
@@ -236,17 +235,15 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	}, nil)
 
 	// mock candidate
-	methodName = &iotexapi.ReadStakingDataMethod{
+	methodNameBytes, _ = proto.Marshal(&iotexapi.ReadStakingDataMethod{
 		Method: iotexapi.ReadStakingDataMethod_CANDIDATES,
-	}
-	methodNameBytes, _ = proto.Marshal(methodName)
-	arguments2 := &iotexapi.ReadStakingDataRequest_Candidates{
+	})
+	argumentsBytes, _ = proto.Marshal(&iotexapi.ReadStakingDataRequest_Candidates{
 		Pagination: &iotexapi.PaginationParam{
 			Offset: 0,
 			Limit:  10,
 		},
-	}
-	argumentsBytes, _ = proto.Marshal(arguments2)
+	})
 	readStateRequest = &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(protocolID),
 		MethodName: methodNameBytes,
