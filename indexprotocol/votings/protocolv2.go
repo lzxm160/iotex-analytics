@@ -237,7 +237,8 @@ func (p *Protocol) updateVotingResultV2(tx *sql.Tx, candidates *iotextypes.Candi
 }
 
 func (p *Protocol) updateAggregateVotingV2(tx *sql.Tx, votes *iotextypes.VoteBucketList, delegates *iotextypes.CandidateListV2, epochNumber uint64, probationList *iotextypes.ProbationCandidateList) (err error) {
-	intensityRate, probationMap := getProbationMap(delegates, probationList)
+	pb := convertProbationListToLocal(probationList)
+	intensityRate, probationMap := getProbationMapFromDB(delegates, pb)
 	//update aggregate voting table
 	sumOfWeightedVotes := make(map[aggregateKey]*big.Int)
 	totalVoted := big.NewInt(0)
@@ -419,21 +420,6 @@ func remainingTime(bucket *iotextypes.VoteBucket) time.Duration {
 	return 0
 }
 
-func getProbationMap(candidateList *iotextypes.CandidateListV2, probationList *iotextypes.ProbationCandidateList) (intensityRate float64, probationMap map[string]uint32) {
-	probationMap = make(map[string]uint32)
-	if probationList != nil {
-		intensityRate = float64(uint32(100)-probationList.IntensityRate) / float64(100)
-		for _, can := range candidateList.Candidates {
-			for _, pb := range probationList.ProbationList {
-				if pb.Address == can.OperatorAddress {
-					probationMap[can.Name] = pb.Count
-				}
-			}
-		}
-	}
-	return
-}
-
 func getProbationMapFromDB(candidateList *iotextypes.CandidateListV2, probationList []*ProbationList) (intensityRate float64, probationMap map[string]uint64) {
 	probationMap = make(map[string]uint64)
 	if probationList != nil {
@@ -445,6 +431,20 @@ func getProbationMapFromDB(candidateList *iotextypes.CandidateListV2, probationL
 				}
 			}
 		}
+	}
+	return
+}
+
+func convertProbationListToLocal(probationList *iotextypes.ProbationCandidateList) (ret []*ProbationList) {
+	ret = make([]*ProbationList, 0)
+	for _, pb := range probationList.ProbationList {
+		p := &ProbationList{
+			0,
+			uint64(probationList.IntensityRate),
+			pb.Address,
+			uint64(pb.Count),
+		}
+		ret = append(ret, p)
 	}
 	return
 }
