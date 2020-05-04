@@ -161,21 +161,29 @@ func (p *Protocol) getCandidatesAllV2(chainClient iotexapi.APIServiceClient, can
 }
 
 func (p *Protocol) getCandidatesV2(chainClient iotexapi.APIServiceClient, offset, limit uint32) (candidateList *iotextypes.CandidateListV2, err error) {
-	methodName := &iotexapi.ReadStakingDataMethod{
+	methodName, err := proto.Marshal(&iotexapi.ReadStakingDataMethod{
 		Method: iotexapi.ReadStakingDataMethod_CANDIDATES,
+	})
+	if err != nil {
+		return nil, err
 	}
-	methodNameBytes, _ := proto.Marshal(methodName)
-	arguments := &iotexapi.ReadStakingDataRequest_Candidates{
-		Pagination: &iotexapi.PaginationParam{
-			Offset: offset,
-			Limit:  limit,
+	arg, err := proto.Marshal(&iotexapi.ReadStakingDataRequest{
+		Request: &iotexapi.ReadStakingDataRequest_Candidates_{
+			Candidates: &iotexapi.ReadStakingDataRequest_Candidates{
+				Pagination: &iotexapi.PaginationParam{
+					Offset: offset,
+					Limit:  limit,
+				},
+			},
 		},
+	})
+	if err != nil {
+		return nil, err
 	}
-	argumentsBytes, _ := proto.Marshal(arguments)
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(protocolID),
-		MethodName: methodNameBytes,
-		Arguments:  [][]byte{argumentsBytes},
+		MethodName: methodName,
+		Arguments:  [][]byte{arg},
 	}
 	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
 	if err != nil {
@@ -345,7 +353,7 @@ func (p *Protocol) getBucketInfoByEpochV2(height, epochNum uint64, delegateName 
 				WeightedVotes:     weightedVotes.Text(10),
 				RemainingDuration: fmt.Sprintf("%0.2f", remainingTime(vote).Seconds()),
 				StartTime:         fmt.Sprintf("%d", vote.StakeStartTime.Seconds),
-				Decay:             true, //always true for stakingv2,TODO check
+				Decay:             !vote.AutoStake,
 			}
 			votinginfoList = append(votinginfoList, votinginfo)
 		}
@@ -411,14 +419,14 @@ func remainingTime(bucket *iotextypes.VoteBucket) time.Duration {
 	return 0
 }
 
-func getProbationMap(delegates *iotextypes.CandidateListV2, probationList *iotextypes.ProbationCandidateList) (intensityRate float64, probationMap map[string]uint32) {
+func getProbationMap(candidateList *iotextypes.CandidateListV2, probationList *iotextypes.ProbationCandidateList) (intensityRate float64, probationMap map[string]uint32) {
 	probationMap = make(map[string]uint32)
 	if probationList != nil {
 		intensityRate = float64(uint32(100)-probationList.IntensityRate) / float64(100)
-		for _, delegate := range delegates.Candidates {
-			for _, elem := range probationList.ProbationList {
-				if elem.Address == delegate.OperatorAddress {
-					probationMap[delegate.Name] = elem.Count
+		for _, can := range candidateList.Candidates {
+			for _, pb := range probationList.ProbationList {
+				if pb.Address == can.OperatorAddress {
+					probationMap[can.Name] = pb.Count
 				}
 			}
 		}
@@ -426,11 +434,11 @@ func getProbationMap(delegates *iotextypes.CandidateListV2, probationList *iotex
 	return
 }
 
-func getProbationMapFromDB(candidateList *iotextypes.CandidateListV2, pblist []*ProbationList) (intensityRate float64, probationMap map[string]uint64) {
+func getProbationMapFromDB(candidateList *iotextypes.CandidateListV2, probationList []*ProbationList) (intensityRate float64, probationMap map[string]uint64) {
 	probationMap = make(map[string]uint64)
-	if pblist != nil {
+	if probationList != nil {
 		for _, can := range candidateList.Candidates {
-			for _, pb := range pblist {
+			for _, pb := range probationList {
 				intensityRate = float64(uint64(100)-pb.IntensityRate) / float64(100)
 				if pb.Address == can.Name {
 					probationMap[can.Name] = pb.Count
