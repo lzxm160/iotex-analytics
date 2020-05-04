@@ -111,21 +111,25 @@ func (p *Protocol) getBucketsAllV2(chainClient iotexapi.APIServiceClient, bucket
 }
 
 func (p *Protocol) getBucketsV2(chainClient iotexapi.APIServiceClient, offset, limit uint32) (voteBucketList *iotextypes.VoteBucketList, err error) {
-	methodName := &iotexapi.ReadStakingDataMethod{
+	methodName, err := proto.Marshal(&iotexapi.ReadStakingDataMethod{
 		Method: iotexapi.ReadStakingDataMethod_BUCKETS,
+	})
+	if err != nil {
+		return nil, err
 	}
-	methodNameBytes, _ := proto.Marshal(methodName)
-	arguments := &iotexapi.ReadStakingDataRequest_VoteBuckets{
+	arguments, err := proto.Marshal(&iotexapi.ReadStakingDataRequest_VoteBuckets{
 		Pagination: &iotexapi.PaginationParam{
 			Offset: offset,
 			Limit:  limit,
 		},
+	})
+	if err != nil {
+		return nil, err
 	}
-	argumentsBytes, _ := proto.Marshal(arguments)
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(protocolID),
-		MethodName: methodNameBytes,
-		Arguments:  [][]byte{argumentsBytes},
+		MethodName: methodName,
+		Arguments:  [][]byte{arguments},
 	}
 	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
 	if err != nil {
