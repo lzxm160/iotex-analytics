@@ -372,30 +372,6 @@ func calculateVoteWeightV2(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.
 	return weightedAmount
 }
 
-//func filterCandidatesV2(
-//	candidates *iotextypes.CandidateListV2,
-//	unqualifiedList *iotextypes.ProbationCandidateList,
-//) (err error) {
-//	intensityRate := float64(uint32(100)-unqualifiedList.IntensityRate) / float64(100)
-//	probationMap := make(map[string]uint32)
-//	for _, elem := range unqualifiedList.ProbationList {
-//		// TODO check if this count is not useful
-//		probationMap[elem.Address] = elem.Count
-//	}
-//	for i, cand := range candidates.Candidates {
-//		if _, ok := probationMap[cand.OperatorAddress]; ok {
-//			// if it is an unqualified delegate, multiply the voting power with probation intensity rate
-//			votingPower, ok := new(big.Float).SetString(cand.TotalWeightedVotes)
-//			if !ok {
-//				return errors.New("total weighted votes convert error")
-//			}
-//			newVotingPower, _ := votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
-//			candidates.Candidates[i].TotalWeightedVotes = newVotingPower.String()
-//		}
-//	}
-//	return nil
-//}
-
 func remainingTime(bucket *iotextypes.VoteBucket) time.Duration {
 	now := time.Now()
 	startTime := time.Unix(bucket.StakeStartTime.Seconds, int64(bucket.StakeStartTime.Nanos))

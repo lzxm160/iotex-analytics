@@ -126,7 +126,6 @@ func filterCandidates(
 	epochStartHeight uint64,
 ) (interface{}, error) {
 	v2 := false
-	var candidatesMap interface{}
 	if _, ok := candidates.(*iotextypes.CandidateListV2); ok {
 		v2 = true
 	}
@@ -137,6 +136,8 @@ func filterCandidates(
 	for _, elem := range unqualifiedList.ProbationList {
 		probationMap[elem.Address] = elem.Count
 	}
+
+	var candidatesMap interface{}
 	switch {
 	case v2:
 		candidatesMap = make(map[string]*iotextypes.CandidateV2)
@@ -153,7 +154,6 @@ func filterCandidates(
 				updatedVotingPower[cand.OperatorAddress] = newVotingPower
 				candidatesMap.(map[string]*iotextypes.CandidateV2)[cand.OperatorAddress] = &clone
 			}
-
 		}
 	default:
 		candidatesMap = make(map[string]*types.Candidate)
@@ -188,37 +188,3 @@ func filterCandidates(
 	}
 	return verifiedCandidates, nil
 }
-
-//func filterCandidates(
-//	candidates []*types.Candidate,
-//	unqualifiedList *iotextypes.ProbationCandidateList,
-//	epochStartHeight uint64,
-//) ([]*types.Candidate, error) {
-//	candidatesMap := make(map[string]*types.Candidate)
-//	updatedVotingPower := make(map[string]*big.Int)
-//	intensityRate := float64(uint32(100)-unqualifiedList.IntensityRate) / float64(100)
-//
-//	probationMap := make(map[string]uint32)
-//	for _, elem := range unqualifiedList.ProbationList {
-//		probationMap[elem.Address] = elem.Count
-//	}
-//	for _, cand := range candidates {
-//		filterCand := cand.Clone()
-//		candOpAddr := string(cand.OperatorAddress())
-//		if _, ok := probationMap[candOpAddr]; ok {
-//			// if it is an unqualified delegate, multiply the voting power with probation intensity rate
-//			votingPower := new(big.Float).SetInt(filterCand.Score())
-//			newVotingPower, _ := votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
-//			filterCand.SetScore(newVotingPower)
-//		}
-//		updatedVotingPower[candOpAddr] = filterCand.Score()
-//		candidatesMap[candOpAddr] = filterCand
-//	}
-//	// sort again with updated voting power
-//	sorted := util.Sort(updatedVotingPower, epochStartHeight)
-//	var verifiedCandidates []*types.Candidate
-//	for _, name := range sorted {
-//		verifiedCandidates = append(verifiedCandidates, candidatesMap[name])
-//	}
-//	return verifiedCandidates, nil
-//}
