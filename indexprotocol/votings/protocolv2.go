@@ -420,6 +420,9 @@ func getProbationMapFromDB(candidateList *iotextypes.CandidateListV2, probationL
 }
 
 func convertProbationListToLocal(probationList *iotextypes.ProbationCandidateList) (ret []*ProbationList) {
+	if probationList == nil {
+		return nil
+	}
 	ret = make([]*ProbationList, 0)
 	for _, pb := range probationList.ProbationList {
 		p := &ProbationList{
