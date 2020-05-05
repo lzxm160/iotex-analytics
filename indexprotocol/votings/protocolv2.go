@@ -31,7 +31,7 @@ import (
 const (
 	protocolID          = "staking"
 	readBucketsLimit    = 30000
-	readCondidatesLimit = 20000
+	readCandidatesLimit = 20000
 )
 
 func (p *Protocol) stakingV2(chainClient iotexapi.APIServiceClient, epochStartheight, epochNumber uint64, probationList *iotextypes.ProbationCandidateList) (err error) {
@@ -95,10 +95,14 @@ func (p *Protocol) getBucketsV2(chainClient iotexapi.APIServiceClient, offset, l
 	if err != nil {
 		return nil, err
 	}
-	arguments, err := proto.Marshal(&iotexapi.ReadStakingDataRequest_VoteBuckets{
-		Pagination: &iotexapi.PaginationParam{
-			Offset: offset,
-			Limit:  limit,
+	arg, err := proto.Marshal(&iotexapi.ReadStakingDataRequest{
+		Request: &iotexapi.ReadStakingDataRequest_Buckets{
+			Buckets: &iotexapi.ReadStakingDataRequest_VoteBuckets{
+				Pagination: &iotexapi.PaginationParam{
+					Offset: offset,
+					Limit:  limit,
+				},
+			},
 		},
 	})
 	if err != nil {
@@ -107,7 +111,7 @@ func (p *Protocol) getBucketsV2(chainClient iotexapi.APIServiceClient, offset, l
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(protocolID),
 		MethodName: methodName,
-		Arguments:  [][]byte{arguments},
+		Arguments:  [][]byte{arg},
 	}
 	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
 	if err != nil {
@@ -126,14 +130,14 @@ func (p *Protocol) getBucketsV2(chainClient iotexapi.APIServiceClient, offset, l
 func (p *Protocol) getCandidatesAllV2(chainClient iotexapi.APIServiceClient) (candidateListAll *iotextypes.CandidateListV2, err error) {
 	candidateListAll = &iotextypes.CandidateListV2{}
 	for i := uint32(0); ; i++ {
-		offset := i * readCondidatesLimit
-		size := uint32(readCondidatesLimit)
+		offset := i * readCandidatesLimit
+		size := uint32(readCandidatesLimit)
 		candidateList, err := p.getCandidatesV2(chainClient, offset, size)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get candidates")
 		}
 		candidateListAll.Candidates = append(candidateListAll.Candidates, candidateList.Candidates...)
-		if len(candidateList.Candidates) < readCondidatesLimit {
+		if len(candidateList.Candidates) < readCandidatesLimit {
 			break
 		}
 	}

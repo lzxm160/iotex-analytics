@@ -214,16 +214,20 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	methodNameBytes, _ := proto.Marshal(&iotexapi.ReadStakingDataMethod{
 		Method: iotexapi.ReadStakingDataMethod_BUCKETS,
 	})
-	argumentsBytes, _ := proto.Marshal(&iotexapi.ReadStakingDataRequest_VoteBuckets{
-		Pagination: &iotexapi.PaginationParam{
-			Offset: 0,
-			Limit:  readBucketsLimit,
+	arg, err := proto.Marshal(&iotexapi.ReadStakingDataRequest{
+		Request: &iotexapi.ReadStakingDataRequest_Buckets{
+			Buckets: &iotexapi.ReadStakingDataRequest_VoteBuckets{
+				Pagination: &iotexapi.PaginationParam{
+					Offset: 0,
+					Limit:  readBucketsLimit,
+				},
+			},
 		},
 	})
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(protocolID),
 		MethodName: methodNameBytes,
-		Arguments:  [][]byte{argumentsBytes},
+		Arguments:  [][]byte{arg},
 	}
 
 	vbl := &iotextypes.VoteBucketList{Buckets: buckets}
@@ -237,16 +241,20 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	methodNameBytes, _ = proto.Marshal(&iotexapi.ReadStakingDataMethod{
 		Method: iotexapi.ReadStakingDataMethod_CANDIDATES,
 	})
-	argumentsBytes, _ = proto.Marshal(&iotexapi.ReadStakingDataRequest_Candidates{
-		Pagination: &iotexapi.PaginationParam{
-			Offset: 0,
-			Limit:  readCondidatesLimit,
+	arg, err = proto.Marshal(&iotexapi.ReadStakingDataRequest{
+		Request: &iotexapi.ReadStakingDataRequest_Candidates_{
+			Candidates: &iotexapi.ReadStakingDataRequest_Candidates{
+				Pagination: &iotexapi.PaginationParam{
+					Offset: 0,
+					Limit:  readCandidatesLimit,
+				},
+			},
 		},
 	})
 	readStateRequest = &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(protocolID),
 		MethodName: methodNameBytes,
-		Arguments:  [][]byte{argumentsBytes},
+		Arguments:  [][]byte{arg},
 	}
 
 	cl := &iotextypes.CandidateListV2{Candidates: candidates}
