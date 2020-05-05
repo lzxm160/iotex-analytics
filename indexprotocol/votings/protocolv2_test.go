@@ -217,7 +217,7 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	argumentsBytes, _ := proto.Marshal(&iotexapi.ReadStakingDataRequest_VoteBuckets{
 		Pagination: &iotexapi.PaginationParam{
 			Offset: 0,
-			Limit:  10,
+			Limit:  readBucketsLimit,
 		},
 	})
 	readStateRequest := &iotexapi.ReadStateRequest{
@@ -240,7 +240,7 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	argumentsBytes, _ = proto.Marshal(&iotexapi.ReadStakingDataRequest_Candidates{
 		Pagination: &iotexapi.PaginationParam{
 			Offset: 0,
-			Limit:  10,
+			Limit:  readCondidatesLimit,
 		},
 	})
 	readStateRequest = &iotexapi.ReadStateRequest{
