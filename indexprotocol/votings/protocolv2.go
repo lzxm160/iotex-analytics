@@ -44,9 +44,14 @@ func (p *Protocol) stakingV2(chainClient iotexapi.APIServiceClient, epochStarthe
 		return errors.Wrap(err, "failed to get buckets count")
 	}
 	if probationList != nil {
-		err = filterCandidatesV2(candidateList, probationList)
+		ret, err := filterCandidates(candidateList, probationList, epochStartheight)
 		if err != nil {
 			return errors.Wrap(err, "failed to filter candidate with probation list")
+		}
+		var ok bool
+		candidateList, ok = ret.(*iotextypes.CandidateListV2)
+		if !ok {
+			return errors.Errorf("failed to convert iotextypes.CandidateListV2:%s", reflect.TypeOf(ret))
 		}
 	}
 	// after get and clean data,the following code is for writing mysql
@@ -367,29 +372,29 @@ func calculateVoteWeightV2(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.
 	return weightedAmount
 }
 
-func filterCandidatesV2(
-	candidates *iotextypes.CandidateListV2,
-	unqualifiedList *iotextypes.ProbationCandidateList,
-) (err error) {
-	intensityRate := float64(uint32(100)-unqualifiedList.IntensityRate) / float64(100)
-	probationMap := make(map[string]uint32)
-	for _, elem := range unqualifiedList.ProbationList {
-		// TODO check if this count is not useful
-		probationMap[elem.Address] = elem.Count
-	}
-	for i, cand := range candidates.Candidates {
-		if _, ok := probationMap[cand.OperatorAddress]; ok {
-			// if it is an unqualified delegate, multiply the voting power with probation intensity rate
-			votingPower, ok := new(big.Float).SetString(cand.TotalWeightedVotes)
-			if !ok {
-				return errors.New("total weighted votes convert error")
-			}
-			newVotingPower, _ := votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
-			candidates.Candidates[i].TotalWeightedVotes = newVotingPower.String()
-		}
-	}
-	return nil
-}
+//func filterCandidatesV2(
+//	candidates *iotextypes.CandidateListV2,
+//	unqualifiedList *iotextypes.ProbationCandidateList,
+//) (err error) {
+//	intensityRate := float64(uint32(100)-unqualifiedList.IntensityRate) / float64(100)
+//	probationMap := make(map[string]uint32)
+//	for _, elem := range unqualifiedList.ProbationList {
+//		// TODO check if this count is not useful
+//		probationMap[elem.Address] = elem.Count
+//	}
+//	for i, cand := range candidates.Candidates {
+//		if _, ok := probationMap[cand.OperatorAddress]; ok {
+//			// if it is an unqualified delegate, multiply the voting power with probation intensity rate
+//			votingPower, ok := new(big.Float).SetString(cand.TotalWeightedVotes)
+//			if !ok {
+//				return errors.New("total weighted votes convert error")
+//			}
+//			newVotingPower, _ := votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
+//			candidates.Candidates[i].TotalWeightedVotes = newVotingPower.String()
+//		}
+//	}
+//	return nil
+//}
 
 func remainingTime(bucket *iotextypes.VoteBucket) time.Duration {
 	now := time.Now()

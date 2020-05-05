@@ -205,7 +205,10 @@ func TestFilterCandidatesV2(t *testing.T) {
 			},
 		},
 	}
-	require.NoError(filterCandidatesV2(cl, unqualifiedList))
+	ret, err := filterCandidates(cl, unqualifiedList, 10)
+	require.NoError(err)
+	cl, ok := ret.(*iotextypes.CandidateListV2)
+	require.True(ok)
 	require.Equal("9", cl.Candidates[0].TotalWeightedVotes)
 }
 

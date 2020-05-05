@@ -6,6 +6,7 @@ require (
 	github.com/99designs/gqlgen v0.8.3
 	github.com/agnivade/levenshtein v1.0.2 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible
+	github.com/ethereum/go-ethereum v1.8.27
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gogo/protobuf v1.2.1
 	github.com/golang/mock v1.3.1
