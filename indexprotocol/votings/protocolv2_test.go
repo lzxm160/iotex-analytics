@@ -210,7 +210,6 @@ func TestFilterCandidatesV2(t *testing.T) {
 }
 
 func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
-	// TODO need to add two getcount api
 	require := require.New(t)
 	methodNameBytes, _ := proto.Marshal(&iotexapi.ReadStakingDataMethod{
 		Method: iotexapi.ReadStakingDataMethod_BUCKETS,
