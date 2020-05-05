@@ -29,25 +29,17 @@ import (
 )
 
 const (
-	protocolID                    = "staking"
-	oneTimeReturnsBucketsCount    = 30000
-	oneTimeReturnsCondidatesCount = 20000
+	protocolID          = "staking"
+	readBucketsLimit    = 30000
+	readCondidatesLimit = 20000
 )
 
 func (p *Protocol) stakingV2(chainClient iotexapi.APIServiceClient, epochStartheight, epochNumber uint64, probationList *iotextypes.ProbationCandidateList) (err error) {
-	bucketsCount, err := p.getBucketsCountV2(chainClient)
+	voteBucketList, err := p.getBucketsAllV2(chainClient)
 	if err != nil {
 		return errors.Wrap(err, "failed to get buckets count")
 	}
-	candidatesCount, err := p.getCandidatesCountV2(chainClient)
-	if err != nil {
-		return errors.Wrap(err, "failed to get candidates count")
-	}
-	voteBucketList, err := p.getBucketsAllV2(chainClient, bucketsCount)
-	if err != nil {
-		return errors.Wrap(err, "failed to get buckets count")
-	}
-	candidateList, err := p.getCandidatesAllV2(chainClient, candidatesCount)
+	candidateList, err := p.getCandidatesAllV2(chainClient)
 	if err != nil {
 		return errors.Wrap(err, "failed to get buckets count")
 	}
@@ -79,33 +71,19 @@ func (p *Protocol) stakingV2(chainClient iotexapi.APIServiceClient, epochStarthe
 	return
 }
 
-func (p *Protocol) getBucketsCountV2(chainClient iotexapi.APIServiceClient) (count uint32, err error) {
-	// TODO waiting for iotex-core's api
-	count = uint32(10)
-	return
-}
-
-func (p *Protocol) getCandidatesCountV2(chainClient iotexapi.APIServiceClient) (count uint32, err error) {
-	// TODO waiting for iotex-core's api
-	count = uint32(10)
-	return
-}
-
-func (p *Protocol) getBucketsAllV2(chainClient iotexapi.APIServiceClient, bucketsCount uint32) (voteBucketListAll *iotextypes.VoteBucketList, err error) {
+func (p *Protocol) getBucketsAllV2(chainClient iotexapi.APIServiceClient) (voteBucketListAll *iotextypes.VoteBucketList, err error) {
 	voteBucketListAll = &iotextypes.VoteBucketList{}
-	batch := bucketsCount / oneTimeReturnsBucketsCount
-	lastSize := bucketsCount % oneTimeReturnsBucketsCount
-	for i := uint32(0); i <= batch; i++ {
-		offset := i * oneTimeReturnsBucketsCount
-		size := uint32(oneTimeReturnsBucketsCount)
-		if i == batch {
-			size = lastSize
-		}
+	for i := uint32(0); ; i++ {
+		offset := i * readBucketsLimit
+		size := uint32(readBucketsLimit)
 		voteBucketList, err := p.getBucketsV2(chainClient, offset, size)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get bucket")
 		}
 		voteBucketListAll.Buckets = append(voteBucketListAll.Buckets, voteBucketList.Buckets...)
+		if len(voteBucketList.Buckets) < readBucketsLimit {
+			break
+		}
 	}
 	return
 }
@@ -145,21 +123,19 @@ func (p *Protocol) getBucketsV2(chainClient iotexapi.APIServiceClient, offset, l
 	return
 }
 
-func (p *Protocol) getCandidatesAllV2(chainClient iotexapi.APIServiceClient, candidatesCount uint32) (candidateListAll *iotextypes.CandidateListV2, err error) {
+func (p *Protocol) getCandidatesAllV2(chainClient iotexapi.APIServiceClient) (candidateListAll *iotextypes.CandidateListV2, err error) {
 	candidateListAll = &iotextypes.CandidateListV2{}
-	batch := candidatesCount / oneTimeReturnsCondidatesCount
-	lastSize := candidatesCount % oneTimeReturnsCondidatesCount
-	for i := uint32(0); i <= batch; i++ {
-		offset := i * oneTimeReturnsCondidatesCount
-		size := uint32(oneTimeReturnsCondidatesCount)
-		if i == batch {
-			size = lastSize
-		}
+	for i := uint32(0); ; i++ {
+		offset := i * readCondidatesLimit
+		size := uint32(readCondidatesLimit)
 		candidateList, err := p.getCandidatesV2(chainClient, offset, size)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get candidates")
 		}
 		candidateListAll.Candidates = append(candidateListAll.Candidates, candidateList.Candidates...)
+		if len(candidateList.Candidates) < readCondidatesLimit {
+			break
+		}
 	}
 	return
 }
