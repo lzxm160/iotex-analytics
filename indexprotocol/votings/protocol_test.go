@@ -57,12 +57,12 @@ func TestProtocol(t *testing.T) {
 		require.NoError(err)
 		require.NoError(store.Stop(ctx))
 	}()
-
-	p, err := NewProtocol(store, epochctx.NewEpochCtx(36, 24, 15), indexprotocol.GravityChain{}, indexprotocol.Poll{
+	cfg := indexprotocol.VoteWeightCalConsts{}
+	p, err := NewProtocol(store, epochctx.NewEpochCtx(36, 24, 15, epochctx.FairbankHeight(100000)), indexprotocol.GravityChain{}, indexprotocol.Poll{
 		VoteThreshold:        "0",
 		ScoreThreshold:       "0",
 		SelfStakingThreshold: "0",
-	})
+	}, cfg)
 	require.NoError(err)
 	require.NoError(p.CreateTables(ctx))
 
@@ -105,8 +105,8 @@ func TestProtocol(t *testing.T) {
 		Data: data,
 	}, nil)
 	gomock.InOrder(
-		first,
 		second,
+		first,
 	)
 	timestamp, err := ptypes.TimestampProto(time.Unix(1000, 0))
 	require.NoError(err)
