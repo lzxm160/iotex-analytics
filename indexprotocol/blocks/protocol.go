@@ -51,6 +51,7 @@ const (
 		"putPollResult DECIMAL(65, 0) NOT NULL, gas_consumed DECIMAL(65, 0) NOT NULL, producer_address VARCHAR(41) NOT NULL, " +
 		"producer_name VARCHAR(24) NOT NULL, expected_producer_address VARCHAR(41) NOT NULL, " +
 		"expected_producer_name VARCHAR(24) NOT NULL, timestamp DECIMAL(65, 0) NOT NULL, PRIMARY KEY (block_height))"
+	addStakingColumn       = "ALTER TABLE %s ADD COLUMN stakeCreate DECIMAL(65, 0) NOT NULL AFTER putPollResult,ADD COLUMN stakeUnstake DECIMAL(65, 0) NOT NULL AFTER stakeCreate,ADD COLUMN stakeWithdraw DECIMAL(65, 0) NOT NULL AFTER stakeUnstake,ADD COLUMN stakeAddDeposit DECIMAL(65, 0) NOT NULL AFTER stakeWithdraw,ADD COLUMN stakeRestake DECIMAL(65, 0) NOT NULL AFTER stakeAddDeposit,ADD COLUMN stakeChangeCandidate DECIMAL(65, 0) NOT NULL AFTER stakeRestake,ADD COLUMN stakeTransferOwnership DECIMAL(65, 0) NOT NULL AFTER stakeChangeCandidate,ADD COLUMN candidateRegister DECIMAL(65, 0) NOT NULL AFTER stakeTransferOwnership,ADD COLUMN candidateUpdate DECIMAL(65, 0) NOT NULL AFTER candidateRegister"
 	selectBlockHistoryInfo = "SELECT COUNT(1) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = " +
 		"DATABASE() AND TABLE_NAME = '%s' AND INDEX_NAME = '%s'"
 	createIndex    = "CREATE INDEX %s ON %s (epoch_number, producer_name, expected_producer_name)"
@@ -65,7 +66,7 @@ const (
 	selectProductivity = "SELECT * FROM %s WHERE epoch_number=? AND delegate_name=?"
 	insertBlockHistory = "INSERT INTO %s (epoch_number, block_height, block_hash, transfer, execution, " +
 		"depositToRewardingFund, claimFromRewardingFund, grantReward, putPollResult, gas_consumed, producer_address, " +
-		"producer_name, expected_producer_address, expected_producer_name, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+		"producer_name, expected_producer_address, expected_producer_name, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	insertExpectedProducer = "INSERT IGNORE INTO %s SELECT epoch_number, expected_producer_name, " +
 		"COUNT(expected_producer_address) AS expected_production FROM %s GROUP BY epoch_number, expected_producer_name"
 	insertProducer = "INSERT IGNORE INTO %s SELECT epoch_number, producer_name, " +
@@ -89,6 +90,15 @@ type (
 		ClaimFromRewardingFund  uint64
 		GrantReward             uint64
 		PutPollResult           uint64
+		StakeCreate             uint64
+		StakeUnstake            uint64
+		StakeWithdraw           uint64
+		StakeAddDeposit         uint64
+		StakeRestake            uint64
+		StakeChangeCandidate    uint64
+		StakeTransferOwnership  uint64
+		CandidateRegister       uint64
+		CandidateUpdate         uint64
 		GasConsumed             uint64
 		ProducerAddress         string
 		ProducerName            string
@@ -158,6 +168,10 @@ func (p *Protocol) CreateTables(ctx context.Context) error {
 		ProductivityTableName, EpochProducerIndexName)); err != nil {
 		return err
 	}
+	if _, err := p.Store.GetDB().Exec(fmt.Sprintf(addStakingColumn,
+		BlockHistoryTableName)); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -187,25 +201,56 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 	}
 
 	// log action index
-	var transferCount uint64
-	var executionCount uint64
-	var depositToRewardingFundCount uint64
-	var claimFromRewardingFundCount uint64
-	var grantRewardCount uint64
-	var putPollResultCount uint64
+	var (
+		transferCount               uint64
+		executionCount              uint64
+		depositToRewardingFundCount uint64
+		claimFromRewardingFundCount uint64
+		grantRewardCount            uint64
+		putPollResultCount          uint64
+		stakeCreateCount            uint64
+		stakeUnstakeCount           uint64
+		stakeWithdrawCount          uint64
+		stakeAddDepositCount        uint64
+		stakeRestakeCount           uint64
+		stakeChangeCandidateCount   uint64
+		stakeTransferOwnershipCount uint64
+		candidateRegisterCount      uint64
+		candidateUpdateCount        uint64
+	)
+
 	for _, selp := range blk.Actions {
 		act := selp.Action()
-		if _, ok := act.(*action.Transfer); ok {
+		switch act.(type) {
+		case *action.Transfer:
 			transferCount++
-		} else if _, ok := act.(*action.Execution); ok {
+		case *action.Execution:
 			executionCount++
-		} else if _, ok := act.(*action.DepositToRewardingFund); ok {
+		case *action.DepositToRewardingFund:
 			depositToRewardingFundCount++
-		} else if _, ok := act.(*action.ClaimFromRewardingFund); ok {
+		case *action.ClaimFromRewardingFund:
 			claimFromRewardingFundCount++
-		} else if _, ok := act.(*action.GrantReward); ok {
+		case *action.GrantReward:
 			grantRewardCount++
-		} else if _, ok := act.(*action.PutPollResult); ok {
+		case *action.CreateStake:
+			stakeCreateCount++
+		case *action.Unstake:
+			stakeUnstakeCount++
+		case *action.WithdrawStake:
+			stakeWithdrawCount++
+		case *action.DepositToStake:
+			stakeAddDepositCount++
+		case *action.Restake:
+			stakeRestakeCount++
+		case *action.ChangeCandidate:
+			stakeChangeCandidateCount++
+		case *action.TransferStake:
+			stakeTransferOwnershipCount++
+		case *action.CandidateRegister:
+			candidateRegisterCount++
+		case *action.CandidateUpdate:
+			candidateUpdateCount++
+		case *action.PutPollResult:
 			putPollResultCount++
 		}
 	}
@@ -223,7 +268,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 	}
 	expectedProducerName := p.OperatorAddrToName[expectedProducerAddr]
 	return p.updateBlockHistory(tx, epochNumber, height, hex.EncodeToString(hash[:]), transferCount, executionCount,
-		depositToRewardingFundCount, claimFromRewardingFundCount, grantRewardCount, putPollResultCount, gasConsumed,
+		depositToRewardingFundCount, claimFromRewardingFundCount, grantRewardCount, putPollResultCount, stakeCreateCount, stakeUnstakeCount, stakeWithdrawCount, stakeAddDepositCount, stakeRestakeCount, stakeChangeCandidateCount, stakeTransferOwnershipCount, candidateRegisterCount, candidateUpdateCount, gasConsumed,
 		producerAddr, producerName, expectedProducerAddr, expectedProducerName, blk.Timestamp())
 }
 
@@ -307,6 +352,15 @@ func (p *Protocol) updateBlockHistory(
 	claimFromRewardingFunds uint64,
 	grantRewards uint64,
 	putPollResults uint64,
+	stakeCreate uint64,
+	stakeUnstake uint64,
+	stakeWithdraw uint64,
+	stakeAddDeposit uint64,
+	stakeRestake uint64,
+	stakeChangeCandidate uint64,
+	stakeTransferOwnership uint64,
+	candidateRegister uint64,
+	candidateUpdate uint64,
 	gasConsumed uint64,
 	producerAddress string,
 	producerName string,
@@ -316,9 +370,7 @@ func (p *Protocol) updateBlockHistory(
 ) error {
 	insertQuery := fmt.Sprintf(insertBlockHistory,
 		BlockHistoryTableName)
-	if _, err := tx.Exec(insertQuery, epochNumber, height, hash, transfers, executions, depositToRewardingFunds,
-		claimFromRewardingFunds, grantRewards, putPollResults, gasConsumed, producerAddress, producerName,
-		expectedProducerAddress, expectedProducerName, timestamp.Unix()); err != nil {
+	if _, err := tx.Exec(insertQuery, epochNumber, height, hash, transfers, executions, depositToRewardingFunds, claimFromRewardingFunds, grantRewards, putPollResults, stakeCreate, stakeUnstake, stakeWithdraw, stakeAddDeposit, stakeRestake, stakeChangeCandidate, stakeTransferOwnership, candidateRegister, candidateUpdate, gasConsumed, producerAddress, producerName, expectedProducerAddress, expectedProducerName, timestamp.Unix()); err != nil {
 		return err
 	}
 	return nil
