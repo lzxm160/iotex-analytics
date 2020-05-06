@@ -64,7 +64,7 @@ const (
 	selectBlockHistory = "SELECT * FROM %s WHERE block_height=?"
 	selectProductivity = "SELECT * FROM %s WHERE epoch_number=? AND delegate_name=?"
 	insertBlockHistory = "INSERT INTO %s (epoch_number, block_height, block_hash, transfer, execution, " +
-		"depositToRewardingFund, claimFromRewardingFund, grantReward, putPollResult, gas_consumed, producer_address, " +
+		"depositToRewardingFund, claimFromRewardingFund, grantReward, putPollResult,stakeCreate,stakeUnstake,stakeWithdraw,stakeAddDeposit,stakeRestake,stakeChangeCandidate,stakeTransferOwnership,candidateRegister,candidateUpdate,gas_consumed, producer_address, " +
 		"producer_name, expected_producer_address, expected_producer_name, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	insertExpectedProducer = "INSERT IGNORE INTO %s SELECT epoch_number, expected_producer_name, " +
 		"COUNT(expected_producer_address) AS expected_production FROM %s GROUP BY epoch_number, expected_producer_name"
