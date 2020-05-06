@@ -33,7 +33,7 @@ const (
 	// ProtocolID is the ID of protocol
 	ProtocolID = "blocks"
 	// BlockHistoryTableName is the table name of block history
-	BlockHistoryTableName = "block_history"
+	BlockHistoryTableName = "block_history2"
 	// ProductivityTableName is the table name of block producers' productivity
 	ProductivityTableName = "productivity_history"
 	// ExpectedProducerTableName is a table required by productivity table
@@ -48,10 +48,9 @@ const (
 	createBlockHistory      = "CREATE TABLE IF NOT EXISTS %s (epoch_number DECIMAL(65, 0) NOT NULL, " +
 		"block_height DECIMAL(65, 0) NOT NULL, block_hash VARCHAR(64) NOT NULL, transfer DECIMAL(65, 0) NOT NULL, execution DECIMAL(65, 0) NOT NULL, " +
 		"depositToRewardingFund DECIMAL(65, 0) NOT NULL, claimFromRewardingFund DECIMAL(65, 0) NOT NULL, grantReward DECIMAL(65, 0) NOT NULL, " +
-		"putPollResult DECIMAL(65, 0) NOT NULL, gas_consumed DECIMAL(65, 0) NOT NULL, producer_address VARCHAR(41) NOT NULL, " +
+		"putPollResult DECIMAL(65, 0) NOT NULL,stakeCreate DECIMAL(65, 0) NOT NULL,stakeUnstake DECIMAL(65, 0) NOT NULL,stakeWithdraw DECIMAL(65, 0) NOT NULL,stakeAddDeposit DECIMAL(65, 0) NOT NULL,stakeRestake DECIMAL(65, 0) NOT NULL,stakeChangeCandidate DECIMAL(65, 0) NOT NULL,stakeTransferOwnership DECIMAL(65, 0) NOT NULL,candidateRegister DECIMAL(65, 0) NOT NULL,candidateUpdate DECIMAL(65, 0) NOT NULL, gas_consumed DECIMAL(65, 0) NOT NULL, producer_address VARCHAR(41) NOT NULL, " +
 		"producer_name VARCHAR(24) NOT NULL, expected_producer_address VARCHAR(41) NOT NULL, " +
 		"expected_producer_name VARCHAR(24) NOT NULL, timestamp DECIMAL(65, 0) NOT NULL, PRIMARY KEY (block_height))"
-	addStakingColumn       = "ALTER TABLE %s ADD COLUMN stakeCreate DECIMAL(65, 0) NOT NULL AFTER putPollResult,ADD COLUMN stakeUnstake DECIMAL(65, 0) NOT NULL AFTER stakeCreate,ADD COLUMN stakeWithdraw DECIMAL(65, 0) NOT NULL AFTER stakeUnstake,ADD COLUMN stakeAddDeposit DECIMAL(65, 0) NOT NULL AFTER stakeWithdraw,ADD COLUMN stakeRestake DECIMAL(65, 0) NOT NULL AFTER stakeAddDeposit,ADD COLUMN stakeChangeCandidate DECIMAL(65, 0) NOT NULL AFTER stakeRestake,ADD COLUMN stakeTransferOwnership DECIMAL(65, 0) NOT NULL AFTER stakeChangeCandidate,ADD COLUMN candidateRegister DECIMAL(65, 0) NOT NULL AFTER stakeTransferOwnership,ADD COLUMN candidateUpdate DECIMAL(65, 0) NOT NULL AFTER candidateRegister"
 	selectBlockHistoryInfo = "SELECT COUNT(1) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = " +
 		"DATABASE() AND TABLE_NAME = '%s' AND INDEX_NAME = '%s'"
 	createIndex    = "CREATE INDEX %s ON %s (epoch_number, producer_name, expected_producer_name)"
@@ -166,11 +165,6 @@ func (p *Protocol) CreateTables(ctx context.Context) error {
 	}
 	if _, err := p.Store.GetDB().Exec(fmt.Sprintf(createProductivity,
 		ProductivityTableName, EpochProducerIndexName)); err != nil {
-		return err
-	}
-	// this may take a while according to number of entries
-	if _, err := p.Store.GetDB().Exec(fmt.Sprintf(addStakingColumn,
-		BlockHistoryTableName)); err != nil {
 		return err
 	}
 	return nil
