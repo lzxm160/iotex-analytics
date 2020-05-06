@@ -168,6 +168,7 @@ func (p *Protocol) CreateTables(ctx context.Context) error {
 		ProductivityTableName, EpochProducerIndexName)); err != nil {
 		return err
 	}
+	// this may take a while according to number of entries
 	if _, err := p.Store.GetDB().Exec(fmt.Sprintf(addStakingColumn,
 		BlockHistoryTableName)); err != nil {
 		return err
@@ -370,6 +371,8 @@ func (p *Protocol) updateBlockHistory(
 ) error {
 	insertQuery := fmt.Sprintf(insertBlockHistory,
 		BlockHistoryTableName)
+	fmt.Println(insertQuery)
+	fmt.Println(insertQuery, epochNumber, height, hash, transfers, executions, depositToRewardingFunds, claimFromRewardingFunds, grantRewards, putPollResults, stakeCreate, stakeUnstake, stakeWithdraw, stakeAddDeposit, stakeRestake, stakeChangeCandidate, stakeTransferOwnership, candidateRegister, candidateUpdate, gasConsumed, producerAddress, producerName, expectedProducerAddress, expectedProducerName, timestamp.Unix())
 	if _, err := tx.Exec(insertQuery, epochNumber, height, hash, transfers, executions, depositToRewardingFunds, claimFromRewardingFunds, grantRewards, putPollResults, stakeCreate, stakeUnstake, stakeWithdraw, stakeAddDeposit, stakeRestake, stakeChangeCandidate, stakeTransferOwnership, candidateRegister, candidateUpdate, gasConsumed, producerAddress, producerName, expectedProducerAddress, expectedProducerName, timestamp.Unix()); err != nil {
 		return err
 	}
