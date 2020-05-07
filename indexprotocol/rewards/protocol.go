@@ -482,6 +482,7 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 	}
 
 	insertQuery := fmt.Sprintf(insertAccountReward, AccountRewardTableName, strings.Join(valStrs, ","))
+	fmt.Println("insert:", insertQuery, strings.Join(valStrs, ","), valArgs)
 	if _, err := tx.Exec(insertQuery, valArgs...); err != nil {
 		return err
 	}
