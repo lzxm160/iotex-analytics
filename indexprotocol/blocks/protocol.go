@@ -376,10 +376,10 @@ func (p *Protocol) updateDelegates(
 	height uint64,
 	epochNumber uint64,
 ) error {
-	// TODO
-	// if height >= p.epochCtx.FairbankHeight() {
-	//		return p.updateCandidateRewardAddressV2(height, epochNum, delegateName)
-	//	}
+	// stakingV2 TODO
+	if height >= p.epochCtx.FairbankHeight() {
+		return p.updateDelegatesV2(chainClient, height, epochNumber)
+	}
 	var gravityChainStartHeight uint64
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(indexprotocol.PollProtocolID),
@@ -435,6 +435,52 @@ func (p *Protocol) updateDelegates(
 	if err := activeBlockProducers.Deserialize(readStateRes.GetData()); err != nil {
 		return errors.Wrap(err, "failed to deserialize active block producers")
 	}
+	p.ActiveBlockProducers = []string{}
+	for _, activeBlockProducer := range activeBlockProducers {
+		p.ActiveBlockProducers = append(p.ActiveBlockProducers, activeBlockProducer.Address)
+	}
+
+	return nil
+}
+
+func (p *Protocol) updateDelegatesV2(
+	chainClient iotexapi.APIServiceClient,
+	height uint64,
+	epochNumber uint64,
+) error {
+	//getCandidatesRequest := &api.GetCandidatesRequest{
+	//	Height: strconv.Itoa(int(gravityChainStartHeight)),
+	//	Offset: uint32(0),
+	//	Limit:  uint32(p.epochCtx.NumCandidateDelegates()),
+	//}
+	//getCandidatesResponse, err := electionClient.GetCandidates(context.Background(), getCandidatesRequest)
+	//if err != nil {
+	//	return errors.Wrap(err, "failed to get candidates from election service")
+	//}
+	//
+	//p.OperatorAddrToName = make(map[string]string)
+	//for _, candidate := range getCandidatesResponse.GetCandidates() {
+	//	p.OperatorAddrToName[candidate.GetOperatorAddress()] = candidate.GetName()
+	//}
+
+	readStateRequest := &iotexapi.ReadStateRequest{
+		ProtocolID: []byte(indexprotocol.PollProtocolID),
+		MethodName: []byte("ActiveBlockProducersByEpoch"),
+		Arguments:  [][]byte{[]byte(strconv.FormatUint(epochNumber, 10))},
+	}
+	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
+	if err != nil {
+		return errors.Wrap(err, "failed to get active block producers")
+	}
+
+	var activeBlockProducers state.CandidateList
+	if err := activeBlockProducers.Deserialize(readStateRes.GetData()); err != nil {
+		return errors.Wrap(err, "failed to deserialize active block producers")
+	}
+	for _, c := range activeBlockProducers.Proto().Candidates {
+		fmt.Println("ActiveBlockProducersByEpoch:", c)
+	}
+
 	p.ActiveBlockProducers = []string{}
 	for _, activeBlockProducer := range activeBlockProducers {
 		p.ActiveBlockProducers = append(p.ActiveBlockProducers, activeBlockProducer.Address)

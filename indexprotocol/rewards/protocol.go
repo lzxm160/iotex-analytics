@@ -340,9 +340,9 @@ func (p *Protocol) updateCandidateRewardAddress(
 	electionClient api.APIServiceClient,
 	height uint64,
 ) error {
-	// TODO
+	// stakingV2 TODO
 	// if height >= p.epochCtx.FairbankHeight() {
-	//		return p.updateCandidateRewardAddressV2(height, epochNum, delegateName)
+	//		return p.updateCandidateRewardAddressV2(chainClient, height)
 	//	}
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(indexprotocol.PollProtocolID),
