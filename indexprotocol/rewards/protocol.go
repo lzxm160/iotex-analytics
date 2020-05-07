@@ -405,7 +405,7 @@ func (p *Protocol) updateCandidateRewardAddressV2(
 		if _, ok := p.RewardAddrToName[candidate.RewardAddress]; !ok {
 			p.RewardAddrToName[candidate.RewardAddress] = make([]string, 0)
 		}
-		fmt.Println("updateCandidateRewardAddressV2:", candidate.RewardAddress, string(candidate.CanName))
+		fmt.Println("updateCandidateRewardAddressV2:", candidate.RewardAddress, string(candidate.CanName), candidate.Address)
 		p.RewardAddrToName[candidate.RewardAddress] = append(p.RewardAddrToName[candidate.RewardAddress], string(candidate.CanName))
 	}
 	return nil
