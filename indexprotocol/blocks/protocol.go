@@ -378,7 +378,7 @@ func (p *Protocol) updateDelegates(
 ) error {
 	// stakingV2 TODO
 	if height >= p.epochCtx.FairbankHeight() {
-		return p.updateDelegatesV2(chainClient, height, epochNumber)
+		return p.updateDelegatesV2(chainClient, epochNumber)
 	}
 	var gravityChainStartHeight uint64
 	readStateRequest := &iotexapi.ReadStateRequest{
@@ -445,7 +445,6 @@ func (p *Protocol) updateDelegates(
 
 func (p *Protocol) updateDelegatesV2(
 	chainClient iotexapi.APIServiceClient,
-	height uint64,
 	epochNumber uint64,
 ) error {
 	readStateRequest := &iotexapi.ReadStateRequest{

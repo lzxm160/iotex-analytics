@@ -17,8 +17,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/iotexproject/iotex-core/state"
-
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 
@@ -27,6 +25,7 @@ import (
 	"github.com/iotexproject/iotex-core/action/protocol/rewarding/rewardingpb"
 	"github.com/iotexproject/iotex-core/blockchain/block"
 	"github.com/iotexproject/iotex-core/pkg/log"
+	"github.com/iotexproject/iotex-core/state"
 	"github.com/iotexproject/iotex-election/pb/api"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 
