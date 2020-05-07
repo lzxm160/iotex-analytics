@@ -420,6 +420,9 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 	if err != nil {
 		return errors.Wrap(err, "failed to get voting info")
 	}
+	for k, v := range rewardAddrToNameMapping {
+		fmt.Println("rewardAddrToNameMapping", k, v)
+	}
 	// Get aggregate reward	records from last epoch
 	getQuery := fmt.Sprintf(selectRewardHistoryGroup, RewardHistoryTableName)
 	fmt.Println("getQuery:", getQuery, lastEpoch)
@@ -449,6 +452,7 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 		record := parsedRow.(*AggregateReward)
 		epochNumber := record.EpochNumber
 		rewardAddress := record.RewardAddress
+		fmt.Println("rewardAddress", rewardAddress)
 		candidateNames := rewardAddrToNameMapping[rewardAddress]
 		fmt.Println("len(candidateNames):", len(candidateNames))
 		if len(candidateNames) == 1 {
