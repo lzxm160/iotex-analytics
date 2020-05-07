@@ -17,6 +17,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/iotexproject/iotex-core/state"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 
@@ -341,9 +343,9 @@ func (p *Protocol) updateCandidateRewardAddress(
 	height uint64,
 ) error {
 	// stakingV2 TODO
-	// if height >= p.epochCtx.FairbankHeight() {
-	//		return p.updateCandidateRewardAddressV2(chainClient, height)
-	//	}
+	if height >= p.epochCtx.FairbankHeight() {
+		return p.updateCandidateRewardAddressV2(chainClient, height)
+	}
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(indexprotocol.PollProtocolID),
 		MethodName: []byte("GetGravityChainStartHeight"),
@@ -374,6 +376,37 @@ func (p *Protocol) updateCandidateRewardAddress(
 			p.RewardAddrToName[candidate.GetRewardAddress()] = make([]string, 0)
 		}
 		p.RewardAddrToName[candidate.GetRewardAddress()] = append(p.RewardAddrToName[candidate.GetRewardAddress()], candidate.GetName())
+	}
+	return nil
+}
+
+func (p *Protocol) updateCandidateRewardAddressV2(
+	chainClient iotexapi.APIServiceClient,
+	height uint64,
+) error {
+	epochNumber := p.epochCtx.GetEpochNumber(height)
+	readStateRequest := &iotexapi.ReadStateRequest{
+		ProtocolID: []byte(indexprotocol.PollProtocolID),
+		MethodName: []byte("CandidatesByEpoch"),
+		Arguments:  [][]byte{[]byte(strconv.FormatUint(epochNumber, 10))},
+	}
+	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
+	if err != nil {
+		return errors.Wrap(err, "failed to get active block producers")
+	}
+
+	var candidateList state.CandidateList
+	if err := candidateList.Deserialize(readStateRes.GetData()); err != nil {
+		return errors.Wrap(err, "failed to deserialize active block producers")
+	}
+
+	p.RewardAddrToName = make(map[string][]string)
+	for _, candidate := range candidateList.Proto().Candidates {
+		if _, ok := p.RewardAddrToName[candidate.GetRewardAddress()]; !ok {
+			p.RewardAddrToName[candidate.GetRewardAddress()] = make([]string, 0)
+		}
+		fmt.Println("updateCandidateRewardAddressV2:", candidate.GetRewardAddress(), string(candidate.Votes))
+		p.RewardAddrToName[candidate.GetRewardAddress()] = append(p.RewardAddrToName[candidate.GetRewardAddress()], string(candidate.Votes))
 	}
 	return nil
 }
