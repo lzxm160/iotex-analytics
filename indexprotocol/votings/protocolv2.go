@@ -39,9 +39,16 @@ func (p *Protocol) stakingV2(chainClient iotexapi.APIServiceClient, epochStarthe
 	if err != nil {
 		return errors.Wrap(err, "failed to get buckets count")
 	}
+	for _, bucket := range voteBucketList.Buckets {
+		fmt.Println("get bucket:", bucket)
+	}
+
 	candidateList, err := p.getCandidatesAllV2(chainClient)
 	if err != nil {
 		return errors.Wrap(err, "failed to get buckets count")
+	}
+	for _, cand := range candidateList.Candidates {
+		fmt.Println("get candidate:", cand)
 	}
 	if probationList != nil {
 		candidateList, err = filterCandidatesV2(candidateList, probationList, epochStartheight)
