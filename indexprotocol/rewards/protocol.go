@@ -401,12 +401,12 @@ func (p *Protocol) updateCandidateRewardAddressV2(
 	}
 
 	p.RewardAddrToName = make(map[string][]string)
-	for _, candidate := range candidateList.Proto().Candidates {
-		if _, ok := p.RewardAddrToName[candidate.GetRewardAddress()]; !ok {
-			p.RewardAddrToName[candidate.GetRewardAddress()] = make([]string, 0)
+	for _, candidate := range candidateList {
+		if _, ok := p.RewardAddrToName[candidate.RewardAddress]; !ok {
+			p.RewardAddrToName[candidate.RewardAddress] = make([]string, 0)
 		}
-		fmt.Println("updateCandidateRewardAddressV2:", candidate.GetRewardAddress(), string(candidate.Votes))
-		p.RewardAddrToName[candidate.GetRewardAddress()] = append(p.RewardAddrToName[candidate.GetRewardAddress()], string(candidate.Votes))
+		fmt.Println("updateCandidateRewardAddressV2:", candidate.RewardAddress, string(candidate.CanName))
+		p.RewardAddrToName[candidate.RewardAddress] = append(p.RewardAddrToName[candidate.RewardAddress], string(candidate.CanName))
 	}
 	return nil
 }
