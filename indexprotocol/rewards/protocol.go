@@ -22,7 +22,6 @@ import (
 
 	"github.com/iotexproject/go-pkgs/hash"
 	"github.com/iotexproject/iotex-core/action"
-	"github.com/iotexproject/iotex-core/action/protocol/poll"
 	"github.com/iotexproject/iotex-core/action/protocol/rewarding/rewardingpb"
 	"github.com/iotexproject/iotex-core/blockchain/block"
 	"github.com/iotexproject/iotex-core/pkg/log"
@@ -341,8 +340,12 @@ func (p *Protocol) updateCandidateRewardAddress(
 	electionClient api.APIServiceClient,
 	height uint64,
 ) error {
+	// TODO
+	// if height >= p.epochCtx.FairbankHeight() {
+	//		return p.updateCandidateRewardAddressV2(height, epochNum, delegateName)
+	//	}
 	readStateRequest := &iotexapi.ReadStateRequest{
-		ProtocolID: []byte(poll.ProtocolID),
+		ProtocolID: []byte(indexprotocol.PollProtocolID),
 		MethodName: []byte("GetGravityChainStartHeight"),
 		Arguments:  [][]byte{[]byte(strconv.FormatUint(height, 10))},
 	}
