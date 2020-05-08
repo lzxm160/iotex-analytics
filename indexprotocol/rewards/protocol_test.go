@@ -155,6 +155,14 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	for _, c := range cl.Candidates {
 		fmt.Println(c)
 	}
+
+	fmt.Println("--------------------------")
+	buckets, err := getBucketsV2(chainClient, 0, 100)
+	require.NoError(err)
+	fmt.Println("len(buckets.Buckets):", len(buckets.Buckets))
+	for _, b := range buckets.Buckets {
+		fmt.Println(b)
+	}
 }
 
 func getCandidatesV2(chainClient iotexapi.APIServiceClient, offset, limit uint32) (candidateList *iotextypes.CandidateListV2, err error) {
@@ -192,6 +200,46 @@ func getCandidatesV2(chainClient iotexapi.APIServiceClient, offset, limit uint32
 	}
 	candidateList = &iotextypes.CandidateListV2{}
 	if err := proto.Unmarshal(readStateRes.GetData(), candidateList); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal VoteBucketList")
+	}
+	return
+}
+
+func getBucketsV2(chainClient iotexapi.APIServiceClient, offset, limit uint32) (voteBucketList *iotextypes.VoteBucketList, err error) {
+	methodName, err := proto.Marshal(&iotexapi.ReadStakingDataMethod{
+		Method: iotexapi.ReadStakingDataMethod_BUCKETS,
+	})
+	if err != nil {
+		return nil, err
+	}
+	arg, err := proto.Marshal(&iotexapi.ReadStakingDataRequest{
+		Request: &iotexapi.ReadStakingDataRequest_Buckets{
+			Buckets: &iotexapi.ReadStakingDataRequest_VoteBuckets{
+				Pagination: &iotexapi.PaginationParam{
+					Offset: offset,
+					Limit:  limit,
+				},
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	readStateRequest := &iotexapi.ReadStateRequest{
+		ProtocolID: []byte("staking"),
+		MethodName: methodName,
+		Arguments:  [][]byte{arg},
+	}
+	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			// TODO rm this when commit pr
+			fmt.Println("ReadStakingDataMethod_BUCKETS not found")
+		}
+		return
+	}
+	voteBucketList = &iotextypes.VoteBucketList{}
+	if err := proto.Unmarshal(readStateRes.GetData(), voteBucketList); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal VoteBucketList")
 	}
 	return
