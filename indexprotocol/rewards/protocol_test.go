@@ -122,8 +122,10 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	// TODO
 	localconnectStr := "root:123456@tcp(192.168.146.140:3306)/"
 	localdbName := "analytics"
-	chainEndpoint := "api.iotex.one:80"
+	//chainEndpoint := "api.iotex.one:80"
+	chainEndpoint := "api.testnet.iotex.one:80"
 	require := require.New(t)
+
 	ctx := context.Background()
 
 	store := s.NewMySQL(localconnectStr, localdbName)
