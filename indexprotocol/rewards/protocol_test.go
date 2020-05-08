@@ -177,7 +177,7 @@ func getCandidatesV2(chainClient iotexapi.APIServiceClient, offset, limit uint32
 		return nil, err
 	}
 	readStateRequest := &iotexapi.ReadStateRequest{
-		ProtocolID: []byte(protocolID),
+		ProtocolID: []byte("staking"),
 		MethodName: methodName,
 		Arguments:  [][]byte{arg},
 	}
