@@ -139,5 +139,5 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	conn, err := grpc.DialContext(grpcCtx, chainEndpoint, grpc.WithBlock(), grpc.WithInsecure())
 	require.NoError(err)
 	chainClient := iotexapi.NewAPIServiceClient(conn)
-	require.NoError(p.updateCandidateRewardAddress(chainClient, nil, 3252241))
+	require.NoError(p.updateCandidateRewardAddress(chainClient, nil, 3253241))
 }
