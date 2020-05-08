@@ -40,7 +40,7 @@ func (p *Protocol) stakingV2(chainClient iotexapi.APIServiceClient, epochStarthe
 		return errors.Wrap(err, "failed to get buckets count")
 	}
 	for _, bucket := range voteBucketList.Buckets {
-		fmt.Println("get bucket:", bucket.UnstakeStartTime.Seconds)
+		fmt.Println("get bucket:", bucket.UnstakeStartTime.Seconds, bucket.AutoStake)
 	}
 
 	candidateList, err := p.getCandidatesAllV2(chainClient)
