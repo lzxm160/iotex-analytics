@@ -12,6 +12,9 @@ import (
 	"encoding/hex"
 	"strconv"
 	"testing"
+	"time"
+
+	"google.golang.org/grpc"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -106,4 +109,35 @@ func TestProtocol(t *testing.T) {
 	rewardHistoryList, err = p.getRewardHistory(hex.EncodeToString(actionHash2[:]))
 	require.NoError(err)
 	require.Equal(3, len(rewardHistoryList))
+}
+
+func TestUpdateCandidateRewardAddress(t *testing.T) {
+	// TODO
+	localconnectStr := "root:123456@tcp(192.168.146.140:3306)/"
+	localdbName := "analytics"
+	chainEndpoint := "api.iotex.one:80"
+	require := require.New(t)
+	ctx := context.Background()
+
+	store := s.NewMySQL(localconnectStr, localdbName)
+	require.NoError(store.Start(ctx))
+	defer func() {
+		require.NoError(store.Stop(ctx))
+	}()
+	epochctx := epochctx.NewEpochCtx(
+		36,
+		24,
+		15,
+		epochctx.EnableDardanellesSubEpoch(1816201, 30),
+		epochctx.FairbankHeight(3252241),
+	)
+	p := NewProtocol(store, epochctx, indexprotocol.Rewarding{})
+
+	require.NoError(p.CreateTables(ctx))
+	grpcCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	conn, err := grpc.DialContext(grpcCtx, chainEndpoint, grpc.WithBlock(), grpc.WithInsecure())
+	require.NoError(err)
+	chainClient := iotexapi.NewAPIServiceClient(conn)
+	require.NoError(p.updateCandidateRewardAddress(chainClient, nil, 3252241))
 }

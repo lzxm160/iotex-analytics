@@ -155,3 +155,7 @@ func TestProtocol(t *testing.T) {
 	require.Equal(uint64(0), productivityHistory.Production)
 	require.Equal(uint64(1), productivityHistory.ExpectedProduction)
 }
+
+func TestUpdateDelegates(t *testing.T) {
+	// TODO
+}

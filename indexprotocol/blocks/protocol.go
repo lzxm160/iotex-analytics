@@ -376,6 +376,10 @@ func (p *Protocol) updateDelegates(
 	height uint64,
 	epochNumber uint64,
 ) error {
+	err := p.updateActiveBlockProducers(chainClient, epochNumber)
+	if err != nil {
+		return errors.Wrap(err, "update active block producers")
+	}
 	if height >= p.epochCtx.FairbankHeight() {
 		return p.updateDelegatesV2(chainClient, epochNumber)
 	}
@@ -419,7 +423,7 @@ func (p *Protocol) updateDelegates(
 	for _, candidate := range getCandidatesResponse.GetCandidates() {
 		p.OperatorAddrToName[candidate.GetOperatorAddress()] = candidate.GetName()
 	}
-	return p.updateActiveBlockProducers(chainClient, epochNumber)
+	return nil
 }
 
 func (p *Protocol) updateDelegatesV2(
@@ -445,7 +449,7 @@ func (p *Protocol) updateDelegatesV2(
 		p.OperatorAddrToName[c.Address] = string(c.CanName)
 		fmt.Println("updateDelegatesV2:", c)
 	}
-	return p.updateActiveBlockProducers(chainClient, epochNumber)
+	return nil
 }
 
 func (p *Protocol) updateActiveBlockProducers(chainClient iotexapi.APIServiceClient, epochNumber uint64) error {

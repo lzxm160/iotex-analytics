@@ -341,7 +341,6 @@ func (p *Protocol) updateCandidateRewardAddress(
 	electionClient api.APIServiceClient,
 	height uint64,
 ) error {
-	// stakingV2 TODO
 	if height >= p.epochCtx.FairbankHeight() {
 		return p.updateCandidateRewardAddressV2(chainClient, height)
 	}
