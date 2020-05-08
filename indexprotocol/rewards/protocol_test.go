@@ -10,13 +10,20 @@ import (
 	"context"
 	"database/sql"
 	"encoding/hex"
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
 
+	"github.com/iotexproject/iotex-proto/golang/iotextypes"
+	"github.com/pkg/errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"google.golang.org/grpc"
 
 	"github.com/golang/mock/gomock"
+	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/require"
 
 	"github.com/iotexproject/iotex-core/test/mock/mock_apiserviceclient"
@@ -140,4 +147,51 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	require.NoError(err)
 	chainClient := iotexapi.NewAPIServiceClient(conn)
 	require.NoError(p.updateCandidateRewardAddress(chainClient, nil, 3253241))
+
+	fmt.Println("-------------------------------")
+	cl, err := getCandidatesV2(chainClient, 0, 100)
+	require.NoError(err)
+	for _, c := range cl.Candidates {
+		fmt.Println(c)
+	}
+}
+
+func getCandidatesV2(chainClient iotexapi.APIServiceClient, offset, limit uint32) (candidateList *iotextypes.CandidateListV2, err error) {
+	methodName, err := proto.Marshal(&iotexapi.ReadStakingDataMethod{
+		Method: iotexapi.ReadStakingDataMethod_CANDIDATES,
+	})
+	if err != nil {
+		return nil, err
+	}
+	arg, err := proto.Marshal(&iotexapi.ReadStakingDataRequest{
+		Request: &iotexapi.ReadStakingDataRequest_Candidates_{
+			Candidates: &iotexapi.ReadStakingDataRequest_Candidates{
+				Pagination: &iotexapi.PaginationParam{
+					Offset: offset,
+					Limit:  limit,
+				},
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	readStateRequest := &iotexapi.ReadStateRequest{
+		ProtocolID: []byte(protocolID),
+		MethodName: methodName,
+		Arguments:  [][]byte{arg},
+	}
+	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			// TODO rm this when commit pr
+			fmt.Println("ReadStakingDataMethod_BUCKETS not found")
+		}
+		return
+	}
+	candidateList = &iotextypes.CandidateListV2{}
+	if err := proto.Unmarshal(readStateRes.GetData(), candidateList); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal VoteBucketList")
+	}
+	return
 }
