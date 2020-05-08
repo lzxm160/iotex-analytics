@@ -148,9 +148,10 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	chainClient := iotexapi.NewAPIServiceClient(conn)
 	require.NoError(p.updateCandidateRewardAddress(chainClient, nil, 3253241))
 
-	fmt.Println("-------------------------------")
+	fmt.Println("--------------------------")
 	cl, err := getCandidatesV2(chainClient, 0, 100)
 	require.NoError(err)
+	fmt.Println("len(cl.Candidates):", len(cl.Candidates))
 	for _, c := range cl.Candidates {
 		fmt.Println(c)
 	}
