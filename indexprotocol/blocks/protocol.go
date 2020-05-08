@@ -430,23 +430,13 @@ func (p *Protocol) updateDelegatesV2(
 	chainClient iotexapi.APIServiceClient,
 	epochNumber uint64,
 ) error {
-	readStateRequest := &iotexapi.ReadStateRequest{
-		ProtocolID: []byte(indexprotocol.PollProtocolID),
-		MethodName: []byte("CandidatesByEpoch"),
-		Arguments:  [][]byte{[]byte(strconv.FormatUint(epochNumber, 10))},
-	}
-	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
+	candidateList, err := indexprotocol.GetCandidatesAllV2(chainClient)
 	if err != nil {
-		return errors.Wrap(err, "failed to get active block producers")
-	}
-
-	var candidateList state.CandidateList
-	if err := candidateList.Deserialize(readStateRes.GetData()); err != nil {
-		return errors.Wrap(err, "failed to deserialize active block producers")
+		return errors.Wrap(err, "get candidate error")
 	}
 	p.OperatorAddrToName = make(map[string]string)
-	for _, c := range candidateList {
-		p.OperatorAddrToName[c.Address] = string(c.CanName)
+	for _, c := range candidateList.Candidates {
+		p.OperatorAddrToName[c.OperatorAddress] = string(c.Name)
 		fmt.Println("updateDelegatesV2:", c)
 	}
 	return nil
