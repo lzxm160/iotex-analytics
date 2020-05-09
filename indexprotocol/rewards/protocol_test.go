@@ -115,31 +115,47 @@ func TestProtocol(t *testing.T) {
 func TestUpdateCandidateRewardAddress(t *testing.T) {
 	chainEndpoint := "api.testnet.iotex.one:80"
 	require := require.New(t)
-	ctx := context.Background()
-	store := s.NewMySQL(connectStr, dbName)
-	require.NoError(store.Start(ctx))
-	defer func() {
-		require.NoError(store.Stop(ctx))
-	}()
-	epochctx := epochctx.NewEpochCtx(
-		36,
-		24,
-		15,
-		epochctx.EnableDardanellesSubEpoch(1816201, 30),
-		epochctx.FairbankHeight(3252241),
-	)
-	p := NewProtocol(store, epochctx, indexprotocol.Rewarding{})
-
-	require.NoError(p.CreateTables(ctx))
+	//ctx := context.Background()
+	//store := s.NewMySQL(connectStr, dbName)
+	//require.NoError(store.Start(ctx))
+	//defer func() {
+	//	require.NoError(store.Stop(ctx))
+	//}()
+	//epochctx := epochctx.NewEpochCtx(
+	//	36,
+	//	24,
+	//	15,
+	//	epochctx.EnableDardanellesSubEpoch(1816201, 30),
+	//	epochctx.FairbankHeight(3252241),
+	//)
+	//p := NewProtocol(store, epochctx, indexprotocol.Rewarding{})
+	//
+	//require.NoError(p.CreateTables(ctx))
 	grpcCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	conn, err := grpc.DialContext(grpcCtx, chainEndpoint, grpc.WithBlock(), grpc.WithInsecure())
 	require.NoError(err)
 	chainClient := iotexapi.NewAPIServiceClient(conn)
-	require.NoError(p.updateCandidateRewardAddress(chainClient, nil, 3253241))
+	//require.NoError(p.updateCandidateRewardAddress(chainClient, nil, 3253241))
 
-	fmt.Println("--------------------------")
-	cl, err := indexprotocol.GetCandidatesAllV2(chainClient)
+	//fmt.Println("--------------------------")
+	//cl, err := indexprotocol.GetCandidatesAllV2(chainClient)
+	//require.NoError(err)
+	//fmt.Println("len(cl.Candidates):", len(cl.Candidates))
+	//for _, c := range cl.Candidates {
+	//	fmt.Println(c)
+	//}
+	//
+	//fmt.Println("--------------------------")
+	//buckets, err := indexprotocol.GetBucketsAllV2(chainClient)
+	//require.NoError(err)
+	//fmt.Println("len(buckets.Buckets):", len(buckets.Buckets))
+	//for _, b := range buckets.Buckets {
+	//	fmt.Println(b)
+	//}
+
+	//fmt.Println("--------------------------")
+	cl, err := indexprotocol.GetCandidatesV2ByEpoch(chainClient, 2)
 	require.NoError(err)
 	fmt.Println("len(cl.Candidates):", len(cl.Candidates))
 	for _, c := range cl.Candidates {
@@ -147,10 +163,10 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	}
 
 	fmt.Println("--------------------------")
-	buckets, err := indexprotocol.GetBucketsAllV2(chainClient)
+	buckets, err := indexprotocol.GetBucketsV2ByEpoch(chainClient, 2)
 	require.NoError(err)
 	fmt.Println("len(buckets.Buckets):", len(buckets.Buckets))
-	for _, b := range buckets.Buckets {
-		fmt.Println(b)
+	for _, c := range buckets.Buckets {
+		fmt.Println(c)
 	}
 }
