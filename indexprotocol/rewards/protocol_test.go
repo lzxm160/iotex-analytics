@@ -138,24 +138,8 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	chainClient := iotexapi.NewAPIServiceClient(conn)
 	//require.NoError(p.updateCandidateRewardAddress(chainClient, nil, 3253241))
 
-	//fmt.Println("--------------------------")
-	//cl, err := indexprotocol.GetCandidatesAllV2(chainClient)
-	//require.NoError(err)
-	//fmt.Println("len(cl.Candidates):", len(cl.Candidates))
-	//for _, c := range cl.Candidates {
-	//	fmt.Println(c)
-	//}
-	//
-	//fmt.Println("--------------------------")
-	//buckets, err := indexprotocol.GetBucketsAllV2(chainClient)
-	//require.NoError(err)
-	//fmt.Println("len(buckets.Buckets):", len(buckets.Buckets))
-	//for _, b := range buckets.Buckets {
-	//	fmt.Println(b)
-	//}
-
-	//fmt.Println("--------------------------")
-	cl, err := indexprotocol.GetCandidatesV2ByEpoch(chainClient, 2)
+	fmt.Println("--------------------------")
+	cl, err := indexprotocol.GetCandidatesAllV2(chainClient)
 	require.NoError(err)
 	fmt.Println("len(cl.Candidates):", len(cl.Candidates))
 	for _, c := range cl.Candidates {
@@ -163,10 +147,11 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	}
 
 	fmt.Println("--------------------------")
-	buckets, err := indexprotocol.GetBucketsV2ByEpoch(chainClient, 2)
+	buckets, err := indexprotocol.GetBucketsAllV2(chainClient)
 	require.NoError(err)
 	fmt.Println("len(buckets.Buckets):", len(buckets.Buckets))
-	for _, c := range buckets.Buckets {
-		fmt.Println(c)
+	for _, b := range buckets.Buckets {
+		fmt.Println(b)
 	}
+
 }
