@@ -113,7 +113,8 @@ func TestProtocol(t *testing.T) {
 }
 
 func TestUpdateCandidateRewardAddress(t *testing.T) {
-	chainEndpoint := "api.testnet.iotex.one:80"
+	//chainEndpoint := "api.testnet.iotex.one:80"
+	chainEndpoint := "127.0.0.1:14014"
 	require := require.New(t)
 	//ctx := context.Background()
 	//store := s.NewMySQL(connectStr, dbName)
