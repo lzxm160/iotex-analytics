@@ -148,11 +148,11 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	}
 
 	fmt.Println("--------------------------")
-	buckets, err := indexprotocol.GetBucketsV2(chainClient, uint32(361), 0)
-	require.NoError(err)
-	fmt.Println("len(buckets.Buckets):", len(buckets.Buckets))
-	for _, b := range buckets.Buckets {
-		fmt.Println(b)
-	}
+	//buckets, err := indexprotocol.GetBucketsV2(chainClient, uint32(361), 0)
+	//require.NoError(err)
+	//fmt.Println("len(buckets.Buckets):", len(buckets.Buckets))
+	//for _, b := range buckets.Buckets {
+	//	fmt.Println(b)
+	//}
 
 }
