@@ -10,6 +10,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
@@ -96,12 +97,12 @@ type BlockHandler interface {
 	HandleBlock(context.Context, *sql.Tx, *block.Block) error
 }
 
-func GetBucketsAllV2(chainClient iotexapi.APIServiceClient) (voteBucketListAll *iotextypes.VoteBucketList, err error) {
+func GetBucketsAllV2(chainClient iotexapi.APIServiceClient, height uint64) (voteBucketListAll *iotextypes.VoteBucketList, err error) {
 	voteBucketListAll = &iotextypes.VoteBucketList{}
 	for i := uint32(0); ; i++ {
 		offset := i * readBucketsLimit
 		size := uint32(readBucketsLimit)
-		voteBucketList, err := GetBucketsV2(chainClient, offset, size)
+		voteBucketList, err := GetBucketsV2(chainClient, offset, size, height)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get bucket")
 		}
@@ -113,7 +114,7 @@ func GetBucketsAllV2(chainClient iotexapi.APIServiceClient) (voteBucketListAll *
 	return
 }
 
-func GetBucketsV2(chainClient iotexapi.APIServiceClient, offset, limit uint32) (voteBucketList *iotextypes.VoteBucketList, err error) {
+func GetBucketsV2(chainClient iotexapi.APIServiceClient, offset, limit uint32, height uint64) (voteBucketList *iotextypes.VoteBucketList, err error) {
 	methodName, err := proto.Marshal(&iotexapi.ReadStakingDataMethod{
 		Method: iotexapi.ReadStakingDataMethod_BUCKETS,
 	})
@@ -136,7 +137,7 @@ func GetBucketsV2(chainClient iotexapi.APIServiceClient, offset, limit uint32) (
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(protocolID),
 		MethodName: methodName,
-		Arguments:  [][]byte{arg},
+		Arguments:  [][]byte{arg, []byte(strconv.FormatUint(height, 10))},
 	}
 	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
 	if err != nil {
@@ -153,12 +154,12 @@ func GetBucketsV2(chainClient iotexapi.APIServiceClient, offset, limit uint32) (
 	return
 }
 
-func GetCandidatesAllV2(chainClient iotexapi.APIServiceClient) (candidateListAll *iotextypes.CandidateListV2, err error) {
+func GetCandidatesAllV2(chainClient iotexapi.APIServiceClient, height uint64) (candidateListAll *iotextypes.CandidateListV2, err error) {
 	candidateListAll = &iotextypes.CandidateListV2{}
 	for i := uint32(0); ; i++ {
 		offset := i * readCandidatesLimit
 		size := uint32(readCandidatesLimit)
-		candidateList, err := GetCandidatesV2(chainClient, offset, size)
+		candidateList, err := GetCandidatesV2(chainClient, offset, size, height)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get candidates")
 		}
@@ -170,7 +171,7 @@ func GetCandidatesAllV2(chainClient iotexapi.APIServiceClient) (candidateListAll
 	return
 }
 
-func GetCandidatesV2(chainClient iotexapi.APIServiceClient, offset, limit uint32) (candidateList *iotextypes.CandidateListV2, err error) {
+func GetCandidatesV2(chainClient iotexapi.APIServiceClient, offset, limit uint32, height uint64) (candidateList *iotextypes.CandidateListV2, err error) {
 	methodName, err := proto.Marshal(&iotexapi.ReadStakingDataMethod{
 		Method: iotexapi.ReadStakingDataMethod_CANDIDATES,
 	})
@@ -193,7 +194,7 @@ func GetCandidatesV2(chainClient iotexapi.APIServiceClient, offset, limit uint32
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(protocolID),
 		MethodName: methodName,
-		Arguments:  [][]byte{arg},
+		Arguments:  [][]byte{arg, []byte(strconv.FormatUint(height, 10))},
 	}
 	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
 	if err != nil {
