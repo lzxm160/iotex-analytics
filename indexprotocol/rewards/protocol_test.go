@@ -140,7 +140,7 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	//require.NoError(p.updateCandidateRewardAddress(chainClient, nil, 3253241))
 
 	fmt.Println("--------------------------")
-	cl, err := indexprotocol.GetCandidatesAllV2(chainClient, 500)
+	cl, err := indexprotocol.GetCandidatesAllV2(chainClient, 50)
 	require.NoError(err)
 	fmt.Println("len(cl.Candidates):", len(cl.Candidates))
 	for _, c := range cl.Candidates {
@@ -148,7 +148,7 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	}
 
 	fmt.Println("--------------------------")
-	buckets, err := indexprotocol.GetBucketsAllV2(chainClient, 500)
+	buckets, err := indexprotocol.GetBucketsAllV2(chainClient, 60)
 	require.NoError(err)
 	fmt.Println("len(buckets.Buckets):", len(buckets.Buckets))
 	for _, b := range buckets.Buckets {
