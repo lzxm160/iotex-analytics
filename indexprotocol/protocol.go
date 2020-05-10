@@ -92,7 +92,7 @@ type Protocol interface {
 	Initialize(context.Context, *sql.Tx, *Genesis) error
 }
 
-// BlockHandler ishte interface of handling block
+// BlockHandler is the interface of handling block
 type BlockHandler interface {
 	HandleBlock(context.Context, *sql.Tx, *block.Block) error
 }
@@ -210,47 +210,3 @@ func GetCandidatesV2(chainClient iotexapi.APIServiceClient, offset, limit uint32
 	}
 	return
 }
-
-//func GetCandidatesV2ByEpoch(chainClient iotexapi.APIServiceClient, Epoch uint64) (candidateList *iotextypes.CandidateListV2, err error) {
-//	readStateRequest := &iotexapi.ReadStateRequest{
-//		ProtocolID: []byte(PollProtocolID),
-//		MethodName: []byte("CandidatesByEpoch"),
-//		Arguments:  [][]byte{[]byte(strconv.FormatUint(Epoch, 10))},
-//	}
-//	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
-//	if err != nil {
-//		if status.Code(err) == codes.NotFound {
-//			// TODO rm this when commit pr
-//			fmt.Println("ReadStakingDataMethod_BUCKETS not found")
-//		}
-//		return
-//	}
-//	cand := &iotextypes.CandidateListV2{}
-//	if err := proto.Unmarshal(readStateRes.GetData(), cand); err != nil {
-//		return nil, errors.Wrap(err, "failed to unmarshal CandidateListV2")
-//	}
-//
-//	return cand, nil
-//}
-//
-//func GetBucketsV2ByEpoch(chainClient iotexapi.APIServiceClient, Epoch uint64) (candidateList *iotextypes.VoteBucketList, err error) {
-//	readStateRequest := &iotexapi.ReadStateRequest{
-//		ProtocolID: []byte(PollProtocolID),
-//		MethodName: []byte("VoteBucketsByEpoch"),
-//		Arguments:  [][]byte{[]byte(strconv.FormatUint(Epoch, 10))},
-//	}
-//	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
-//	if err != nil {
-//		if status.Code(err) == codes.NotFound {
-//			// TODO rm this when commit pr
-//			fmt.Println("ReadStakingDataMethod_BUCKETS not found")
-//		}
-//		return
-//	}
-//	bucket := &iotextypes.VoteBucketList{}
-//	if err := proto.Unmarshal(readStateRes.GetData(), bucket); err != nil {
-//		return nil, errors.Wrap(err, "failed to unmarshal CandidateListV2")
-//	}
-//
-//	return bucket, nil
-//}
