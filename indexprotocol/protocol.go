@@ -10,6 +10,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
@@ -136,8 +137,8 @@ func GetBucketsV2(chainClient iotexapi.APIServiceClient, offset, limit uint32, h
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(protocolID),
 		MethodName: methodName,
-		//Arguments:  [][]byte{arg, []byte(strconv.FormatUint(height, 10))},
-		Arguments: [][]byte{arg},
+		Arguments:  [][]byte{arg, []byte(strconv.FormatUint(height, 10))},
+		//Arguments: [][]byte{arg},
 	}
 	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
 	if err != nil {
@@ -194,8 +195,8 @@ func GetCandidatesV2(chainClient iotexapi.APIServiceClient, offset, limit uint32
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(protocolID),
 		MethodName: methodName,
-		//Arguments:  [][]byte{arg, []byte(strconv.FormatUint(height, 10))},
-		Arguments: [][]byte{arg},
+		Arguments:  [][]byte{arg, []byte(strconv.FormatUint(height, 10))},
+		//Arguments: [][]byte{arg},
 	}
 	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
 	if err != nil {
