@@ -151,8 +151,8 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	buckets, err := indexprotocol.GetBucketsAllV2(chainClient, 1000)
 	require.NoError(err)
 	fmt.Println("len(buckets.Buckets):", len(buckets.Buckets))
-	for _, b := range buckets.Buckets {
-		fmt.Println(b)
-	}
+	//for _, b := range buckets.Buckets {
+	//fmt.Println(b)
+	//}
 
 }
