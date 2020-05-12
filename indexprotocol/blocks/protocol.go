@@ -403,6 +403,7 @@ func (p *Protocol) updateDelegates(
 			return err
 		}
 
+		fmt.Println("updateDelegates 405", string(readStateRes.GetData()))
 		gravityChainStartHeight, err = strconv.ParseUint(string(readStateRes.GetData()), 10, 64)
 		fmt.Println("updateDelegates 407", err)
 		if err != nil {
