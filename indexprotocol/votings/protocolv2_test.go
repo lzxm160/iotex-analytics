@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"google.golang.org/grpc"
+
 	"github.com/gogo/protobuf/proto"
 	"github.com/golang/mock/gomock"
 	"github.com/golang/protobuf/ptypes"
@@ -34,7 +36,7 @@ const (
 	//localconnectStr = connectStr
 	localdbName = "analytics"
 	//localdbName = dbName
-	chainEndpoint = "api.iotex.one:80"
+	chainEndpoint = "35.236.100.38:14014"
 )
 
 var (
@@ -162,24 +164,19 @@ func TestStakingV2(t *testing.T) {
 }
 
 func TestStakingV2WithChainEndpoint(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	chainClient := mock_apiserviceclient.NewMockServiceClient(ctrl)
-	mock(chainClient, t)
+	require := require.New(t)
+	grpcCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	conn, err := grpc.DialContext(grpcCtx, chainEndpoint, grpc.WithBlock(), grpc.WithInsecure())
+	require.NoError(err)
+	chainClient := iotexapi.NewAPIServiceClient(conn)
+
 	height := uint64(110000)
 	epochNumber := uint64(68888)
-	require := require.New(t)
+
 	ctx := context.Background()
-	//use for remote database
-	testutil.CleanupDatabase(t, connectStr, dbName)
 	store := s.NewMySQL(localconnectStr, localdbName)
 	require.NoError(store.Start(ctx))
-	defer func() {
-		//use for remote database
-		_, err := store.GetDB().Exec("DROP DATABASE " + dbName)
-		require.NoError(err)
-		require.NoError(store.Stop(ctx))
-	}()
 	require.NoError(store.Start(context.Background()))
 	cfg := indexprotocol.VoteWeightCalConsts{
 		DurationLg: 1.2,
@@ -201,36 +198,36 @@ func TestStakingV2WithChainEndpoint(t *testing.T) {
 	require.NoError(err)
 	bucketList, ok := ret.(*iotextypes.VoteBucketList)
 	require.True(ok)
-	bucketsBytes, _ := proto.Marshal(&iotextypes.VoteBucketList{Buckets: buckets})
-	bucketListBytes, _ := proto.Marshal(bucketList)
-	require.EqualValues(bucketsBytes, bucketListBytes)
+	fmt.Println("len(bucketList.Buckets):", len(bucketList.Buckets))
+	for _, b := range bucketList.Buckets {
+		fmt.Println(b)
+	}
 
 	// case II: checkout candidate if it's written right
 	ret, err = p.nativeV2CandidateTableOperator.Get(height, p.Store.GetDB(), nil)
 	require.NoError(err)
 	candidateList, ok := ret.(*iotextypes.CandidateListV2)
 	require.True(ok)
-
-	candidatesBytes, _ := proto.Marshal(&iotextypes.CandidateListV2{Candidates: candidates})
-	candidateListBytes, _ := proto.Marshal(candidateList)
-	require.EqualValues(candidatesBytes, candidateListBytes)
+	fmt.Println("len(candidateList.Candidates):", len(candidateList.Candidates))
+	for _, c := range candidateList.Candidates {
+		fmt.Println(c)
+	}
 
 	// case III: check getBucketInfoByEpochV2
 	bucketInfo, err := p.getBucketInfoByEpochV2(height, epochNumber, delegateName)
 	require.NoError(err)
-	require.Equal("io1l9vaqmanwj47tlrpv6etf3pwq0s0snsq4vxke2", bucketInfo[0].VoterAddress)
-	require.Equal("io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02", bucketInfo[1].VoterAddress)
-	require.Equal("io1vdtfpzkwpyngzvx7u2mauepnzja7kd5rryp0sg", bucketInfo[2].VoterAddress)
+
 	for _, b := range bucketInfo {
-		require.True(b.Decay)
-		require.Equal(epochNumber, b.EpochNumber)
-		require.True(b.IsNative)
-		dur, err := strconv.ParseFloat(b.RemainingDuration, 64)
-		require.NoError(err)
-		require.True(uint64(dur) <= uint64(86400))
-		require.Equal(fmt.Sprintf("%d", now.Unix()), b.StartTime)
-		require.Equal("30000", b.Votes)
-		require.Equal("30000", b.WeightedVotes)
+		fmt.Println(b)
+		//require.True(b.Decay)
+		//require.Equal(epochNumber, b.EpochNumber)
+		//require.True(b.IsNative)
+		//dur, err := strconv.ParseFloat(b.RemainingDuration, 64)
+		//require.NoError(err)
+		//require.True(uint64(dur) <= uint64(86400))
+		//require.Equal(fmt.Sprintf("%d", now.Unix()), b.StartTime)
+		//require.Equal("30000", b.Votes)
+		//require.Equal("30000", b.WeightedVotes)
 	}
 }
 
@@ -285,6 +282,9 @@ func TestFilterCandidatesV2(t *testing.T) {
 }
 
 func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
+	protocolID := "staking"
+	readBucketsLimit := uint32(30000)
+	readCandidatesLimit := uint32(20000)
 	require := require.New(t)
 	methodNameBytes, _ := proto.Marshal(&iotexapi.ReadStakingDataMethod{
 		Method: iotexapi.ReadStakingDataMethod_BUCKETS,
