@@ -465,6 +465,7 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 	}
 	if len(valStrs) == 0 || len(valArgs) == 0 {
 		log.S().Warnf("This shouldn't happen, len(valStrs):%d,len(valArgs):%d", len(valStrs), len(valArgs))
+		return nil
 	}
 	insertQuery := fmt.Sprintf(insertAccountReward, AccountRewardTableName, strings.Join(valStrs, ","))
 	if _, err := tx.Exec(insertQuery, valArgs...); err != nil {
