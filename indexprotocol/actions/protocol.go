@@ -194,7 +194,7 @@ func (p *Protocol) Initialize(context.Context, *sql.Tx, *indexprotocol.Genesis) 
 func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block) error {
 	hashToActionInfo := make(map[hash.Hash256]*ActionInfo)
 	hermesHashes := make(map[hash.Hash256]bool)
-
+	fmt.Println("actions handleblock:")
 	// log action index
 	for _, selp := range blk.Actions {
 		actionHash := selp.Hash()
