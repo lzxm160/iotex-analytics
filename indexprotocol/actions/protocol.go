@@ -11,6 +11,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -204,8 +205,8 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 		dst, _ := selp.Destination()
 		gasPrice := selp.GasPrice().String()
 		nonce := selp.Nonce()
-
 		act := selp.Action()
+		fmt.Println("actions handleblock:", reflect.TypeOf(act))
 		var actionType string
 		amount := "0"
 		switch a := act.(type) {
@@ -246,6 +247,8 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			actionType = CandidateUpdate
 		case *action.PutPollResult:
 			actionType = PutPollResult
+		default:
+			fmt.Println("default:", a)
 		}
 		hashToActionInfo[actionHash] = &ActionInfo{
 			ActionType: actionType,
