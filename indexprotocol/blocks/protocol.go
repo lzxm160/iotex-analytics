@@ -392,19 +392,25 @@ func (p *Protocol) updateDelegates(
 		MethodName: []byte("GetGravityChainStartHeight"),
 		Arguments:  [][]byte{[]byte(strconv.FormatUint(height, 10))},
 	}
+	fmt.Println("updateDelegates 395", height)
 	retryInterval := time.Duration(backoffInterval) * time.Minute
 	bo := backoff.WithMaxRetries(backoff.NewConstantBackOff(retryInterval), numOfRetry)
 	nerr := backoff.Retry(func() error {
-		fmt.Println("updateDelegates 398")
+		fmt.Println("updateDelegates 398", retryInterval)
 		readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
+		fmt.Println("updateDelegates 404", err)
 		if err != nil {
 			return err
 		}
+
 		gravityChainStartHeight, err = strconv.ParseUint(string(readStateRes.GetData()), 10, 64)
+		fmt.Println("updateDelegates 407", err)
 		if err != nil {
 			return errors.Wrap(err, "failed to parse gravityChainStartHeight")
 		}
+
 		if gravityChainStartHeight == 0 {
+			fmt.Println("updateDelegates 413", gravityChainStartHeight)
 			//retry to get chain start height again
 			return errors.New("waiting for fetching next timestamp in election service")
 		}
