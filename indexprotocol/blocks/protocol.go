@@ -395,6 +395,7 @@ func (p *Protocol) updateDelegates(
 	retryInterval := time.Duration(backoffInterval) * time.Minute
 	bo := backoff.WithMaxRetries(backoff.NewConstantBackOff(retryInterval), numOfRetry)
 	nerr := backoff.Retry(func() error {
+		fmt.Println("updateDelegates 398")
 		readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
 		if err != nil {
 			return err
