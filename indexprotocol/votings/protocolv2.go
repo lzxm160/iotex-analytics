@@ -10,7 +10,6 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
-
 	"math"
 	"math/big"
 	"reflect"

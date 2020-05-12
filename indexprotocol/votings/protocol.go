@@ -266,6 +266,7 @@ func (p *Protocol) Initialize(context.Context, *sql.Tx, *indexprotocol.Genesis) 
 
 // HandleBlock handles blocks
 func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block) error {
+	log.S().Info("votings HandleBlock", blk.Height())
 	blkheight := blk.Height()
 	epochNumber := p.epochCtx.GetEpochNumber(blkheight)
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
