@@ -279,6 +279,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			return errors.Wrapf(err, "failed to get probation list from chain service in epoch %d", epochNumber)
 		}
 		// process staking v2
+		fmt.Println("///////////////////votings HandleBlock", blkheight, p.epochCtx.FairbankHeight())
 		if blkheight >= p.epochCtx.FairbankHeight() {
 			if err := p.stakingV2(chainClient, blkheight, epochNumber, probationList); err != nil {
 				return errors.Wrapf(err, "failed to write staking v2 in epoch %d", epochNumber)
