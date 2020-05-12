@@ -270,6 +270,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 	blkheight := blk.Height()
 	epochNumber := p.epochCtx.GetEpochNumber(blkheight)
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
+	fmt.Println("///////////////////votings HandleBlock", p.epochCtx.GetEpochHeight(epochNumber), blkheight, p.epochCtx.FairbankHeight())
 	if indexCtx.ConsensusScheme == "ROLLDPOS" && blkheight == p.epochCtx.GetEpochHeight(epochNumber) {
 		// update voting tables on every epoch start height
 		chainClient := indexCtx.ChainClient
@@ -279,7 +280,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			return errors.Wrapf(err, "failed to get probation list from chain service in epoch %d", epochNumber)
 		}
 		// process staking v2
-		fmt.Println("///////////////////votings HandleBlock", blkheight, p.epochCtx.FairbankHeight())
+
 		if blkheight >= p.epochCtx.FairbankHeight() {
 			if err := p.stakingV2(chainClient, blkheight, epochNumber, probationList); err != nil {
 				return errors.Wrapf(err, "failed to write staking v2 in epoch %d", epochNumber)
