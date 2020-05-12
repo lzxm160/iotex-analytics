@@ -171,8 +171,8 @@ func TestStakingV2WithChainEndpoint(t *testing.T) {
 	require.NoError(err)
 	chainClient := iotexapi.NewAPIServiceClient(conn)
 
-	height := uint64(110000)
-	epochNumber := uint64(68888)
+	height := uint64(3325460)
+	epochNumber := uint64(4758)
 
 	ctx := context.Background()
 	store := s.NewMySQL(localconnectStr, localdbName)
