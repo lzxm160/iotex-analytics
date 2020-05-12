@@ -152,6 +152,7 @@ func (p *Protocol) Initialize(ctx context.Context, tx *sql.Tx, genesis *indexpro
 func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block) error {
 	height := blk.Height()
 	epochNumber := p.epochCtx.GetEpochNumber(height)
+	fmt.Println("accounts HandleBlock:", height, epochNumber)
 	// log action index
 	hashToGasPrice := make(map[string]*big.Int)
 	hashToSrcAddr := make(map[string]string)
