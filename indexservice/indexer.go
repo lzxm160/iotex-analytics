@@ -111,7 +111,7 @@ func (idx *Indexer) Start(ctx context.Context) error {
 		return errors.Wrap(err, "failed to get chain metadata")
 	}
 	tipHeight := getChainMetaRes.GetChainMeta().GetHeight()
-
+	log.S().Infof("tip height:%d", tipHeight)
 	if err := idx.IndexInBatch(ctx, tipHeight); err != nil {
 		return errors.Wrap(err, "failed to index blocks in batch")
 	}
