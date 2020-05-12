@@ -382,6 +382,7 @@ func (p *Protocol) updateDelegates(
 	if err := p.updateActiveBlockProducers(chainClient, epochNumber); err != nil {
 		return errors.Wrap(err, "update active block producers")
 	}
+	fmt.Println("updateDelegates 385")
 	if height >= p.epochCtx.FairbankHeight() {
 		return p.updateDelegatesV2(chainClient, height)
 	}
@@ -411,6 +412,7 @@ func (p *Protocol) updateDelegates(
 	if nerr != nil {
 		return errors.Wrap(nerr, "failed to get gravity chain start height by backoff")
 	}
+	fmt.Println("updateDelegates 415")
 	getCandidatesRequest := &api.GetCandidatesRequest{
 		Height: strconv.Itoa(int(gravityChainStartHeight)),
 		Offset: uint32(0),
@@ -420,7 +422,7 @@ func (p *Protocol) updateDelegates(
 	if err != nil {
 		return errors.Wrap(err, "failed to get candidates from election service")
 	}
-
+	fmt.Println("updateDelegates 425")
 	p.OperatorAddrToName = make(map[string]string)
 	for _, candidate := range getCandidatesResponse.GetCandidates() {
 		p.OperatorAddrToName[candidate.GetOperatorAddress()] = candidate.GetName()
