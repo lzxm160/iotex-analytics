@@ -114,7 +114,7 @@ func TestProtocol(t *testing.T) {
 
 func TestUpdateCandidateRewardAddress(t *testing.T) {
 	//chainEndpoint := "api.testnet.iotex.one:80"
-	chainEndpoint := "127.0.0.1:14014"
+	chainEndpoint := "35.236.100.38:14014"
 	require := require.New(t)
 	//ctx := context.Background()
 	//store := s.NewMySQL(connectStr, dbName)
@@ -140,7 +140,7 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	//require.NoError(p.updateCandidateRewardAddress(chainClient, nil, 3253241))
 
 	fmt.Println("--------------------------")
-	cl, err := indexprotocol.GetCandidatesAllV2(chainClient, 1000)
+	cl, err := indexprotocol.GetCandidatesAllV2(chainClient, 3325056)
 	require.NoError(err)
 	fmt.Println("len(cl.Candidates):", len(cl.Candidates))
 	for _, c := range cl.Candidates {
@@ -148,7 +148,7 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	}
 
 	fmt.Println("--------------------------")
-	buckets, err := indexprotocol.GetBucketsAllV2(chainClient, 1000)
+	buckets, err := indexprotocol.GetBucketsAllV2(chainClient, 3325056)
 	require.NoError(err)
 	fmt.Println("len(buckets.Buckets):", len(buckets.Buckets))
 	//for _, b := range buckets.Buckets {
