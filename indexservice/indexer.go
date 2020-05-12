@@ -225,7 +225,7 @@ func (idx *Indexer) IndexInBatch(ctx context.Context, tipHeight uint64) error {
 			return errors.Wrap(err, "failed to get raw blocks from the chain")
 		}
 		for _, blkInfo := range getRawBlocksRes.GetBlocks() {
-			log.S().Infof("blkInfo:%s", blkInfo.Block.Header.GetCore().Height)
+			log.S().Infof("blkInfo:%d", blkInfo.Block.Header.GetCore().Height)
 			blk := &block.Block{}
 			if err := blk.ConvertFromBlockPb(blkInfo.GetBlock()); err != nil {
 				return errors.Wrap(err, "failed to convert block protobuf to raw block")
