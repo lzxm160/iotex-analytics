@@ -405,6 +405,7 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 	if err != nil {
 		// for testnet ignore indexprotocol.ErrNotExist
 		if errors.Cause(err) == indexprotocol.ErrNotExist {
+			log.S().Errorf("getVotingInfo not exist for epoch %d", lastEpoch)
 			return nil
 		}
 		return errors.Wrap(err, "failed to get voting info")
