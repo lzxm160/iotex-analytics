@@ -191,6 +191,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 		}
 	}
 	if height == epochHeight {
+		fmt.Println("height == epochHeight")
 		if err := p.rebuildProductivityTable(tx); err != nil {
 			return errors.Wrap(err, "failed to rebuild productivity table")
 		}
@@ -377,6 +378,7 @@ func (p *Protocol) updateDelegates(
 	height uint64,
 	epochNumber uint64,
 ) error {
+	fmt.Println("updateDelegates")
 	if err := p.updateActiveBlockProducers(chainClient, epochNumber); err != nil {
 		return errors.Wrap(err, "update active block producers")
 	}
