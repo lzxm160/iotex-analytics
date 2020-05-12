@@ -186,6 +186,16 @@ func InsertVoteBuckets(tableName string, driverName committee.DRIVERTYPE, record
 		ct := time.Unix(bucket.CreateTime.Seconds, int64(bucket.CreateTime.Nanos))
 		sst := time.Unix(bucket.StakeStartTime.Seconds, int64(bucket.StakeStartTime.Nanos))
 		ust := time.Unix(bucket.UnstakeStartTime.Seconds, int64(bucket.UnstakeStartTime.Nanos))
+		fmt.Println(hex.EncodeToString(h[:]),
+			bucket.Index,
+			bucket.CandidateAddress,
+			bucket.Owner,
+			bucket.StakedAmount,
+			duration.String(),
+			ct,
+			sst,
+			ust,
+			bucket.AutoStake)
 		if _, err = stmt.Exec(
 			hex.EncodeToString(h[:]),
 			bucket.Index,
