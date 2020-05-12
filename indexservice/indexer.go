@@ -112,6 +112,8 @@ func (idx *Indexer) Start(ctx context.Context) error {
 	}
 	tipHeight := getChainMetaRes.GetChainMeta().GetHeight()
 	log.S().Infof("tip height:%d", tipHeight)
+	//for testnet test height after fairbank
+	idx.lastHeight = uint64(3330561)
 	if err := idx.IndexInBatch(ctx, tipHeight); err != nil {
 		return errors.Wrap(err, "failed to index blocks in batch")
 	}
@@ -211,7 +213,7 @@ func (idx *Indexer) IndexInBatch(ctx context.Context, tipHeight uint64) error {
 	chainClient := indexCtx.ChainClient
 
 	startHeight := idx.lastHeight + 1
-	startHeight = uint64(3330561)
+
 	for startHeight <= tipHeight {
 		count := idx.Config.RangeQueryLimit
 		if idx.Config.RangeQueryLimit > tipHeight-startHeight+1 {
