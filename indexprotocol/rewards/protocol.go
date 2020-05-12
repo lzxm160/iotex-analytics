@@ -403,6 +403,10 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 	// Get voting result from last epoch
 	rewardAddrToNameMapping, weightedVotesMapping, err := p.getVotingInfo(tx, lastEpoch)
 	if err != nil {
+		// for testnet ignore indexprotocol.ErrNotExist
+		if errors.Cause(err) == indexprotocol.ErrNotExist {
+			return nil
+		}
 		return errors.Wrap(err, "failed to get voting info")
 	}
 	// Get aggregate reward	records from last epoch
