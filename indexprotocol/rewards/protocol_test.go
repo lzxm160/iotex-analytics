@@ -138,9 +138,9 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	require.NoError(err)
 	chainClient := iotexapi.NewAPIServiceClient(conn)
 	//require.NoError(p.updateCandidateRewardAddress(chainClient, nil, 3253241))
-
+	height := uint64(3325260)
 	fmt.Println("--------------------------")
-	cl, err := indexprotocol.GetCandidatesAllV2(chainClient, 3325142)
+	cl, err := indexprotocol.GetCandidatesAllV2(chainClient, height)
 	require.NoError(err)
 	fmt.Println("len(cl.Candidates):", len(cl.Candidates))
 	for _, c := range cl.Candidates {
@@ -148,7 +148,7 @@ func TestUpdateCandidateRewardAddress(t *testing.T) {
 	}
 
 	fmt.Println("--------------------------")
-	buckets, err := indexprotocol.GetBucketsAllV2(chainClient, 3325142)
+	buckets, err := indexprotocol.GetBucketsAllV2(chainClient, height)
 	require.NoError(err)
 	fmt.Println("len(buckets.Buckets):", len(buckets.Buckets))
 	for _, b := range buckets.Buckets {
