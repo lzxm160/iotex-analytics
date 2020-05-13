@@ -223,7 +223,7 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	readStateRequest := &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(protocolID),
 		MethodName: methodNameBytes,
-		Arguments:  [][]byte{arg, []byte(strconv.FormatUint(10, 10))},
+		Arguments:  [][]byte{arg, []byte(strconv.FormatUint(110000, 10))},
 	}
 
 	vbl := &iotextypes.VoteBucketList{Buckets: buckets}
@@ -250,7 +250,7 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	readStateRequest = &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(protocolID),
 		MethodName: methodNameBytes,
-		Arguments:  [][]byte{arg, []byte(strconv.FormatUint(10, 10))},
+		Arguments:  [][]byte{arg, []byte(strconv.FormatUint(110000, 10))},
 	}
 
 	cl := &iotextypes.CandidateListV2{Candidates: candidates}
