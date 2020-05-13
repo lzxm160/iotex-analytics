@@ -224,7 +224,7 @@ func (p *Protocol) CreateTables(ctx context.Context) error {
 	if err = p.timeTableOperator.CreateTables(tx); err != nil {
 		return err
 	}
-	//staking
+	//staking tables
 	if err = p.stakingBucketTableOperator.CreateTables(tx); err != nil {
 		return err
 	}
@@ -266,9 +266,11 @@ func (p *Protocol) Initialize(context.Context, *sql.Tx, *indexprotocol.Genesis) 
 
 // HandleBlock handles blocks
 func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block) error {
+	log.S().Info("votings HandleBlock", blk.Height())
 	blkheight := blk.Height()
 	epochNumber := p.epochCtx.GetEpochNumber(blkheight)
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
+	fmt.Println("///////////////////votings HandleBlock", epochNumber, p.epochCtx.GetEpochHeight(epochNumber), blkheight, p.epochCtx.FairbankHeight())
 	if indexCtx.ConsensusScheme == "ROLLDPOS" && blkheight == p.epochCtx.GetEpochHeight(epochNumber) {
 		// update voting tables on every epoch start height
 		chainClient := indexCtx.ChainClient
@@ -281,11 +283,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			return errors.Wrapf(err, "failed to put data into probation tables in epoch %d", epochNumber)
 		}
 		// process staking
-		if blkheight >= p.epochCtx.FairbankHeight() {
-
-			return p.processStaking(chainClient, blkheight, epochNumber, probationList)
-		}
-
+		fmt.Println(blkheight, ">=", p.epochCtx.FairbankHeight())
 		var gravityHeight uint64
 		if epochNumber == 1 {
 			gravityHeight = p.GravityChainCfg.GravityChainStartHeight
@@ -296,13 +294,18 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 				return errors.Wrapf(err, "failed to get gravity height from chain service in epoch %d", epochNumber)
 			}
 		}
+
+		// process staking
+		if blkheight >= p.epochCtx.FairbankHeight() {
+			return p.processStaking(tx, chainClient, blkheight, epochNumber, probationList, gravityHeight)
+		}
+
 		if err := p.fetchAndStoreRawBuckets(tx, electionClient, chainClient, epochNumber, blkheight, gravityHeight); err != nil {
 			return errors.Wrapf(err, "failed to fetch and store raw bucket in epoch %d", epochNumber)
 		}
 		if err := p.updateVotingTables(tx, epochNumber, blkheight, gravityHeight, probationList); err != nil {
 			return errors.Wrapf(err, "failed to update voting tables in epoch %d", epochNumber)
 		}
-
 	}
 	return nil
 }
