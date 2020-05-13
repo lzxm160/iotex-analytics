@@ -15,12 +15,11 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/iotexproject/iotex-core/pkg/log"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
 
 	"github.com/iotexproject/iotex-address/address"
+	"github.com/iotexproject/iotex-core/pkg/log"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 
@@ -172,10 +171,16 @@ func (p *Protocol) updateAggregateStaking(tx *sql.Tx, votes *iotextypes.VoteBuck
 		if _, ok := nameMap[key.candidateName]; !ok {
 			return errors.New("candidate cannot find name through owner address")
 		}
+		addr, err := address.FromString(key.voterAddress)
+		if err != nil {
+			return err
+		}
+		addressString := hex.EncodeToString(addr.Bytes())
+		voterAddress := common.HexToAddress(addressString)
 		if _, err = aggregateStmt.Exec(
 			key.epochNumber,
 			nameMap[key.candidateName],
-			key.voterAddress,
+			voterAddress,
 			key.isNative,
 			val.Text(10),
 		); err != nil {
