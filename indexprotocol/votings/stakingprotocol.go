@@ -117,6 +117,10 @@ func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.Candid
 }
 
 func (p *Protocol) updateAggregateStaking(tx *sql.Tx, votes *iotextypes.VoteBucketList, delegates *iotextypes.CandidateListV2, epochNumber uint64, probationList *iotextypes.ProbationCandidateList) (err error) {
+	nameMap, err := ownerAddressToNameMap(delegates)
+	if err != nil {
+		return errors.Wrap(err, "owner address to name map error")
+	}
 	pb := convertProbationListToLocal(probationList)
 	intensityRate, probationMap := stakingProbationListToMap(delegates, pb)
 	//update aggregate voting table
@@ -165,9 +169,12 @@ func (p *Protocol) updateAggregateStaking(tx *sql.Tx, votes *iotextypes.VoteBuck
 			votingPower := new(big.Float).SetInt(val)
 			val, _ = votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
 		}
+		if _, ok := nameMap[key.candidateName]; !ok {
+			return errors.New("candidate cannot find name through owner address")
+		}
 		if _, err = aggregateStmt.Exec(
 			key.epochNumber,
-			key.candidateName,
+			nameMap[key.candidateName],
 			key.voterAddress,
 			key.isNative,
 			val.Text(10),
@@ -291,4 +298,16 @@ func selfStakeIndexMap(candidates *iotextypes.CandidateListV2) map[uint64]struct
 		ret[can.SelfStakeBucketIdx] = struct{}{}
 	}
 	return ret
+}
+
+func ownerAddressToNameMap(candidates *iotextypes.CandidateListV2) (ret map[string]string, err error) {
+	ret = make(map[string]string)
+	for _, can := range candidates.Candidates {
+		name, err := indexprotocol.EncodeDelegateName(can.Name)
+		if err != nil {
+			return
+		}
+		ret[can.OwnerAddress] = name
+	}
+	return
 }
