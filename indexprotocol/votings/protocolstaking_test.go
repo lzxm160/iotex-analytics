@@ -258,9 +258,12 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	second := chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).AnyTimes().Return(&iotexapi.ReadStateResponse{
 		Data: s,
 	}, nil)
-
+	third := chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).AnyTimes().Return(&iotexapi.ReadStateResponse{
+		Data: []byte("888888888"),
+	}, nil)
 	gomock.InOrder(
 		first,
 		second,
+		third,
 	)
 }
