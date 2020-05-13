@@ -858,14 +858,17 @@ func (p *Protocol) getDelegateRewardPortions(stakingAddress common.Address, grav
 			opts := &bind.CallOpts{BlockNumber: new(big.Int).SetUint64(gravityChainHeight)}
 			blockRewardPortion, err := caller.GetProfileByField(opts, stakingAddress, "blockRewardPortion")
 			if err != nil {
+				fmt.Println("blockRewardPortion", err)
 				return err
 			}
 			epochRewardPortion, err := caller.GetProfileByField(opts, stakingAddress, "epochRewardPortion")
 			if err != nil {
+				fmt.Println("epochRewardPortion", err)
 				return err
 			}
 			foundationRewardPortion, err := caller.GetProfileByField(opts, stakingAddress, "foundationRewardPortion")
 			if err != nil {
+				fmt.Println("foundationRewardPortion", err)
 				return err
 			}
 

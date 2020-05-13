@@ -91,10 +91,11 @@ func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.Candid
 		}
 		addressString := hex.EncodeToString(addr.Bytes())
 		stakingAddress := common.HexToAddress(addressString)
-		fmt.Println("getDelegateRewardPortions:", stakingAddress.String(), gravityHeight)
+
 		blockRewardPortion, epochRewardPortion, foundationBonusPortion, err := p.getDelegateRewardPortions(stakingAddress, gravityHeight)
 		if err != nil {
-			return err
+			fmt.Println("getDelegateRewardPortions:", stakingAddress.String(), gravityHeight)
+			blockRewardPortion, epochRewardPortion, foundationBonusPortion = 0, 0, 0
 		}
 		if _, err = voteResultStmt.Exec(
 			epochNumber,
