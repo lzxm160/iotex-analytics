@@ -8,8 +8,6 @@ package votings
 
 import (
 	"context"
-	"fmt"
-	"strconv"
 	"testing"
 	"time"
 
@@ -80,7 +78,7 @@ var (
 	delegateName = "xxxx"
 )
 
-func TestStakingV2(t *testing.T) {
+func TestStaking(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	chainClient := mock_apiserviceclient.NewMockServiceClient(ctrl)
@@ -112,11 +110,11 @@ func TestStakingV2(t *testing.T) {
 	}, cfg)
 	require.NoError(err)
 	require.NoError(p.CreateTables(context.Background()))
-	require.NoError(p.stakingV2(chainClient, height, epochNumber, nil))
+	require.NoError(p.processStaking(chainClient, height, epochNumber, nil))
 
 	// case I: checkout bucket if it's written right
 	require.NoError(err)
-	ret, err := p.nativeV2BucketTableOperator.Get(height, p.Store.GetDB(), nil)
+	ret, err := p.stakingBucketTableOperator.Get(height, p.Store.GetDB(), nil)
 	require.NoError(err)
 	bucketList, ok := ret.(*iotextypes.VoteBucketList)
 	require.True(ok)
@@ -125,7 +123,7 @@ func TestStakingV2(t *testing.T) {
 	require.EqualValues(bucketsBytes, bucketListBytes)
 
 	// case II: checkout candidate if it's written right
-	ret, err = p.nativeV2CandidateTableOperator.Get(height, p.Store.GetDB(), nil)
+	ret, err = p.stakingCandidateTableOperator.Get(height, p.Store.GetDB(), nil)
 	require.NoError(err)
 	candidateList, ok := ret.(*iotextypes.CandidateListV2)
 	require.True(ok)
@@ -134,8 +132,8 @@ func TestStakingV2(t *testing.T) {
 	candidateListBytes, _ := proto.Marshal(candidateList)
 	require.EqualValues(candidatesBytes, candidateListBytes)
 
-	// case III: check getBucketInfoByEpochV2
-	bucketInfo, err := p.getBucketInfoByEpochV2(height, epochNumber, delegateName)
+	// case III: check getStakingBucketInfoByEpoch
+	bucketInfo, err := p.getStakingBucketInfoByEpoch(height, epochNumber, delegateName)
 	require.NoError(err)
 	require.Equal("io1l9vaqmanwj47tlrpv6etf3pwq0s0snsq4vxke2", bucketInfo[0].VoterAddress)
 	require.Equal("io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02", bucketInfo[1].VoterAddress)
@@ -144,10 +142,10 @@ func TestStakingV2(t *testing.T) {
 		require.True(b.Decay)
 		require.Equal(epochNumber, b.EpochNumber)
 		require.True(b.IsNative)
-		dur, err := strconv.ParseFloat(b.RemainingDuration, 64)
+		dur, err := time.ParseDuration(b.RemainingDuration)
 		require.NoError(err)
-		require.True(uint64(dur) <= uint64(86400))
-		require.Equal(fmt.Sprintf("%d", now.Unix()), b.StartTime)
+		require.True(dur.Seconds() <= float64(86400))
+		require.Equal(now.String(), b.StartTime)
 		require.Equal("30000", b.Votes)
 		require.Equal("30000", b.WeightedVotes)
 	}
@@ -186,7 +184,7 @@ func TestRemainingTime(t *testing.T) {
 	require.Equal(time.Duration(0), remaining)
 }
 
-func TestFilterCandidatesV2(t *testing.T) {
+func TestFilterStakingCandidates(t *testing.T) {
 	require := require.New(t)
 	cl := &iotextypes.CandidateListV2{Candidates: candidates}
 	unqualifiedList := &iotextypes.ProbationCandidateList{
@@ -198,7 +196,7 @@ func TestFilterCandidatesV2(t *testing.T) {
 			},
 		},
 	}
-	cl, err := filterCandidatesV2(cl, unqualifiedList, 10)
+	cl, err := filterStakingCandidates(cl, unqualifiedList, 10)
 	require.NoError(err)
 	require.Equal("9", cl.Candidates[0].TotalWeightedVotes)
 }
