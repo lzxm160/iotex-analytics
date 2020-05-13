@@ -25,6 +25,7 @@ import (
 	"github.com/iotexproject/iotex-analytics/epochctx"
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
 	s "github.com/iotexproject/iotex-analytics/sql"
+	"github.com/iotexproject/iotex-analytics/testutil"
 )
 
 var (
@@ -88,15 +89,13 @@ func TestStaking(t *testing.T) {
 	require := require.New(t)
 	ctx := context.Background()
 	//use for remote database
-	connectStr := "root:123456@tcp(192.168.146.140:3306)/"
-	dbName := "analytics"
-	//testutil.CleanupDatabase(t, connectStr, dbName)
+	testutil.CleanupDatabase(t, connectStr, dbName)
 	store := s.NewMySQL(connectStr, dbName)
 	require.NoError(store.Start(ctx))
 	defer func() {
 		//use for remote database
-		//_, err := store.GetDB().Exec("DROP DATABASE " + dbName)
-		//require.NoError(err)
+		_, err := store.GetDB().Exec("DROP DATABASE " + dbName)
+		require.NoError(err)
 		require.NoError(store.Stop(ctx))
 	}()
 	require.NoError(store.Start(context.Background()))
