@@ -9,7 +9,6 @@ package indexprotocol
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"strconv"
 
 	"github.com/golang/protobuf/proto"
@@ -143,7 +142,6 @@ func getStakingBuckets(chainClient iotexapi.APIServiceClient, offset, limit uint
 	if err != nil {
 		return
 	}
-	fmt.Println(height, readStateRes.GetData())
 	voteBucketList = &iotextypes.VoteBucketList{}
 	if err := proto.Unmarshal(readStateRes.GetData(), voteBucketList); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal VoteBucketList")
