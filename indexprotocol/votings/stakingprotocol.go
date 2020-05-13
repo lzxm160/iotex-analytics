@@ -180,7 +180,7 @@ func (p *Protocol) updateAggregateStaking(tx *sql.Tx, votes *iotextypes.VoteBuck
 		if _, err = aggregateStmt.Exec(
 			key.epochNumber,
 			nameMap[key.candidateName],
-			voterAddress,
+			hex.EncodeToString(voterAddress.Bytes()),
 			key.isNative,
 			val.Text(10),
 		); err != nil {
