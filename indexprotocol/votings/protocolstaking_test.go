@@ -146,7 +146,7 @@ func TestStaking(t *testing.T) {
 		dur, err := time.ParseDuration(b.RemainingDuration)
 		require.NoError(err)
 		require.True(dur.Seconds() <= float64(86400))
-		require.Equal(now.Format("2020-05-13 02:40:15"), b.StartTime)
+		require.Equal(now.Format("2006-01-02 15:04:05"), b.StartTime)
 		require.Equal("30000", b.Votes)
 		require.Equal("30000", b.WeightedVotes)
 	}
