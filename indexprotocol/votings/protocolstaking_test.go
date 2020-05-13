@@ -89,6 +89,8 @@ func TestStaking(t *testing.T) {
 	require := require.New(t)
 	ctx := context.Background()
 	//use for remote database
+	connectStr := "root:123456@tcp(192.168.146.140:3306)/"
+	dbName := "analytics"
 	testutil.CleanupDatabase(t, connectStr, dbName)
 	store := s.NewMySQL(connectStr, dbName)
 	require.NoError(store.Start(ctx))
