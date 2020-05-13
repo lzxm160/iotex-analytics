@@ -40,6 +40,10 @@ func (p *Protocol) processStaking(chainClient iotexapi.APIServiceClient, epochSt
 			return errors.Wrap(err, "failed to filter candidate with probation list")
 		}
 	}
+	if len(voteBucketList.Buckets) == 0 || len(candidateList.Candidates) == 0 {
+		log.S().Errorf("buckets len:%d, candidates len:%d", len(voteBucketList.Buckets), len(candidateList.Candidates))
+		return nil
+	}
 	// after get and clean data,the following code is for writing mysql
 	tx, err := p.Store.GetDB().Begin()
 	// update staking_bucket and height_to_staking_bucket table
