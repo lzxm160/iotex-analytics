@@ -19,6 +19,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/iotexproject/iotex-address/address"
+	"github.com/iotexproject/iotex-core/pkg/log"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 
