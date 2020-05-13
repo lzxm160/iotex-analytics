@@ -8,7 +8,6 @@ package votings
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -145,12 +144,10 @@ func TestStaking(t *testing.T) {
 		require.True(b.Decay)
 		require.Equal(epochNumber, b.EpochNumber)
 		require.True(b.IsNative)
-		fmt.Println("b.RemainingDuration", b.RemainingDuration)
-		fmt.Println("b.StartTime", b.StartTime)
-		fmt.Println("now.String()", now.String())
 		dur, err := time.ParseDuration(b.RemainingDuration)
 		require.NoError(err)
 		require.True(dur.Seconds() <= float64(86400))
+		// now need format b/c nano time is difficult to equal,so dump it
 		require.Equal(now.Format("2006-01-02 15:04:05 -0700 MST"), b.StartTime)
 		require.Equal("30000", b.Votes)
 		require.Equal("30000", b.WeightedVotes)
