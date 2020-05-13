@@ -119,6 +119,7 @@ func NewProtocol(idx *indexservice.Indexer) *Protocol {
 
 // GetAccountReward gets account reward
 func (p *Protocol) GetAccountReward(startEpoch uint64, epochCount uint64, candidateName string) (string, string, string, error) {
+	fmt.Println("GetAccountReward", candidateName)
 	if _, ok := p.indexer.Registry.Find(rewards.ProtocolID); !ok {
 		return "", "", "", errors.New("rewards protocol is unregistered")
 	}
@@ -137,6 +138,7 @@ func (p *Protocol) GetAccountReward(startEpoch uint64, epochCount uint64, candid
 	}
 
 	getQuery := fmt.Sprintf(selectAccountRewardSum, rewards.AccountRewardTableName, startEpoch, endEpoch)
+	fmt.Println("GetAccountReward getQuery", getQuery)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
 		return "", "", "", errors.Wrap(err, "failed to prepare get query")

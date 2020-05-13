@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const candidateName = "63727970746f6c696f6e7378"
+const candidateName = "726f626f7462703030303030"
 
 func TestEnDecodeName(t *testing.T) {
 	require := require.New(t)
