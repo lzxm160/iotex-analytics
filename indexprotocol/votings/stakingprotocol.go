@@ -96,6 +96,8 @@ func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.Candid
 		if err != nil {
 			return errors.Wrap(err, "encode delegate name error")
 		}
+		fmt.Println("candidate.Name", candidate.Name)
+		fmt.Println("candidate.Name encodedName", encodedName)
 		if _, err = voteResultStmt.Exec(
 			epochNumber,
 			encodedName,
