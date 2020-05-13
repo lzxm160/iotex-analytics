@@ -113,7 +113,7 @@ func (idx *Indexer) Start(ctx context.Context) error {
 	tipHeight := getChainMetaRes.GetChainMeta().GetHeight()
 	log.S().Infof("tip height:%d", tipHeight)
 	//for testnet test height after fairbank
-	//idx.lastHeight = uint64(3342141)
+	idx.lastHeight = uint64(3342141)
 	if err := idx.IndexInBatch(ctx, tipHeight); err != nil {
 		return errors.Wrap(err, "failed to index blocks in batch")
 	}
