@@ -277,6 +277,9 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 		if err != nil {
 			return errors.Wrapf(err, "failed to get probation list from chain service in epoch %d", epochNumber)
 		}
+		if err := p.updateProbationListTable(tx, epochNumber, probationList); err != nil {
+			return errors.Wrapf(err, "failed to put data into probation tables in epoch %d", epochNumber)
+		}
 		// process staking
 		if blkheight >= p.epochCtx.FairbankHeight() {
 			return p.processStaking(chainClient, blkheight, epochNumber, probationList)
@@ -299,9 +302,6 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			return errors.Wrapf(err, "failed to update voting tables in epoch %d", epochNumber)
 		}
 
-		if err := p.updateProbationListTable(tx, epochNumber, probationList); err != nil {
-			return errors.Wrapf(err, "failed to put data into probation tables in epoch %d", epochNumber)
-		}
 	}
 	return nil
 }

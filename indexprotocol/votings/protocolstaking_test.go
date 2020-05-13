@@ -8,6 +8,7 @@ package votings
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -129,7 +130,7 @@ func TestStaking(t *testing.T) {
 	require.NoError(err)
 	candidateList, ok := ret.(*iotextypes.CandidateListV2)
 	require.True(ok)
-
+	require.Equal(delegateName, candidateList.Candidates[0].Name)
 	candidatesBytes, _ := proto.Marshal(&iotextypes.CandidateListV2{Candidates: candidates})
 	candidateListBytes, _ := proto.Marshal(candidateList)
 	require.EqualValues(candidatesBytes, candidateListBytes)
@@ -144,6 +145,9 @@ func TestStaking(t *testing.T) {
 		require.True(b.Decay)
 		require.Equal(epochNumber, b.EpochNumber)
 		require.True(b.IsNative)
+		fmt.Println("b.RemainingDuration", b.RemainingDuration)
+		fmt.Println("b.StartTime", b.StartTime)
+		fmt.Println("now.String()", now.String())
 		dur, err := time.ParseDuration(b.RemainingDuration)
 		require.NoError(err)
 		require.True(dur.Seconds() <= float64(86400))
