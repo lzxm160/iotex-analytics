@@ -303,7 +303,8 @@ func selfStakeIndexMap(candidates *iotextypes.CandidateListV2) map[uint64]struct
 func ownerAddressToNameMap(candidates *iotextypes.CandidateListV2) (ret map[string]string, err error) {
 	ret = make(map[string]string)
 	for _, can := range candidates.Candidates {
-		name, err := indexprotocol.EncodeDelegateName(can.Name)
+		var name string
+		name, err = indexprotocol.EncodeDelegateName(can.Name)
 		if err != nil {
 			return
 		}
