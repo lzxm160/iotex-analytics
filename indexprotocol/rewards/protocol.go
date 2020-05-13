@@ -402,6 +402,11 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 	// Get voting result from last epoch
 	rewardAddrToNameMapping, weightedVotesMapping, err := p.getVotingInfo(tx, lastEpoch)
 	if err != nil {
+		// for testnet ignore indexprotocol.ErrNotExist
+		if errors.Cause(err) == indexprotocol.ErrNotExist {
+			log.S().Errorf("getVotingInfo not exist for epoch %d", lastEpoch)
+			return nil
+		}
 		return errors.Wrap(err, "failed to get voting info")
 	}
 	// Get aggregate reward	records from last epoch
@@ -463,7 +468,10 @@ func (p *Protocol) rebuildAccountRewardTable(tx *sql.Tx, lastEpoch uint64) error
 			valArgs = append(valArgs, epochNumber, candidateName, rewards[0], rewards[1], rewards[2])
 		}
 	}
-
+	if len(valStrs) == 0 || len(valArgs) == 0 {
+		log.S().Warnf("This shouldn't happen, len(valStrs):%d,len(valArgs):%d", len(valStrs), len(valArgs))
+		return nil
+	}
 	insertQuery := fmt.Sprintf(insertAccountReward, AccountRewardTableName, strings.Join(valStrs, ","))
 	if _, err := tx.Exec(insertQuery, valArgs...); err != nil {
 		return err
