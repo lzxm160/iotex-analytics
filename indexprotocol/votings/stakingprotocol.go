@@ -233,7 +233,9 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 	var candidateAddress string
 	for _, cand := range candidateList.Candidates {
 		// is this delegateName encoded?
-		if cand.Name == delegateName {
+		encode, err := indexprotocol.EncodeDelegateName(cand.Name)
+		return nil, errors.Wrap(err, "error when encode delegate name")
+		if encode == delegateName {
 			candidateAddress = cand.OwnerAddress
 			break
 		}
