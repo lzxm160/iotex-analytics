@@ -205,11 +205,17 @@ func (p *Protocol) updateAggregateStaking(tx *sql.Tx, votes *iotextypes.VoteBuck
 
 func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegateName string) ([]*VotingInfo, error) {
 	ret, err := p.stakingBucketTableOperator.Get(height, p.Store.GetDB(), nil)
+	if err != nil {
+		return nil, errors.Errorf("staking bucket table operator")
+	}
 	bucketList, ok := ret.(*iotextypes.VoteBucketList)
 	if !ok {
 		return nil, errors.Errorf("Unexpected type %s", reflect.TypeOf(ret))
 	}
 	can, err := p.stakingCandidateTableOperator.Get(height, p.Store.GetDB(), nil)
+	if err != nil {
+		return nil, errors.Errorf("staking candidate table operator")
+	}
 	candidateList, ok := can.(*iotextypes.CandidateListV2)
 	if !ok {
 		return nil, errors.Errorf("Unexpected type %s", reflect.TypeOf(can))
