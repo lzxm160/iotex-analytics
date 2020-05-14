@@ -115,9 +115,9 @@ func QueryCandidates(tableName string, frequencies map[int64]int, sdb *sql.DB, t
 			candidates = append(candidates, candidate)
 		}
 	}
-	for _, c := range candidates {
-		fmt.Println("xxxx", c)
-	}
+	//for _, c := range candidates {
+	//	fmt.Println("xxxx", c)
+	//}
 	return &iotextypes.CandidateListV2{Candidates: candidates}, nil
 }
 
