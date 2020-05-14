@@ -208,6 +208,7 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 	fmt.Println("getStakingBucketInfoByEpoch", height, epochNum, delegateName)
 	ret, err := p.stakingBucketTableOperator.Get(height, p.Store.GetDB(), nil)
 	if errors.Cause(err) == db.ErrNotExist {
+		fmt.Println("staking bucket table operator db.ErrNotExist")
 		return nil, nil
 	}
 	if err != nil {
@@ -219,6 +220,7 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 	}
 	can, err := p.stakingCandidateTableOperator.Get(height, p.Store.GetDB(), nil)
 	if errors.Cause(err) == db.ErrNotExist {
+		fmt.Println("staking candidate table operator db.ErrNotExist")
 		return nil, nil
 	}
 	if err != nil {
@@ -236,7 +238,7 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 			break
 		}
 	}
-	fmt.Println("getStakingBucketInfoByEpoch", candidateAddress, ":", delegateName)
+	fmt.Println("getStakingBucketInfoByEpoch name", candidateAddress, ":", delegateName)
 	// update weighted votes based on probation
 	pblist, err := p.getProbationList(epochNum)
 	if err != nil {
