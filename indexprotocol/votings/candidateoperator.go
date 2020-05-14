@@ -101,6 +101,7 @@ func QueryCandidates(tableName string, frequencies map[int64]int, sdb *sql.DB, t
 		if !ok {
 			return nil, errors.New("failed to convert")
 		}
+		fmt.Println("cs:", cs)
 		candidate := &iotextypes.CandidateV2{
 			OwnerAddress:       string(cs.Owner),
 			OperatorAddress:    string(cs.Operator),
