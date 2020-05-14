@@ -201,7 +201,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			if err := p.updateBalanceHistory(tx, epochNumber, height, actionHash, actionType, dst, src, act.Amount().String()); err != nil {
 				return errors.Wrapf(err, "failed to update balance history on height %d", height)
 			}
-		// TODO: Handle this when core add amount in receipt log
+		// TODO: Handle this when core adds amount in receipt log
 		case *action.WithdrawStake:
 		case *action.DepositToRewardingFund:
 			actionType := "depositToRewardingFund"
