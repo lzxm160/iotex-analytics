@@ -19,6 +19,7 @@ import (
 
 	"github.com/iotexproject/iotex-core/ioctl/util"
 	"github.com/iotexproject/iotex-core/pkg/log"
+	"github.com/iotexproject/iotex-election/db"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 
@@ -204,7 +205,11 @@ func (p *Protocol) updateAggregateStaking(tx *sql.Tx, votes *iotextypes.VoteBuck
 }
 
 func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegateName string) ([]*VotingInfo, error) {
+	fmt.Println("getStakingBucketInfoByEpoch", height, epochNum, delegateName)
 	ret, err := p.stakingBucketTableOperator.Get(height, p.Store.GetDB(), nil)
+	if errors.Cause(err) == db.ErrNotExist {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "staking bucket table operator")
 	}
@@ -213,6 +218,9 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 		return nil, errors.Errorf("Unexpected type %s", reflect.TypeOf(ret))
 	}
 	can, err := p.stakingCandidateTableOperator.Get(height, p.Store.GetDB(), nil)
+	if errors.Cause(err) == db.ErrNotExist {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "staking candidate table operator")
 	}
