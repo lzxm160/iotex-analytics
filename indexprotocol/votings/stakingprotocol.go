@@ -242,7 +242,7 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 			break
 		}
 	}
-	fmt.Println("getStakingBucketInfoByEpoch name", candidateAddress, ":", delegateName)
+	fmt.Println("getStakingBucketInfoByEpoch candidate owner Address", candidateAddress, ":", delegateName)
 	// update weighted votes based on probation
 	pblist, err := p.getProbationList(epochNum)
 	if err != nil {
@@ -252,6 +252,7 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 	var votinginfoList []*VotingInfo
 	selfStakeIndex := selfStakeIndexMap(candidateList)
 	for _, vote := range bucketList.Buckets {
+		fmt.Println(vote.CandidateAddress, candidateAddress)
 		if vote.CandidateAddress == candidateAddress {
 			selfStake := false
 			if _, ok := selfStakeIndex[vote.Index]; ok {
