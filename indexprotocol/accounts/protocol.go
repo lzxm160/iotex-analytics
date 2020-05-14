@@ -163,10 +163,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			return errors.Wrap(err, "failed to rebuild account income table")
 		}
 	}
-	hashToAction := make(map[hash.Hash256]action.SealedEnvelope)
-	for _, selp := range blk.Actions {
-		hashToAction[selp.Hash()] = selp
-	}
+
 	for _, selp := range blk.Actions {
 		actionHash := selp.Hash()
 		src, dst, err := getsrcAndDst(selp)
