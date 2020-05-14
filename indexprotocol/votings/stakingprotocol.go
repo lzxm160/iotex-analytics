@@ -216,11 +216,13 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 	}
 	var candidateAddress string
 	for _, cand := range candidateList.Candidates {
+		// is this delegateName encoded?
 		if cand.Name == delegateName {
 			candidateAddress = cand.OwnerAddress
 			break
 		}
 	}
+	fmt.Println("getStakingBucketInfoByEpoch", candidateAddress, ":", delegateName)
 	// update weighted votes based on probation
 	pblist, err := p.getProbationList(epochNum)
 	if err != nil {
