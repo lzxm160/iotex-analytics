@@ -104,7 +104,7 @@ func TestStaking(t *testing.T) {
 		AutoStake:  1,
 		SelfStake:  1.05,
 	}
-	p, err := NewProtocol(store, epochctx.NewEpochCtx(36, 24, 15), indexprotocol.GravityChain{}, indexprotocol.Poll{
+	p, err := NewProtocol(store, epochctx.NewEpochCtx(36, 24, 15, epochctx.FairbankHeight(100)), indexprotocol.GravityChain{}, indexprotocol.Poll{
 		VoteThreshold:        "100000000000000000000",
 		ScoreThreshold:       "0",
 		SelfStakingThreshold: "0",
