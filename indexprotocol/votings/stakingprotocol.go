@@ -212,7 +212,7 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 		return nil, nil
 	}
 	if err != nil {
-		return nil, errors.Wrap(err, "staking bucket table operator")
+		return nil, errors.Wrap(err, "failed to get staking buckets")
 	}
 	bucketList, ok := ret.(*iotextypes.VoteBucketList)
 	if !ok {
@@ -224,7 +224,7 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 		return nil, nil
 	}
 	if err != nil {
-		return nil, errors.Wrap(err, "staking candidate table operator")
+		return nil, errors.Wrap(err, "failed to get staking candidates")
 	}
 	candidateList, ok := can.(*iotextypes.CandidateListV2)
 	if !ok {
@@ -232,12 +232,11 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 	}
 	var candidateAddress string
 	for _, cand := range candidateList.Candidates {
-		// is this delegateName encoded?
-		encode, err := indexprotocol.EncodeDelegateName(cand.Name)
+		encodedName, err := indexprotocol.EncodeDelegateName(cand.Name)
 		if err != nil {
 			return nil, errors.Wrap(err, "error when encode delegate name")
 		}
-		if encode == delegateName {
+		if encodedName == delegateName {
 			candidateAddress = cand.OwnerAddress
 			break
 		}
