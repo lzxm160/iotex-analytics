@@ -114,7 +114,7 @@ func TestStaking(t *testing.T) {
 	tx, err := p.Store.GetDB().Begin()
 	require.NoError(err)
 	require.NoError(p.processStaking(tx, chainClient, height, epochNumber, nil, 0))
-
+	require.NoError(tx.Commit())
 	// case I: checkout bucket if it's written right
 	require.NoError(err)
 	ret, err := p.stakingBucketTableOperator.Get(height, p.Store.GetDB(), nil)
