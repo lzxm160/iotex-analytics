@@ -107,12 +107,16 @@ func TestProtocol(t *testing.T) {
 	}
 	data, err := candidateList.Serialize()
 	require.NoError(err)
-	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
+	first := chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
 		Data: data,
 	}, nil)
-	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
+	second := chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
 		Data: []byte("100"),
 	}, nil)
+	gomock.InOrder(
+		first,
+		second,
+	)
 	chainClient.EXPECT().ReadContract(gomock.Any(), gomock.Any()).AnyTimes().Return(&iotexapi.ReadContractResponse{
 		Receipt: &iotextypes.Receipt{Status: 1},
 		Data:    "xx",
