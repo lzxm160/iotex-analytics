@@ -281,7 +281,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 		}
 		if err := p.updateProbationListTable(tx, epochNumber, probationList); err != nil {
 			return errors.Wrapf(err, "failed to put data into probation tables in epoch %d", epochNumber)
-		
+
 		}
 
 		var gravityHeight uint64
@@ -297,7 +297,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 
 		// process staking
 		if blkheight >= p.epochCtx.FairbankHeight() {
-		fmt.Println(blkheight, ">=", p.epochCtx.FairbankHeight())
+			fmt.Println(blkheight, ">=", p.epochCtx.FairbankHeight())
 			return p.processStaking(tx, chainClient, blkheight, epochNumber, probationList, gravityHeight)
 		}
 
@@ -408,9 +408,6 @@ func (p *Protocol) calculateEthereumStaking(height uint64, tx *sql.Tx) (*types.E
 		return nil, err
 	}
 	valueOfBuckets, err := p.bucketTableOperator.Get(height, p.Store.GetDB(), tx)
-	if errors.Cause(err) == db.ErrNotExist {
-		return nil, nil
-	}
 	if err != nil {
 		return nil, err
 	}
