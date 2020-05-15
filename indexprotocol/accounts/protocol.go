@@ -152,9 +152,6 @@ func (p *Protocol) Initialize(ctx context.Context, tx *sql.Tx, genesis *indexpro
 func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block) error {
 	height := blk.Height()
 	epochNumber := p.epochCtx.GetEpochNumber(height)
-	// log action index
-	hashToGasPrice := make(map[string]*big.Int)
-	hashToSrcAddr := make(map[string]string)
 	// Special handling for epoch start height
 	epochHeight := p.epochCtx.GetEpochHeight(epochNumber)
 	if height == epochHeight {
@@ -168,6 +165,9 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			actionSuccess[receipt.ActionHash] = true
 		}
 	}
+	// log action index
+	hashToGasPrice := make(map[string]*big.Int)
+	hashToSrcAddr := make(map[string]string)
 	for _, selp := range blk.Actions {
 		actionHash := selp.Hash()
 		src, dst, err := getsrcAndDst(selp)
@@ -176,10 +176,11 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 		}
 		hashToSrcAddr[hex.EncodeToString(actionHash[:])] = src
 		hashToGasPrice[hex.EncodeToString(actionHash[:])] = selp.GasPrice()
-		act := selp.Action()
+
 		if !actionSuccess[selp.Hash()] {
 			continue
 		}
+		act := selp.Action()
 		switch act := act.(type) {
 		case *action.Transfer:
 			actionType := "transfer"
