@@ -55,7 +55,7 @@ func TestProtocol(t *testing.T) {
 		require.NoError(store.Stop(ctx))
 	}()
 
-	bp := blocks.NewProtocol(store, epochctx.NewEpochCtx(36, 24, 15))
+	bp := blocks.NewProtocol(store, epochctx.NewEpochCtx(36, 24, 15, epochctx.FairbankHeight(100000)))
 	p := NewProtocol(store, indexprotocol.HermesConfig{
 		HermesContractAddress:    "testAddr",
 		MultiSendContractAddress: "testAddr",
