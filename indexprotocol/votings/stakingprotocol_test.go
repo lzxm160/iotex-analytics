@@ -136,7 +136,9 @@ func TestStaking(t *testing.T) {
 	require.EqualValues(candidatesBytes, candidateListBytes)
 
 	// case III: check getStakingBucketInfoByEpoch
-	bucketInfo, err := p.getStakingBucketInfoByEpoch(height, epochNumber, delegateName)
+	encodedName, err := indexprotocol.EncodeDelegateName(delegateName)
+	require.NoError(err)
+	bucketInfo, err := p.getStakingBucketInfoByEpoch(height, epochNumber, encodedName)
 	require.NoError(err)
 	require.Equal("io1l9vaqmanwj47tlrpv6etf3pwq0s0snsq4vxke2", bucketInfo[0].VoterAddress)
 	require.Equal("io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02", bucketInfo[1].VoterAddress)
