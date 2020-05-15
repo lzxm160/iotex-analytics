@@ -380,6 +380,7 @@ func (p *Protocol) updateDelegates(
 		return errors.Wrap(err, "update active block producers")
 	}
 	if height >= p.epochCtx.FairbankHeight() {
+		fmt.Println("updateDelegates", height, p.epochCtx.FairbankHeight())
 		return p.updateStakingDelegates(chainClient, height)
 	}
 	var gravityChainStartHeight uint64
