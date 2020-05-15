@@ -169,9 +169,6 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 		}
 	}
 	for _, selp := range blk.Actions {
-		if !actionSuccess[selp.Hash()] {
-			continue
-		}
 		actionHash := selp.Hash()
 		src, dst, err := getsrcAndDst(selp)
 		if err != nil {
@@ -180,6 +177,9 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 		hashToSrcAddr[hex.EncodeToString(actionHash[:])] = src
 		hashToGasPrice[hex.EncodeToString(actionHash[:])] = selp.GasPrice()
 		act := selp.Action()
+		if !actionSuccess[selp.Hash()] {
+			continue
+		}
 		switch act := act.(type) {
 		case *action.Transfer:
 			actionType := "transfer"

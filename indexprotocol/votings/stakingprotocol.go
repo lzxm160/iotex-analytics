@@ -262,9 +262,13 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 				votingPower := new(big.Float).SetInt(weightedVotes)
 				weightedVotes, _ = votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
 			}
+			voteOwnerAddress, err := util.IoAddrToEvmAddr(vote.Owner)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to convert IoTeX address to ETH address")
+			}
 			votinginfo := &VotingInfo{
 				EpochNumber:       epochNum,
-				VoterAddress:      vote.Owner,
+				VoterAddress:      voteOwnerAddress.Hex(),
 				IsNative:          true,
 				Votes:             vote.StakedAmount,
 				WeightedVotes:     weightedVotes.Text(10),
