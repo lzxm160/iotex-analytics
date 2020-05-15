@@ -72,9 +72,6 @@ func TestProtocol(t *testing.T) {
 		ConsensusScheme: "ROLLDPOS",
 	})
 
-	//chainClient.EXPECT().ReadState(gomock.Any(), gomock.Any()).Times(1).Return(&iotexapi.ReadStateResponse{
-	//	Data: []byte(strconv.FormatUint(1000, 10)),
-	//}, nil)
 	electionClient.EXPECT().GetCandidates(gomock.Any(), gomock.Any()).Times(1).Return(
 		&api.CandidateResponse{
 			Candidates: []*api.Candidate{
