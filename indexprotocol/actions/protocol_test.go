@@ -110,7 +110,8 @@ func TestProtocol(t *testing.T) {
 	first := chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
 		Data: data,
 	}, nil)
-	second := chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
+
+	second := chainClient.EXPECT().ReadState(gomock.Any(), gomock.Any()).Times(1).Return(&iotexapi.ReadStateResponse{
 		Data: []byte("100"),
 	}, nil)
 	gomock.InOrder(
