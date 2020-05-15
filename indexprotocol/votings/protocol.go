@@ -842,6 +842,7 @@ func (p *Protocol) mergeResult(height uint64, result *types.ElectionResult, nati
 
 func (p *Protocol) getDelegateRewardPortions(stakingAddress common.Address, gravityChainHeight uint64) (blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage int64, err error) {
 	if p.GravityChainCfg.GravityChainAPIs == nil || gravityChainHeight < p.GravityChainCfg.RewardPercentageStartHeight {
+		fmt.Println("p.GravityChainCfg.GravityChainAPIs == nil", p.GravityChainCfg.GravityChainAPIs == nil)
 		blockRewardPercentage = 100
 		epochRewardPercentage = 100
 		foundationBonusPercentage = 100
