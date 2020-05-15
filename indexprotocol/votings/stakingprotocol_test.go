@@ -8,9 +8,12 @@ package votings
 
 import (
 	"context"
+	"encoding/hex"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/iotexproject/iotex-core/ioctl/util"
 
 	"github.com/golang/mock/gomock"
 	"github.com/golang/protobuf/proto"
@@ -140,9 +143,18 @@ func TestStaking(t *testing.T) {
 	require.NoError(err)
 	bucketInfo, err := p.getStakingBucketInfoByEpoch(height, epochNumber, encodedName)
 	require.NoError(err)
-	require.Equal("io1l9vaqmanwj47tlrpv6etf3pwq0s0snsq4vxke2", bucketInfo[0].VoterAddress)
-	require.Equal("io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02", bucketInfo[1].VoterAddress)
-	require.Equal("io1vdtfpzkwpyngzvx7u2mauepnzja7kd5rryp0sg", bucketInfo[2].VoterAddress)
+
+	ethAddress1, err := util.IoAddrToEvmAddr("io1l9vaqmanwj47tlrpv6etf3pwq0s0snsq4vxke2")
+	require.NoError(err)
+	require.Equal(hex.EncodeToString(ethAddress1.Bytes()), bucketInfo[0].VoterAddress)
+
+	ethAddress2, err := util.IoAddrToEvmAddr("io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02")
+	require.NoError(err)
+	require.Equal(hex.EncodeToString(ethAddress2.Bytes()), bucketInfo[1].VoterAddress)
+
+	ethAddress3, err := util.IoAddrToEvmAddr("io1vdtfpzkwpyngzvx7u2mauepnzja7kd5rryp0sg")
+	require.NoError(err)
+	require.Equal(hex.EncodeToString(ethAddress3.Bytes()), bucketInfo[2].VoterAddress)
 	for _, b := range bucketInfo {
 		require.True(b.Decay)
 		require.Equal(epochNumber, b.EpochNumber)
