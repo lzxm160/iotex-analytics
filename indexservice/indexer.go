@@ -34,13 +34,20 @@ import (
 )
 
 var (
-	label          = "height"
-	blockHeightMtc = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "block_height",
-			Help: "block height",
+	label = "height"
+	//blockHeightMtc = prometheus.NewCounterVec(
+	//	prometheus.CounterOpts{
+	//		Name: "block_height",
+	//		Help: "block height",
+	//	},
+	//	[]string{label},
+	//)
+	blockHeightMtc = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "iotex_db_batch_size",
+			Help: "DB batch size",
 		},
-		[]string{label},
+		[]string{},
 	)
 )
 
@@ -255,11 +262,9 @@ func (idx *Indexer) IndexInBatch(ctx context.Context, tipHeight uint64) error {
 			}
 			// Update lastHeight tracker
 			idx.lastHeight = blk.Height()
-			labelValues := []string{"1234"}
-			//blockHeightMtc.With(label)
-			blockHeightMtc.WithLabelValues(labelValues...)
-			if v, err := blockHeightMtc.GetMetricWithLabelValues(labelValues...); err == nil {
-				fmt.Printf("GetMetricWithLabelValues: %s\n", v)
+			blockHeightMtc.With(prometheus.Labels{label: "a"}).Set(float64(idx.lastHeight))
+			if v, err := blockHeightMtc.GetMetricWith(prometheus.Labels{label: "a"}); err == nil {
+				fmt.Printf("GetMetricWithLabelValues: %s\n", v.Desc())
 			}
 		}
 		startHeight += count
