@@ -47,7 +47,7 @@ var (
 			Name: "iotex_db_batch_size",
 			Help: "DB batch size",
 		},
-		[]string{},
+		[]string{label},
 	)
 )
 
@@ -262,10 +262,11 @@ func (idx *Indexer) IndexInBatch(ctx context.Context, tipHeight uint64) error {
 			}
 			// Update lastHeight tracker
 			idx.lastHeight = blk.Height()
-			blockHeightMtc.With(prometheus.Labels{}).Set(float64(idx.lastHeight))
-			if v, err := blockHeightMtc.GetMetricWith(prometheus.Labels{}); err == nil {
+			blockHeightMtc.With(prometheus.Labels{label: label}).Set(float64(idx.lastHeight))
+			if v, err := blockHeightMtc.GetMetricWith(prometheus.Labels{label: label}); err == nil {
 				fmt.Printf("GetMetricWithLabelValues: %s\n", v.Desc())
 			}
+
 		}
 		startHeight += count
 	}
