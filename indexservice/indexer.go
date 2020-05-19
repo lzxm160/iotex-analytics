@@ -255,7 +255,7 @@ func (idx *Indexer) IndexInBatch(ctx context.Context, tipHeight uint64) error {
 			}
 			// Update lastHeight tracker
 			idx.lastHeight = blk.Height()
-			labelValues := []string{label, "1234"}
+			labelValues := []string{"1234"}
 			//blockHeightMtc.With(label)
 			blockHeightMtc.WithLabelValues(labelValues...)
 			if v, err := blockHeightMtc.GetMetricWithLabelValues(labelValues...); err == nil {
