@@ -437,7 +437,7 @@ func (p *Protocol) totalWeightedVotes(startEpoch uint64, endEpoch uint64, delega
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-
+	fmt.Println("totalWeightedVotes getQuery", getQuery, startEpoch, endEpoch, delegateName)
 	rows, err := stmt.Query(startEpoch, endEpoch, delegateName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
@@ -478,7 +478,7 @@ func (p *Protocol) rewardsToSplit(startEpoch uint64, endEpoch uint64, delegateNa
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-
+	fmt.Println("rewardsToSplit getquery", getQuery, startEpoch, endEpoch, delegateName, percentage, includeFoundationBonus)
 	rows, err := stmt.Query(startEpoch, endEpoch, delegateName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
@@ -522,7 +522,7 @@ func (p *Protocol) voterVotes(startEpoch uint64, endEpoch uint64, delegateName s
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-
+	fmt.Println("voterVotes getQuery", getQuery, startEpoch, endEpoch, delegateName)
 	rows, err := stmt.Query(startEpoch, endEpoch, delegateName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
