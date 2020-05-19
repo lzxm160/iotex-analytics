@@ -263,7 +263,7 @@ func (idx *Indexer) IndexInBatch(ctx context.Context, tipHeight uint64) error {
 			// Update lastHeight tracker
 			idx.lastHeight = blk.Height()
 			blockHeightMtc.With(prometheus.Labels{}).Set(float64(idx.lastHeight))
-			if v, err := blockHeightMtc.GetMetricWith(prometheus.Labels{label: "a"}); err == nil {
+			if v, err := blockHeightMtc.GetMetricWith(prometheus.Labels{}); err == nil {
 				fmt.Printf("GetMetricWithLabelValues: %s\n", v.Desc())
 			}
 		}
