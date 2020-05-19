@@ -85,7 +85,7 @@ func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.Candid
 		}
 		blockRewardPortion, epochRewardPortion, foundationBonusPortion, err := p.getDelegateRewardPortions(stakingAddress, gravityHeight)
 		if err != nil {
-			fmt.Println("getDelegateRewardPortions:", stakingAddress.String(), gravityHeight)
+			//fmt.Println("getDelegateRewardPortions:", stakingAddress.String(), gravityHeight)
 			blockRewardPortion, epochRewardPortion, foundationBonusPortion = 0, 0, 0
 
 			//return errors.Errorf("get delegate reward portions:%s,%d,%s", stakingAddress.String(), gravityHeight, err.Error())
@@ -205,7 +205,7 @@ func (p *Protocol) updateAggregateStaking(tx *sql.Tx, votes *iotextypes.VoteBuck
 }
 
 func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegateName string) ([]*VotingInfo, error) {
-	fmt.Println("getStakingBucketInfoByEpoch", height, epochNum, delegateName)
+	//fmt.Println("getStakingBucketInfoByEpoch", height, epochNum, delegateName)
 	ret, err := p.stakingBucketTableOperator.Get(height, p.Store.GetDB(), nil)
 	if errors.Cause(err) == db.ErrNotExist {
 		fmt.Println("staking bucket table operator db.ErrNotExist")
@@ -250,7 +250,7 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 	var votinginfoList []*VotingInfo
 	selfStakeIndex := selfStakeIndexMap(candidateList)
 	for _, vote := range bucketList.Buckets {
-		fmt.Println(vote.CandidateAddress, candidateAddress)
+		//fmt.Println(vote.CandidateAddress, candidateAddress)
 		if vote.CandidateAddress == candidateAddress {
 			selfStake := false
 			if _, ok := selfStakeIndex[vote.Index]; ok {

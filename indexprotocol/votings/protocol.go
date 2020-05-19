@@ -266,11 +266,11 @@ func (p *Protocol) Initialize(context.Context, *sql.Tx, *indexprotocol.Genesis) 
 
 // HandleBlock handles blocks
 func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block) error {
-	log.S().Info("votings HandleBlock", blk.Height())
+	//log.S().Info("votings HandleBlock", blk.Height())
 	blkheight := blk.Height()
 	epochNumber := p.epochCtx.GetEpochNumber(blkheight)
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
-	fmt.Println("///////////////////votings HandleBlock", epochNumber, p.epochCtx.GetEpochHeight(epochNumber), blkheight, p.epochCtx.FairbankHeight())
+	//fmt.Println("///////////////////votings HandleBlock", epochNumber, p.epochCtx.GetEpochHeight(epochNumber), blkheight, p.epochCtx.FairbankHeight())
 	if indexCtx.ConsensusScheme == "ROLLDPOS" && blkheight == p.epochCtx.GetEpochHeight(epochNumber) {
 		// update voting tables on every epoch start height
 		chainClient := indexCtx.ChainClient
@@ -407,6 +407,9 @@ func (p *Protocol) calculateEthereumStaking(height uint64, tx *sql.Tx) (*types.E
 		return nil, err
 	}
 	valueOfBuckets, err := p.bucketTableOperator.Get(height, p.Store.GetDB(), tx)
+	if errors.Cause(err) == db.ErrNotExist {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
