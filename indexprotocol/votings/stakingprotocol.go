@@ -86,7 +86,8 @@ func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.Candid
 		blockRewardPortion, epochRewardPortion, foundationBonusPortion, err := p.getDelegateRewardPortions(stakingAddress, gravityHeight)
 		if err != nil {
 			//fmt.Println("getDelegateRewardPortions:", stakingAddress.String(), gravityHeight)
-			blockRewardPortion, epochRewardPortion, foundationBonusPortion = 0, 0, 0
+			blockRewardPortion, epochRewardPortion, foundationBonusPortion = 100, 100, 100
+			return nil
 
 			//return errors.Errorf("get delegate reward portions:%s,%d,%s", stakingAddress.String(), gravityHeight, err.Error())
 		}
