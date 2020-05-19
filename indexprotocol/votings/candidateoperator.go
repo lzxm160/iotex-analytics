@@ -101,7 +101,7 @@ func QueryCandidates(tableName string, frequencies map[int64]int, sdb *sql.DB, t
 		if !ok {
 			return nil, errors.New("failed to convert")
 		}
-		fmt.Println("cs:", string(cs.Name))
+		//fmt.Println("cs:", string(cs.Name))
 		candidate := &iotextypes.CandidateV2{
 			OwnerAddress:       string(cs.Owner),
 			OperatorAddress:    string(cs.Operator),
@@ -115,9 +115,9 @@ func QueryCandidates(tableName string, frequencies map[int64]int, sdb *sql.DB, t
 			candidates = append(candidates, candidate)
 		}
 	}
-	for _, c := range candidates {
-		fmt.Println("xxxx", c)
-	}
+	//for _, c := range candidates {
+	//	fmt.Println("xxxx", c)
+	//}
 	return &iotextypes.CandidateListV2{Candidates: candidates}, nil
 }
 

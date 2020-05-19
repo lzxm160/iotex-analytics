@@ -225,7 +225,7 @@ func (idx *Indexer) IndexInBatch(ctx context.Context, tipHeight uint64) error {
 			return errors.Wrap(err, "failed to get raw blocks from the chain")
 		}
 		for _, blkInfo := range getRawBlocksRes.GetBlocks() {
-			log.S().Infof("blkInfo:%d", blkInfo.Block.Header.GetCore().Height)
+			//log.S().Infof("blkInfo:%d", blkInfo.Block.Header.GetCore().Height)
 			blk := &block.Block{}
 			if err := blk.ConvertFromBlockPb(blkInfo.GetBlock()); err != nil {
 				return errors.Wrap(err, "failed to convert block protobuf to raw block")
@@ -275,7 +275,7 @@ func (idx *Indexer) SubscribeNewBlock(
 
 // buildIndex builds the index for a block
 func (idx *Indexer) buildIndex(ctx context.Context, blk *block.Block) error {
-	log.S().Infof("buildIndex:%d", blk.Height())
+	//log.S().Infof("buildIndex:%d", blk.Height())
 	if err := idx.Store.Transact(func(tx *sql.Tx) error {
 		for _, p := range idx.IndexProtocols {
 			if err := p.HandleBlock(ctx, tx, blk); err != nil {
