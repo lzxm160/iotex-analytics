@@ -266,9 +266,11 @@ func (p *Protocol) Initialize(context.Context, *sql.Tx, *indexprotocol.Genesis) 
 
 // HandleBlock handles blocks
 func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block) error {
+	log.S().Info("votings HandleBlock", blk.Height())
 	blkheight := blk.Height()
 	epochNumber := p.epochCtx.GetEpochNumber(blkheight)
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
+	fmt.Println("///////////////////votings HandleBlock", epochNumber, p.epochCtx.GetEpochHeight(epochNumber), blkheight, p.epochCtx.FairbankHeight())
 	if indexCtx.ConsensusScheme == "ROLLDPOS" && blkheight == p.epochCtx.GetEpochHeight(epochNumber) {
 		// update voting tables on every epoch start height
 		chainClient := indexCtx.ChainClient
@@ -294,6 +296,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 
 		// process staking
 		if blkheight >= p.epochCtx.FairbankHeight() {
+			fmt.Println(blkheight, ">=", p.epochCtx.FairbankHeight())
 			return p.processStaking(tx, chainClient, blkheight, epochNumber, probationList, gravityHeight)
 		}
 
