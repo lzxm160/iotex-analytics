@@ -189,7 +189,7 @@ func TestRemainingTime(t *testing.T) {
 		AutoStake:      false,
 	}
 	remaining = remainingTime(bucket)
-	require.True(remaining > 0)
+	require.True(remaining > 0 && remaining < time.Duration(100*24*time.Hour))
 
 	// case III: AutoStake is true
 	bucketTime = time.Unix(time.Now().Unix()-10, 0)
@@ -203,11 +203,11 @@ func TestRemainingTime(t *testing.T) {
 	require.Equal(time.Duration(100*24*time.Hour), remaining)
 
 	// case IV: now is after starttime+stakedduration
-	bucketTime = time.Unix(time.Now().Unix()-200, 0)
+	bucketTime = time.Unix(time.Now().Unix()-86410, 0)
 	timestamp, _ = ptypes.TimestampProto(bucketTime)
 	bucket = &iotextypes.VoteBucket{
 		StakeStartTime: timestamp,
-		StakedDuration: 100,
+		StakedDuration: 1,
 	}
 	remaining = remainingTime(bucket)
 	require.Equal(time.Duration(0), remaining)
