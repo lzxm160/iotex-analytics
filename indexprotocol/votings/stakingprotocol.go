@@ -298,7 +298,8 @@ func calculateVoteWeight(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.Vo
 	if !ok {
 		return big.NewInt(0)
 	}
-	weightedAmount, _ := amount.Mul(amount, big.NewFloat(weight)).Int(nil)
+	weightedAmount, acc := amount.Mul(amount, big.NewFloat(weight)).Int(nil)
+	fmt.Println("calculateVoteWeight", weight, v.StakedAmount, weightedAmount, acc)
 	return weightedAmount
 }
 

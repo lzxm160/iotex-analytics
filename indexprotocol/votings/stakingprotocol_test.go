@@ -357,6 +357,13 @@ func TestVotes(t *testing.T) {
 	d := a.Add(a, b).Add(a, c)
 	fmt.Println("local aggregate_voting mysql", d.String())
 	fmt.Println("local staking_candidate more than aggregate_voting sum", candidatesTotal.Sub(candidatesTotal, d).String())
+
+	amount, ok := new(big.Float).SetString("10000000000000000000000000")
+	if !ok {
+		fmt.Println("!ok")
+	}
+	weightedAmount, acc := amount.Mul(amount, big.NewFloat(1.06)).Int(nil)
+	fmt.Println(weightedAmount.String(), acc)
 	//	//
 	//	////remote
 	//	//
