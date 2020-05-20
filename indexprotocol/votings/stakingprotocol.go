@@ -13,6 +13,7 @@ import (
 	"math"
 	"math/big"
 	"reflect"
+	"strconv"
 	"time"
 
 	"github.com/pkg/errors"
@@ -294,15 +295,44 @@ func calculateVoteWeight(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.Vo
 		// self-stake extra bonus requires enable auto-stake for at least 3 months
 		weight *= cfg.SelfStake
 	}
-	amount, ok := new(big.Float).SetString(v.StakedAmount)
+	rountdWeight := FloatRound(weight, 15)
+	amount, ok := new(big.Int).SetString(v.StakedAmount, 10)
 	if !ok {
 		return big.NewInt(0)
 	}
-	weightedAmount, acc := amount.Mul(amount, big.NewFloat(weight)).Int(nil)
-	fmt.Println("calculateVoteWeight", weight, v.StakedAmount, weightedAmount, acc)
+	weightedAmount := amount.Mul(amount, big.NewInt(int64(rountdWeight*1e15))).Div(amount, big.NewInt(1e15))
+	fmt.Println("calculateVoteWeight", weight, rountdWeight, v.StakedAmount, weightedAmount)
 	return weightedAmount
 }
 
+func FloatRound(f float64, n int) float64 {
+	format := "%." + strconv.Itoa(n) + "f"
+	res, _ := strconv.ParseFloat(fmt.Sprintf(format, f), 64)
+	return res
+}
+
+//func calculateVoteWeight(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.VoteBucket, selfStake bool) *big.Int {
+//	remainingTime := float64(v.StakedDuration * 86400)
+//	weight := float64(1)
+//	var m float64
+//	if v.AutoStake {
+//		m = cfg.AutoStake
+//	}
+//	if remainingTime > 0 {
+//		weight += math.Log(math.Ceil(remainingTime/86400)*(1+m)) / math.Log(cfg.DurationLg) / 100
+//	}
+//	if selfStake && v.AutoStake && v.StakedDuration >= 91 {
+//		// self-stake extra bonus requires enable auto-stake for at least 3 months
+//		weight *= cfg.SelfStake
+//	}
+//	amount, ok := new(big.Float).SetString(v.StakedAmount)
+//	if !ok {
+//		return big.NewInt(0)
+//	}
+//	weightedAmount, acc := amount.Mul(amount, big.NewFloat(weight)).Int(nil)
+//	fmt.Println("calculateVoteWeight", weight, v.StakedAmount, weightedAmount, acc)
+//	return weightedAmount
+//}
 func remainingTime(bucket *iotextypes.VoteBucket) time.Duration {
 	now := time.Now()
 	startTime := time.Unix(bucket.StakeStartTime.Seconds, int64(bucket.StakeStartTime.Nanos))
