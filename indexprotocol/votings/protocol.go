@@ -269,6 +269,7 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 	blkheight := blk.Height()
 	epochNumber := p.epochCtx.GetEpochNumber(blkheight)
 	indexCtx := indexcontext.MustGetIndexCtx(ctx)
+	fmt.Println("///////////////////votings HandleBlock", epochNumber, p.epochCtx.GetEpochHeight(epochNumber), blkheight, p.epochCtx.FairbankHeight())
 	if indexCtx.ConsensusScheme == "ROLLDPOS" && blkheight == p.epochCtx.GetEpochHeight(epochNumber) {
 		// update voting tables on every epoch start height
 		chainClient := indexCtx.ChainClient
