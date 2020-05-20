@@ -9,6 +9,7 @@ package votings
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -295,4 +296,41 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 		second,
 		third,
 	)
+}
+
+func TestVotes(t *testing.T) {
+	require := require.New(t)
+	ctx := context.Background()
+
+	store := s.NewMySQL("root:123456@tcp(192.168.146.140:3306)/", "analytics")
+	require.NoError(store.Start(ctx))
+	defer func() {
+		require.NoError(store.Stop(ctx))
+	}()
+	require.NoError(store.Start(context.Background()))
+	cfg := indexprotocol.VoteWeightCalConsts{
+		DurationLg: 1.2,
+		AutoStake:  1,
+		SelfStake:  1.06,
+	}
+	p, err := NewProtocol(store, epochctx.NewEpochCtx(36, 24, 15, epochctx.FairbankHeight(3252241), epochctx.EnableDardanellesSubEpoch(100081, 30)), indexprotocol.GravityChain{}, indexprotocol.Poll{
+		VoteThreshold:        "100000000000000000000",
+		ScoreThreshold:       "0",
+		SelfStakingThreshold: "0",
+	}, cfg)
+	require.NoError(err)
+	epoch := uint64(4670)
+	startHeight := p.epochCtx.GetEpochHeight(epoch)
+	fmt.Println("startHeight", startHeight)
+	can, err := p.stakingCandidateTableOperator.Get(startHeight, p.Store.GetDB(), nil)
+	require.NoError(err)
+	candidateList, ok := can.(*iotextypes.CandidateListV2)
+	require.True(ok)
+	for _, cand := range candidateList.Candidates {
+		encodedName, err := indexprotocol.EncodeDelegateName(cand.Name)
+		require.NoError(err)
+		if encodedName == "726f626f7462703030303132" {
+			fmt.Println(cand.TotalWeightedVotes)
+		}
+	}
 }
