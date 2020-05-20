@@ -10,6 +10,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"math/big"
 	"strconv"
 	"testing"
 	"time"
@@ -298,11 +299,16 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	)
 }
 
-func TestVotes(t *testing.T) {
+func getcandidateTotal(name string, t *testing.T, local bool) *big.Int {
 	require := require.New(t)
 	ctx := context.Background()
+	var store s.Store
+	if local {
+		store = s.NewMySQL("root:123456@tcp(192.168.146.140:3306)/", "analytics")
+	} else {
+		store = s.NewMySQL("admin:IOTX4689@tcp(analytics-testnet.cs4r6igeqju2.us-east-1.rds.amazonaws.com:3306)/", "analytics")
+	}
 
-	store := s.NewMySQL("root:123456@tcp(192.168.146.140:3306)/", "analytics")
 	require.NoError(store.Start(ctx))
 	defer func() {
 		require.NoError(store.Stop(ctx))
@@ -319,18 +325,77 @@ func TestVotes(t *testing.T) {
 		SelfStakingThreshold: "0",
 	}, cfg)
 	require.NoError(err)
-	epoch := uint64(4670)
+	epoch := uint64(4665)
 	startHeight := p.epochCtx.GetEpochHeight(epoch)
-	fmt.Println("startHeight", startHeight)
+	fmt.Println(epoch, startHeight)
 	can, err := p.stakingCandidateTableOperator.Get(startHeight, p.Store.GetDB(), nil)
 	require.NoError(err)
 	candidateList, ok := can.(*iotextypes.CandidateListV2)
 	require.True(ok)
+	twv := big.NewInt(0)
+	fmt.Println(name, hex.EncodeToString([]byte(name)))
 	for _, cand := range candidateList.Candidates {
 		encodedName, err := indexprotocol.EncodeDelegateName(cand.Name)
 		require.NoError(err)
-		if encodedName == "726f626f7462703030303132" {
-			fmt.Println(cand.TotalWeightedVotes)
+		if encodedName == hex.EncodeToString([]byte(name)) {
+			twv.SetString(cand.TotalWeightedVotes, 10)
+			return twv
 		}
 	}
+	return big.NewInt(0)
 }
+func TestVotes(t *testing.T) {
+	candidatesTotal := getcandidateTotal("robotbp00021", t, true)
+	fmt.Println("candidatesTotal", candidatesTotal.String())
+
+	// for"robotbp00021"
+	//726f626f7462703030303231
+	//select * from aggregate_voting where candidate_name='726f626f7462703030303231' and epoch_number=4665
+	a, _ := big.NewInt(0).SetString("11447588583684614452276736", 10)
+	b, _ := big.NewInt(0).SetString("2289494821788705003536384", 10)
+	c, _ := big.NewInt(0).SetString("228949482178870500352", 10)
+	d := a.Add(a, b).Add(a, c)
+	fmt.Println("local aggregate_voting mysql", d.String())
+	fmt.Println("local staking_candidate more than aggregate_voting sum", candidatesTotal.Sub(candidatesTotal, d).String())
+	//	//
+	//	////remote
+	//	//
+	//	//remotea, _ := big.NewInt(0).SetString("10380282203476409510403440", 10)
+	//	//remoteb, _ := big.NewInt(0).SetString("2200597821158787326148608", 10)
+	//	//remotec, _ := big.NewInt(0).SetString("207603568033847851744", 10)
+	//	//remoted := remotea.Add(remotea, remoteb).Add(remotea, remotec)
+	//	//fmt.Println("remote", remoted.String())
+	//	//fmt.Println("remote aggregate_voting sum less than staking_candidate", remotetwv.Sub(remotetwv, remoted).String())
+
+	// for"robotbp00012"
+	//726f626f7462703030303132
+	//select * from aggregate_voting where candidate_name='726f626f7462703030303132' and epoch_number=4665
+	//a, _ := big.NewInt(0).SetString("2289494821788705003536384", 10)
+	//fmt.Println("local", a.String())
+	//fmt.Println("local aggregate_voting sum less than staking_candidate", candidatesTotal.Sub(candidatesTotal, a).String())
+	//votingPower := new(big.Float).SetInt(a)
+	//val, _ := votingPower.Mul(votingPower, big.NewFloat(90)).Int(nil)
+	//fmt.Println("val", val.String())
+}
+
+//func calculateVoteWeight2(cfg indexprotocol.VoteWeightCalConsts, duration uint32, selfStake bool) *big.Int {
+//	remainingTime := float64(duration * 86400)
+//	weight := float64(1)
+//	var m float64
+//	if true {
+//		m = cfg.AutoStake
+//	}
+//	if remainingTime > 0 {
+//		weight += math.Log(math.Ceil(remainingTime/86400)*(1+m)) / math.Log(cfg.DurationLg) / 100
+//	}
+//	if selfStake && true && duration >= 91 {
+//		// self-stake extra bonus requires enable auto-stake for at least 3 months
+//		weight *= cfg.SelfStake
+//	}
+//	amount, ok := new(big.Float).SetString(v.StakedAmount)
+//	if !ok {
+//		return big.NewInt(0)
+//	}
+//	weightedAmount, _ := amount.Mul(amount, big.NewFloat(weight)).Int(nil)
+//	return weightedAmount
+//}
