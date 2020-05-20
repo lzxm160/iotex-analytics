@@ -298,14 +298,15 @@ func remainingTime(bucket *iotextypes.VoteBucket) time.Duration {
 	if now.Before(startTime) {
 		return 0
 	}
+	duration := time.Duration(bucket.StakedDuration) * 24 * time.Hour
 	if !bucket.AutoStake {
-		endTime := startTime.Add(time.Duration(bucket.StakedDuration) * 24 * time.Hour)
+		endTime := startTime.Add(duration)
 		if endTime.After(now) {
-			return startTime.Add(time.Duration(bucket.StakedDuration) * 24 * time.Hour).Sub(now)
+			return startTime.Add(duration).Sub(now)
 		}
 		return 0
 	}
-	return time.Duration(bucket.StakedDuration) * 24 * time.Hour
+	return duration
 }
 
 func selfStakeIndexMap(candidates *iotextypes.CandidateListV2) map[uint64]struct{} {
