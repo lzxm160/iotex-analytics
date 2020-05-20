@@ -302,7 +302,7 @@ func remainingTime(bucket *iotextypes.VoteBucket) time.Duration {
 	if !bucket.AutoStake {
 		endTime := startTime.Add(duration)
 		if endTime.After(now) {
-			return startTime.Add(duration).Sub(now)
+			return endTime.Sub(now)
 		}
 		return 0
 	}
