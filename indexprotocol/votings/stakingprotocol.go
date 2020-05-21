@@ -13,7 +13,6 @@ import (
 	"math"
 	"math/big"
 	"reflect"
-	"strconv"
 	"time"
 
 	"github.com/pkg/errors"
@@ -42,12 +41,6 @@ func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceCli
 	}
 	// after get and clean data,the following code is for writing mysql
 	// update staking_bucket and height_to_staking_bucket table
-	if probationList != nil {
-		candidateList, err = filterStakingCandidates(candidateList, probationList, epochStartheight)
-		if err != nil {
-			return errors.Wrap(err, "failed to filter candidate with probation list")
-		}
-	}
 	if err = p.stakingBucketTableOperator.Put(epochStartheight, voteBucketList, tx); err != nil {
 		return
 	}
@@ -55,7 +48,12 @@ func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceCli
 	if err = p.stakingCandidateTableOperator.Put(epochStartheight, candidateList, tx); err != nil {
 		return
 	}
-
+	if probationList != nil {
+		candidateList, err = filterStakingCandidates(candidateList, probationList, epochStartheight)
+		if err != nil {
+			return errors.Wrap(err, "failed to filter candidate with probation list")
+		}
+	}
 	// update voting_result table
 	if err = p.updateStakingResult(tx, candidateList, epochNumber, gravityHeight); err != nil {
 		return
@@ -137,7 +135,11 @@ func (p *Protocol) updateAggregateStaking(tx *sql.Tx, votes *iotextypes.VoteBuck
 		if _, ok := selfStakeIndex[vote.Index]; ok {
 			selfStake = true
 		}
-		weightedAmount, _ := calculateVoteWeight(p.voteCfg, vote, selfStake)
+		var weightedAmount *big.Int
+		weightedAmount, err = calculateVoteWeight(p.voteCfg, vote, selfStake)
+		if err != nil {
+			return errors.Wrap(err, "calculate vote weight error")
+		}
 		stakeAmount, ok := big.NewInt(0).SetString(vote.StakedAmount, 10)
 		if !ok {
 			err = errors.New("stake amount convert error")
@@ -256,7 +258,10 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 			if _, ok := selfStakeIndex[vote.Index]; ok {
 				selfStake = true
 			}
-			weightedVotes, _ := calculateVoteWeight(p.voteCfg, vote, selfStake)
+			weightedVotes, err := calculateVoteWeight(p.voteCfg, vote, selfStake)
+			if err != nil {
+				return nil, errors.Wrap(err, "calculate vote weight error")
+			}
 			if _, ok := probationMap[vote.CandidateAddress]; ok {
 				// filter based on probation
 				votingPower := new(big.Float).SetInt(weightedVotes)
@@ -303,62 +308,9 @@ func calculateVoteWeight(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.Vo
 	}
 	amount := new(big.Float).SetInt(amountInt)
 	weightedAmount, _ := amount.Mul(amount, big.NewFloat(weight)).Int(nil)
-	fmt.Println("calculateVoteWeight", weight, v.StakedAmount, weightedAmount)
 	return weightedAmount, nil
 }
 
-//func calculateVoteWeight(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.VoteBucket, selfStake bool) *big.Int {
-//	remainingTime := float64(v.StakedDuration * 86400)
-//	weight := float64(1)
-//	var m float64
-//	if v.AutoStake {
-//		m = cfg.AutoStake
-//	}
-//	if remainingTime > 0 {
-//		weight += math.Log(math.Ceil(remainingTime/86400)*(1+m)) / math.Log(cfg.DurationLg) / 100
-//	}
-//	if selfStake && v.AutoStake && v.StakedDuration >= 91 {
-//		// self-stake extra bonus requires enable auto-stake for at least 3 months
-//		weight *= cfg.SelfStake
-//	}
-//	rountdWeight := FloatRound(weight, 15)
-//	amount, ok := new(big.Int).SetString(v.StakedAmount, 10)
-//	if !ok {
-//		return big.NewInt(0)
-//	}
-//	weightedAmount := amount.Mul(amount, big.NewInt(int64(rountdWeight*1e15))).Div(amount, big.NewInt(1e15))
-//	fmt.Println("calculateVoteWeight", weight, rountdWeight, v.StakedAmount, weightedAmount)
-//	return weightedAmount
-//}
-
-func FloatRound(f float64, n int) float64 {
-	format := "%." + strconv.Itoa(n) + "f"
-	res, _ := strconv.ParseFloat(fmt.Sprintf(format, f), 64)
-	return res
-}
-
-//func calculateVoteWeight(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.VoteBucket, selfStake bool) *big.Int {
-//	remainingTime := float64(v.StakedDuration * 86400)
-//	weight := float64(1)
-//	var m float64
-//	if v.AutoStake {
-//		m = cfg.AutoStake
-//	}
-//	if remainingTime > 0 {
-//		weight += math.Log(math.Ceil(remainingTime/86400)*(1+m)) / math.Log(cfg.DurationLg) / 100
-//	}
-//	if selfStake && v.AutoStake && v.StakedDuration >= 91 {
-//		// self-stake extra bonus requires enable auto-stake for at least 3 months
-//		weight *= cfg.SelfStake
-//	}
-//	amount, ok := new(big.Float).SetString(v.StakedAmount)
-//	if !ok {
-//		return big.NewInt(0)
-//	}
-//	weightedAmount, acc := amount.Mul(amount, big.NewFloat(weight)).Int(nil)
-//	fmt.Println("calculateVoteWeight", weight, v.StakedAmount, weightedAmount, acc)
-//	return weightedAmount
-//}
 func remainingTime(bucket *iotextypes.VoteBucket) time.Duration {
 	now := time.Now()
 	startTime := time.Unix(bucket.StakeStartTime.Seconds, int64(bucket.StakeStartTime.Nanos))

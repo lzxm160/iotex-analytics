@@ -326,7 +326,7 @@ func getcandidateTotal(name string, t *testing.T, local bool) *big.Int {
 	}, cfg)
 	require.NoError(err)
 	//epoch := uint64(4665)
-	epoch := uint64(4659)
+	epoch := uint64(4658)
 	startHeight := p.epochCtx.GetEpochHeight(epoch)
 	fmt.Println(epoch, startHeight)
 	can, err := p.stakingCandidateTableOperator.Get(startHeight, p.Store.GetDB(), nil)
@@ -346,7 +346,7 @@ func getcandidateTotal(name string, t *testing.T, local bool) *big.Int {
 	return big.NewInt(0)
 }
 func TestVotes(t *testing.T) {
-	candidatesTotal := getcandidateTotal("robotbp00021", t, true)
+	candidatesTotal := getcandidateTotal("robotbp00011", t, true)
 	fmt.Println("candidatesTotal", candidatesTotal.String())
 
 	// for"robotbp00021"
