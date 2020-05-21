@@ -280,6 +280,7 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 	}
 	return votinginfoList, nil
 }
+
 func calculateVoteWeight(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.VoteBucket, selfStake bool) (*big.Int, error) {
 	remainingTime := float64(v.StakedDuration * 86400)
 	weight := float64(1)
@@ -301,6 +302,7 @@ func calculateVoteWeight(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.Vo
 	}
 	amount := new(big.Float).SetInt(amountInt)
 	weightedAmount, _ := amount.Mul(amount, big.NewFloat(weight)).Int(nil)
+	fmt.Println("calculateVoteWeight", weight, v.StakedAmount, weightedAmount)
 	return weightedAmount, nil
 }
 
