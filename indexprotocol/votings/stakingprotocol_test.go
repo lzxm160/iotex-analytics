@@ -325,7 +325,8 @@ func getcandidateTotal(name string, t *testing.T, local bool) *big.Int {
 		SelfStakingThreshold: "0",
 	}, cfg)
 	require.NoError(err)
-	epoch := uint64(4665)
+	//epoch := uint64(4665)
+	epoch := uint64(4670)
 	startHeight := p.epochCtx.GetEpochHeight(epoch)
 	fmt.Println(epoch, startHeight)
 	can, err := p.stakingCandidateTableOperator.Get(startHeight, p.Store.GetDB(), nil)
@@ -351,9 +352,9 @@ func TestVotes(t *testing.T) {
 	// for"robotbp00021"
 	//726f626f7462703030303231
 	//select * from aggregate_voting where candidate_name='726f626f7462703030303231' and epoch_number=4665
-	a, _ := big.NewInt(0).SetString("11447588583684614452276736", 10)
-	b, _ := big.NewInt(0).SetString("2289494821788705003536384", 10)
-	c, _ := big.NewInt(0).SetString("228949482178870500352", 10)
+	a, _ := big.NewInt(0).SetString("11447588583684619435300000", 10)
+	b, _ := big.NewInt(0).SetString("2289494821788706000000000", 10)
+	c, _ := big.NewInt(0).SetString("228949482178870600000", 10)
 	d := a.Add(a, b).Add(a, c)
 	fmt.Println("local aggregate_voting mysql", d.String())
 	fmt.Println("local staking_candidate more than aggregate_voting sum", candidatesTotal.Sub(candidatesTotal, d).String())

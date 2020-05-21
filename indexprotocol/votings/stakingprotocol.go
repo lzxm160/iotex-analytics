@@ -36,12 +36,6 @@ func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceCli
 	if err != nil {
 		return errors.Wrap(err, "failed to get buckets count")
 	}
-	if probationList != nil {
-		candidateList, err = filterStakingCandidates(candidateList, probationList, epochStartheight)
-		if err != nil {
-			return errors.Wrap(err, "failed to filter candidate with probation list")
-		}
-	}
 	if len(voteBucketList.Buckets) == 0 || len(candidateList.Candidates) == 0 {
 		log.S().Errorf("buckets len:%d, candidates len:%d", len(voteBucketList.Buckets), len(candidateList.Candidates))
 		return nil
@@ -54,6 +48,12 @@ func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceCli
 	// update staking_candidate and height_to_staking_candidate table
 	if err = p.stakingCandidateTableOperator.Put(epochStartheight, candidateList, tx); err != nil {
 		return
+	}
+	if probationList != nil {
+		candidateList, err = filterStakingCandidates(candidateList, probationList, epochStartheight)
+		if err != nil {
+			return errors.Wrap(err, "failed to filter candidate with probation list")
+		}
 	}
 	// update voting_result table
 	if err = p.updateStakingResult(tx, candidateList, epochNumber, gravityHeight); err != nil {
@@ -136,7 +136,7 @@ func (p *Protocol) updateAggregateStaking(tx *sql.Tx, votes *iotextypes.VoteBuck
 		if _, ok := selfStakeIndex[vote.Index]; ok {
 			selfStake = true
 		}
-		weightedAmount := calculateVoteWeight(p.voteCfg, vote, selfStake)
+		weightedAmount, _ := calculateVoteWeight(p.voteCfg, vote, selfStake)
 		stakeAmount, ok := big.NewInt(0).SetString(vote.StakedAmount, 10)
 		if !ok {
 			err = errors.New("stake amount convert error")
@@ -255,7 +255,7 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 			if _, ok := selfStakeIndex[vote.Index]; ok {
 				selfStake = true
 			}
-			weightedVotes := calculateVoteWeight(p.voteCfg, vote, selfStake)
+			weightedVotes, _ := calculateVoteWeight(p.voteCfg, vote, selfStake)
 			if _, ok := probationMap[vote.CandidateAddress]; ok {
 				// filter based on probation
 				votingPower := new(big.Float).SetInt(weightedVotes)
@@ -280,8 +280,7 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 	}
 	return votinginfoList, nil
 }
-
-func calculateVoteWeight(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.VoteBucket, selfStake bool) *big.Int {
+func calculateVoteWeight(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.VoteBucket, selfStake bool) (*big.Int, error) {
 	remainingTime := float64(v.StakedDuration * 86400)
 	weight := float64(1)
 	var m float64
@@ -295,15 +294,39 @@ func calculateVoteWeight(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.Vo
 		// self-stake extra bonus requires enable auto-stake for at least 3 months
 		weight *= cfg.SelfStake
 	}
-	rountdWeight := FloatRound(weight, 15)
-	amount, ok := new(big.Int).SetString(v.StakedAmount, 10)
+
+	amountInt, ok := big.NewInt(0).SetString(v.StakedAmount, 10)
 	if !ok {
-		return big.NewInt(0)
+		return nil, errors.New("failed to convert string to big int")
 	}
-	weightedAmount := amount.Mul(amount, big.NewInt(int64(rountdWeight*1e15))).Div(amount, big.NewInt(1e15))
-	fmt.Println("calculateVoteWeight", weight, rountdWeight, v.StakedAmount, weightedAmount)
-	return weightedAmount
+	amount := new(big.Float).SetInt(amountInt)
+	weightedAmount, _ := amount.Mul(amount, big.NewFloat(weight)).Int(nil)
+	return weightedAmount, nil
 }
+
+//func calculateVoteWeight(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.VoteBucket, selfStake bool) *big.Int {
+//	remainingTime := float64(v.StakedDuration * 86400)
+//	weight := float64(1)
+//	var m float64
+//	if v.AutoStake {
+//		m = cfg.AutoStake
+//	}
+//	if remainingTime > 0 {
+//		weight += math.Log(math.Ceil(remainingTime/86400)*(1+m)) / math.Log(cfg.DurationLg) / 100
+//	}
+//	if selfStake && v.AutoStake && v.StakedDuration >= 91 {
+//		// self-stake extra bonus requires enable auto-stake for at least 3 months
+//		weight *= cfg.SelfStake
+//	}
+//	rountdWeight := FloatRound(weight, 15)
+//	amount, ok := new(big.Int).SetString(v.StakedAmount, 10)
+//	if !ok {
+//		return big.NewInt(0)
+//	}
+//	weightedAmount := amount.Mul(amount, big.NewInt(int64(rountdWeight*1e15))).Div(amount, big.NewInt(1e15))
+//	fmt.Println("calculateVoteWeight", weight, rountdWeight, v.StakedAmount, weightedAmount)
+//	return weightedAmount
+//}
 
 func FloatRound(f float64, n int) float64 {
 	format := "%." + strconv.Itoa(n) + "f"
