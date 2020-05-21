@@ -171,12 +171,14 @@ func filterStakingCandidates(
 	}
 	for _, cand := range candidates.Candidates {
 		filterCand := *cand
-		votingPower, ok := new(big.Float).SetString(cand.TotalWeightedVotes)
+		votingPowerInt, ok := new(big.Int).SetString(cand.TotalWeightedVotes, 10)
 		if !ok {
 			return nil, errors.New("total weighted votes convert error")
 		}
+		//votingPower := new(big.Float).SetInt(votingPowerInt)
 		if _, ok := probationMap[cand.OperatorAddress]; ok {
-			newVotingPower, _ := votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
+			//newVotingPower, _ := votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
+			newVotingPower := votingPowerInt.Mul(votingPowerInt, big.NewInt(int64(intensityRate*1e15))).Div(votingPowerInt, big.NewInt(1e15))
 			filterCand.TotalWeightedVotes = newVotingPower.String()
 		}
 		totalWeightedVotes, ok := new(big.Int).SetString(filterCand.TotalWeightedVotes, 10)
