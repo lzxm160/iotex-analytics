@@ -166,8 +166,9 @@ func (p *Protocol) updateAggregateStaking(tx *sql.Tx, votes *iotextypes.VoteBuck
 	for key, val := range sumOfWeightedVotes {
 		if _, ok := probationMap[key.candidateName]; ok {
 			// filter based on probation
-			votingPower := new(big.Float).SetInt(val)
-			val, _ = votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
+			//votingPower := new(big.Float).SetInt(val)
+			//val, _ = votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
+			val = val.Mul(val, big.NewInt(int64(intensityRate*1e15))).Div(val, big.NewInt(1e15))
 		}
 		if _, ok := nameMap[key.candidateName]; !ok {
 			return errors.New("candidate cannot find name through owner address")
