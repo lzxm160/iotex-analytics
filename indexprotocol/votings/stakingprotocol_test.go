@@ -346,12 +346,12 @@ func getcandidateTotal(name string, t *testing.T, local bool) *big.Int {
 	return big.NewInt(0)
 }
 func TestVotes(t *testing.T) {
-	candidatesTotal := getcandidateTotal("robotbp00011", t, true)
+	candidatesTotal := getcandidateTotal("robotbp00021", t, true)
 	fmt.Println("candidatesTotal", candidatesTotal.String())
 
 	// for"robotbp00021"
 	//726f626f7462703030303231
-	//select * from aggregate_voting where candidate_name='726f626f7462703030303231' and epoch_number=4665
+	//select * from aggregate_voting where candidate_name='726f626f7462703030303231' and epoch_number=4658
 	a, _ := big.NewInt(0).SetString("11447588583684614452673500", 10)
 	b, _ := big.NewInt(0).SetString("2289494821788705003484665", 10)
 	c, _ := big.NewInt(0).SetString("228949482178870500348", 10)
