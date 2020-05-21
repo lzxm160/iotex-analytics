@@ -15,6 +15,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/iotexproject/iotex-core/pkg/log"
+	"google.golang.org/grpc"
+
 	"github.com/golang/mock/gomock"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
@@ -345,6 +348,7 @@ func getcandidateTotal(name string, t *testing.T, local bool) *big.Int {
 	}
 	return big.NewInt(0)
 }
+
 func TestVotes(t *testing.T) {
 	candidatesTotal := getcandidateTotal("robotbp00021", t, true)
 	fmt.Println("candidatesTotal", candidatesTotal.String())
@@ -386,24 +390,18 @@ func TestVotes(t *testing.T) {
 	//fmt.Println("val", val.String())
 }
 
-//func calculateVoteWeight2(cfg indexprotocol.VoteWeightCalConsts, duration uint32, selfStake bool) *big.Int {
-//	remainingTime := float64(duration * 86400)
-//	weight := float64(1)
-//	var m float64
-//	if true {
-//		m = cfg.AutoStake
-//	}
-//	if remainingTime > 0 {
-//		weight += math.Log(math.Ceil(remainingTime/86400)*(1+m)) / math.Log(cfg.DurationLg) / 100
-//	}
-//	if selfStake && true && duration >= 91 {
-//		// self-stake extra bonus requires enable auto-stake for at least 3 months
-//		weight *= cfg.SelfStake
-//	}
-//	amount, ok := new(big.Float).SetString(v.StakedAmount)
-//	if !ok {
-//		return big.NewInt(0)
-//	}
-//	weightedAmount, _ := amount.Mul(amount, big.NewFloat(weight)).Int(nil)
-//	return weightedAmount
-//}
+func TestGet(t *testing.T) {
+	//3252242
+	//3252241
+	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	conn1, err := grpc.DialContext(grpcCtx1, "35.236.100.38:14014", grpc.WithBlock(), grpc.WithInsecure())
+	if err != nil {
+		log.L().Error("Failed to connect to chain's API server.")
+	}
+	chainClient := iotexapi.NewAPIServiceClient(conn1)
+	c, _ := indexprotocol.GetAllStakingCandidates(chainClient, 3252242)
+	for _, cand := range c.Candidates {
+		fmt.Println(cand.Name)
+	}
+}
