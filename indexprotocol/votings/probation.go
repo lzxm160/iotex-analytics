@@ -139,8 +139,8 @@ func filterCandidates(
 		candOpAddr := string(cand.OperatorAddress())
 		if _, ok := probationMap[candOpAddr]; ok {
 			// if it is an unqualified delegate, multiply the voting power with probation intensity rate
-			votingPower := new(big.Float).SetInt(filterCand.Score())
-			newVotingPower, _ := votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
+			votingPower := filterCand.Score()
+			newVotingPower := votingPower.Mul(votingPower, big.NewInt(int64(intensityRate*1e15))).Div(votingPower, big.NewInt(1e15))
 			filterCand.SetScore(newVotingPower)
 		}
 		updatedVotingPower[candOpAddr] = filterCand.Score()
@@ -175,10 +175,8 @@ func filterStakingCandidates(
 		if !ok {
 			return nil, errors.New("total weighted votes convert error")
 		}
-		votingPower := new(big.Float).SetInt(votingPowerInt)
 		if _, ok := probationMap[cand.OperatorAddress]; ok {
-			newVotingPower, _ := votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
-			//newVotingPower := votingPowerInt.Mul(votingPowerInt, big.NewInt(int64(intensityRate*1e15))).Div(votingPowerInt, big.NewInt(1e15))
+			newVotingPower := votingPowerInt.Mul(votingPowerInt, big.NewInt(int64(intensityRate*1e15))).Div(votingPowerInt, big.NewInt(1e15))
 			filterCand.TotalWeightedVotes = newVotingPower.String()
 		}
 		totalWeightedVotes, ok := new(big.Int).SetString(filterCand.TotalWeightedVotes, 10)

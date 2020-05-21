@@ -135,15 +135,13 @@ func (p *Protocol) updateAggregateStaking(tx *sql.Tx, votes *iotextypes.VoteBuck
 		if _, ok := selfStakeIndex[vote.Index]; ok {
 			selfStake = true
 		}
-		var weightedAmount *big.Int
-		weightedAmount, err = calculateVoteWeight(p.voteCfg, vote, selfStake)
+		weightedAmount, err := calculateVoteWeight(p.voteCfg, vote, selfStake)
 		if err != nil {
 			return errors.Wrap(err, "calculate vote weight error")
 		}
 		stakeAmount, ok := big.NewInt(0).SetString(vote.StakedAmount, 10)
 		if !ok {
-			err = errors.New("stake amount convert error")
-			return
+			return errors.New("stake amount convert error")
 		}
 		if val, ok := sumOfWeightedVotes[key]; ok {
 			val.Add(val, weightedAmount)
@@ -166,8 +164,6 @@ func (p *Protocol) updateAggregateStaking(tx *sql.Tx, votes *iotextypes.VoteBuck
 	for key, val := range sumOfWeightedVotes {
 		if _, ok := probationMap[key.candidateName]; ok {
 			// filter based on probation
-			//votingPower := new(big.Float).SetInt(val)
-			//val, _ = votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
 			val = val.Mul(val, big.NewInt(int64(intensityRate*1e15))).Div(val, big.NewInt(1e15))
 		}
 		if _, ok := nameMap[key.candidateName]; !ok {
