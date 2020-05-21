@@ -42,6 +42,12 @@ func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceCli
 	}
 	// after get and clean data,the following code is for writing mysql
 	// update staking_bucket and height_to_staking_bucket table
+	if probationList != nil {
+		candidateList, err = filterStakingCandidates(candidateList, probationList, epochStartheight)
+		if err != nil {
+			return errors.Wrap(err, "failed to filter candidate with probation list")
+		}
+	}
 	if err = p.stakingBucketTableOperator.Put(epochStartheight, voteBucketList, tx); err != nil {
 		return
 	}
@@ -49,12 +55,7 @@ func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceCli
 	if err = p.stakingCandidateTableOperator.Put(epochStartheight, candidateList, tx); err != nil {
 		return
 	}
-	if probationList != nil {
-		candidateList, err = filterStakingCandidates(candidateList, probationList, epochStartheight)
-		if err != nil {
-			return errors.Wrap(err, "failed to filter candidate with probation list")
-		}
-	}
+
 	// update voting_result table
 	if err = p.updateStakingResult(tx, candidateList, epochNumber, gravityHeight); err != nil {
 		return
