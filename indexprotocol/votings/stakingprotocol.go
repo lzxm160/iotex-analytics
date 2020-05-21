@@ -261,8 +261,7 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 			}
 			if _, ok := probationMap[vote.CandidateAddress]; ok {
 				// filter based on probation
-				votingPower := new(big.Float).SetInt(weightedVotes)
-				weightedVotes, _ = votingPower.Mul(votingPower, big.NewFloat(intensityRate)).Int(nil)
+				weightedVotes = weightedVotes.Mul(weightedVotes, big.NewInt(int64(intensityRate*1e15))).Div(weightedVotes, big.NewInt(1e15))
 			}
 			voteOwnerAddress, err := util.IoAddrToEvmAddr(vote.Owner)
 			if err != nil {
