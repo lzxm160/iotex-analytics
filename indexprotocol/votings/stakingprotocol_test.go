@@ -15,6 +15,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/iotexproject/iotex-core/state"
+	"github.com/pkg/errors"
+
 	"github.com/iotexproject/iotex-core/pkg/log"
 	"google.golang.org/grpc"
 
@@ -400,8 +403,29 @@ func TestGet(t *testing.T) {
 		log.L().Error("Failed to connect to chain's API server.")
 	}
 	chainClient := iotexapi.NewAPIServiceClient(conn1)
-	c, _ := indexprotocol.GetAllStakingCandidates(chainClient, 3252242)
-	for _, cand := range c.Candidates {
-		fmt.Println(cand.Name)
+	//c, _ := indexprotocol.GetAllStakingCandidates(chainClient, 3252242)
+	//for _, cand := range c.Candidates {
+	//	fmt.Println(cand.Name)
+	//}
+	GBlockProducersByEpoch(chainClient)
+}
+func GBlockProducersByEpoch(chainClient iotexapi.APIServiceClient) error {
+	readStateRequest := &iotexapi.ReadStateRequest{
+		ProtocolID: []byte("poll"),
+		MethodName: []byte("ActiveBlockProducersByEpoch"),
+		Arguments:  [][]byte{[]byte(strconv.FormatUint(4657, 10))},
 	}
+	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
+	if err != nil {
+		return errors.Wrap(err, "failed to get active block producers")
+	}
+
+	var activeBlockProducers state.CandidateList
+	if err := activeBlockProducers.Deserialize(readStateRes.GetData()); err != nil {
+		return errors.Wrap(err, "failed to deserialize active block producers")
+	}
+	for _, a := range activeBlockProducers {
+		fmt.Println(a)
+	}
+	return nil
 }
