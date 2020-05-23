@@ -18,6 +18,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/iotexproject/iotex-core/ioctl/util"
+	"github.com/iotexproject/iotex-core/pkg/log"
 	"github.com/iotexproject/iotex-election/db"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
@@ -33,6 +34,10 @@ func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceCli
 	candidateList, err := indexprotocol.GetAllStakingCandidates(chainClient, epochStartheight)
 	if err != nil {
 		return errors.Wrap(err, "failed to get buckets count")
+	}
+	if len(voteBucketList.Buckets) == 0 || len(candidateList.Candidates) == 0 {
+		log.S().Errorf("buckets len:%d, candidates len:%d", len(voteBucketList.Buckets), len(candidateList.Candidates))
+		return nil
 	}
 	// after get and clean data,the following code is for writing mysql
 	// update staking_bucket and height_to_staking_bucket table
@@ -80,7 +85,10 @@ func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.Candid
 		}
 		blockRewardPortion, epochRewardPortion, foundationBonusPortion, err := p.getDelegateRewardPortions(stakingAddress, gravityHeight)
 		if err != nil {
-			return errors.Errorf("get delegate reward portions:%s,%d,%s", stakingAddress.String(), gravityHeight, err.Error())
+			//fmt.Println("getDelegateRewardPortions:", stakingAddress.String(), gravityHeight)
+			blockRewardPortion, epochRewardPortion, foundationBonusPortion = 100, 100, 100
+
+			//return errors.Errorf("get delegate reward portions:%s,%d,%s", stakingAddress.String(), gravityHeight, err.Error())
 		}
 		encodedName, err := indexprotocol.EncodeDelegateName(candidate.Name)
 		if err != nil {
@@ -201,6 +209,7 @@ func (p *Protocol) updateAggregateStaking(tx *sql.Tx, votes *iotextypes.VoteBuck
 func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegateName string) ([]*VotingInfo, error) {
 	ret, err := p.stakingBucketTableOperator.Get(height, p.Store.GetDB(), nil)
 	if errors.Cause(err) == db.ErrNotExist {
+		fmt.Println("staking bucket table operator db.ErrNotExist")
 		return nil, nil
 	}
 	if err != nil {
@@ -212,6 +221,7 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 	}
 	can, err := p.stakingCandidateTableOperator.Get(height, p.Store.GetDB(), nil)
 	if errors.Cause(err) == db.ErrNotExist {
+		fmt.Println("staking candidate table operator db.ErrNotExist")
 		return nil, nil
 	}
 	if err != nil {
