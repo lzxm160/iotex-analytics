@@ -608,6 +608,7 @@ func (p *Protocol) breakdownRewards(
 		if productionSum.Sign() > 0 && earnBlockReward[candidateName] {
 			production := big.NewInt(0).SetUint64(productivityMap[candidateName].Production)
 			blockReward = big.NewInt(0).Div(big.NewInt(0).Mul(totalBlockReward, production), productionSum)
+			fmt.Println(totalBlockReward, production, productionSum, blockReward)
 		}
 		if qualifiedTotalVotes.Sign() > 0 && earnEpochReward[candidateName] {
 			epochReward = big.NewInt(0).Div(big.NewInt(0).Mul(totalEpochReward, weightedVotesMap[candidateName]), qualifiedTotalVotes)
