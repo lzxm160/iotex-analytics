@@ -10,17 +10,10 @@ import (
 	"context"
 	"database/sql"
 	"encoding/hex"
-	"fmt"
-	"math"
 	"math/big"
 	"strconv"
 	"testing"
 	"time"
-
-	"github.com/iotexproject/iotex-core/pkg/log"
-	"go.uber.org/zap"
-
-	"google.golang.org/grpc"
 
 	"github.com/golang/mock/gomock"
 	"github.com/golang/protobuf/proto"
@@ -214,111 +207,112 @@ func TestProtocol(t *testing.T) {
 		require.Equal("115", totalWeightedVotes)
 	*/
 }
-func TestYy(t *testing.T) {
-	const chainEndpoint = "35.233.193.56:14014"
-	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	conn1, err := grpc.DialContext(grpcCtx1, chainEndpoint, grpc.WithBlock(), grpc.WithInsecure())
-	if err != nil {
-		log.L().Error("Failed to connect to chain's API server.")
-	}
-	chainClient := iotexapi.NewAPIServiceClient(conn1)
 
-	readStateRequest := &iotexapi.ReadStateRequest{
-		ProtocolID: []byte("poll"),
-		MethodName: []byte("GetGravityChainStartHeight"),
-		//Arguments:  [][]byte{[]byte(strconv.FormatUint(5059782, 10))},
-		Arguments: [][]byte{[]byte(strconv.FormatUint(5059421, 10))},
-	}
-
-	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
-	if err != nil {
-		log.L().Fatal("Failed to read state", zap.Error(err))
-	}
-	gravityChainStartHeight, err := strconv.ParseUint(string(readStateRes.GetData()), 10, 64)
-	if err != nil {
-		log.L().Fatal("Failed to convert gravity chain start height", zap.Error(err))
-	}
-	fmt.Println(gravityChainStartHeight)
-
-}
-func TestXx(t *testing.T) {
-	require := require.New(t)
-	ctx := context.Background()
-	store := s.NewMySQL(connectStr, dbName)
-	require.NoError(store.Start(ctx))
-	defer func() {
-		require.NoError(store.Stop(ctx))
-	}()
-	cfg := indexprotocol.VoteWeightCalConsts{}
-	p, _ := NewProtocol(store, epochctx.NewEpochCtx(36, 24, 15, epochctx.FairbankHeight(100000)), indexprotocol.GravityChain{}, indexprotocol.Poll{
-		VoteThreshold:        "0",
-		ScoreThreshold:       "0",
-		SelfStakingThreshold: "0",
-	}, cfg)
-	for height := uint64(10143300); height <= 10143300; height++ {
-		grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		conn1, err := grpc.DialContext(grpcCtx1, "35.185.52.92:8089", grpc.WithBlock(), grpc.WithInsecure())
-		require.NoError(err)
-		electionClient := api.NewAPIServiceClient(conn1)
-		_, cands, _, _ := p.getRawData(electionClient, height)
-		for _, cand := range cands {
-			//addr, err := address.FromBytes(cand.OperatorAddress())
-			//fmt.Println(err)
-			//if string(cand.OperatorAddress()) == "io13q2am9nedrd3n746lsj6qan4pymcpgm94vvx2c" || string(cand.OperatorAddress()) == "io1xj0u5n20tsqwxh5a3xdtmzuz9wasft0pqjrq8t" {
-			//	fmt.Println(string(cand.OperatorAddress()), string(cand.Name()))
-			//}
-			//if string(cand.Address()) == "io13q2am9nedrd3n746lsj6qan4pymcpgm94vvx2c" || string(cand.Address()) == "io1xj0u5n20tsqwxh5a3xdtmzuz9wasft0pqjrq8t" {
-			//	fmt.Println(string(cand.Address()), string(cand.Name()))
-			//}
-			//if string(cand.RewardAddress()) == "io13q2am9nedrd3n746lsj6qan4pymcpgm94vvx2c" || string(cand.RewardAddress()) == "io1xj0u5n20tsqwxh5a3xdtmzuz9wasft0pqjrq8t" {
-			//	fmt.Println(string(cand.RewardAddress()), string(cand.Name()))
-			//}
-			//fmt.Println(string(cand.OperatorAddress()), string(cand.Address()), string(cand.RewardAddress()), string(cand.Name()))
-			fmt.Println(string(cand.OperatorAddress()), string(cand.Name()))
-		}
-	}
-
-}
-func TestZz(t *testing.T) {
-	require := require.New(t)
-	ctx := context.Background()
-	store := s.NewMySQL(connectStr, dbName)
-	require.NoError(store.Start(ctx))
-	defer func() {
-		require.NoError(store.Stop(ctx))
-	}()
-	//cfg := indexprotocol.VoteWeightCalConsts{}
-	//p, _ := NewProtocol(store, epochctx.NewEpochCtx(36, 24, 15, epochctx.FairbankHeight(100000)), indexprotocol.GravityChain{}, indexprotocol.Poll{
-	//	VoteThreshold:        "0",
-	//	ScoreThreshold:       "0",
-	//	SelfStakingThreshold: "0",
-	//}, cfg)
-	getCandidatesRequest := &api.GetCandidatesRequest{
-		Height: strconv.Itoa(int(10143100)),
-		Offset: uint32(0),
-		Limit:  math.MaxUint32,
-	}
-	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	conn1, err := grpc.DialContext(grpcCtx1, "35.185.52.92:8089", grpc.WithBlock(), grpc.WithInsecure())
-	require.NoError(err)
-	electionClient := api.NewAPIServiceClient(conn1)
-	getCandidatesResponse, err := electionClient.GetCandidates(context.Background(), getCandidatesRequest)
-	require.NoError(err)
-
-	//rewardAddrToName := make(map[string][]string)
-	for _, cand := range getCandidatesResponse.GetCandidates() {
-		//if string(cand.GetRewardAddress()) == "io13q2am9nedrd3n746lsj6qan4pymcpgm94vvx2c" || string(cand.GetRewardAddress()) == "io1xj0u5n20tsqwxh5a3xdtmzuz9wasft0pqjrq8t" {
-		//	fmt.Println(cand.GetRewardAddress(), cand.GetName())
-		//}
-		//if _, ok := rewardAddrToName[candidate.GetRewardAddress()]; !ok {
-		//	rewardAddrToName[candidate.GetRewardAddress()] = make([]string, 0)
-		//}
-		//rewardAddrToName[candidate.GetRewardAddress()] = append(p.RewardAddrToName[candidate.GetRewardAddress()], candidate.GetName())
-		name, err := hex.DecodeString(cand.GetName())
-		require.NoError(err)
-		fmt.Println(cand.GetOperatorAddress(), string(name))
-	}
-}
+//func TestYy(t *testing.T) {
+//	const chainEndpoint = "35.233.193.56:14014"
+//	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+//	defer cancel()
+//	conn1, err := grpc.DialContext(grpcCtx1, chainEndpoint, grpc.WithBlock(), grpc.WithInsecure())
+//	if err != nil {
+//		log.L().Error("Failed to connect to chain's API server.")
+//	}
+//	chainClient := iotexapi.NewAPIServiceClient(conn1)
+//
+//	readStateRequest := &iotexapi.ReadStateRequest{
+//		ProtocolID: []byte("poll"),
+//		MethodName: []byte("GetGravityChainStartHeight"),
+//		//Arguments:  [][]byte{[]byte(strconv.FormatUint(5059782, 10))},
+//		Arguments: [][]byte{[]byte(strconv.FormatUint(5059421, 10))},
+//	}
+//
+//	readStateRes, err := chainClient.ReadState(context.Background(), readStateRequest)
+//	if err != nil {
+//		log.L().Fatal("Failed to read state", zap.Error(err))
+//	}
+//	gravityChainStartHeight, err := strconv.ParseUint(string(readStateRes.GetData()), 10, 64)
+//	if err != nil {
+//		log.L().Fatal("Failed to convert gravity chain start height", zap.Error(err))
+//	}
+//	fmt.Println(gravityChainStartHeight)
+//
+//}
+//func TestXx(t *testing.T) {
+//	require := require.New(t)
+//	ctx := context.Background()
+//	store := s.NewMySQL(connectStr, dbName)
+//	require.NoError(store.Start(ctx))
+//	defer func() {
+//		require.NoError(store.Stop(ctx))
+//	}()
+//	cfg := indexprotocol.VoteWeightCalConsts{}
+//	p, _ := NewProtocol(store, epochctx.NewEpochCtx(36, 24, 15, epochctx.FairbankHeight(100000)), indexprotocol.GravityChain{}, indexprotocol.Poll{
+//		VoteThreshold:        "0",
+//		ScoreThreshold:       "0",
+//		SelfStakingThreshold: "0",
+//	}, cfg)
+//	for height := uint64(10143300); height <= 10143300; height++ {
+//		grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+//		defer cancel()
+//		conn1, err := grpc.DialContext(grpcCtx1, "35.185.52.92:8089", grpc.WithBlock(), grpc.WithInsecure())
+//		require.NoError(err)
+//		electionClient := api.NewAPIServiceClient(conn1)
+//		_, cands, _, _ := p.getRawData(electionClient, height)
+//		for _, cand := range cands {
+//			//addr, err := address.FromBytes(cand.OperatorAddress())
+//			//fmt.Println(err)
+//			//if string(cand.OperatorAddress()) == "io13q2am9nedrd3n746lsj6qan4pymcpgm94vvx2c" || string(cand.OperatorAddress()) == "io1xj0u5n20tsqwxh5a3xdtmzuz9wasft0pqjrq8t" {
+//			//	fmt.Println(string(cand.OperatorAddress()), string(cand.Name()))
+//			//}
+//			//if string(cand.Address()) == "io13q2am9nedrd3n746lsj6qan4pymcpgm94vvx2c" || string(cand.Address()) == "io1xj0u5n20tsqwxh5a3xdtmzuz9wasft0pqjrq8t" {
+//			//	fmt.Println(string(cand.Address()), string(cand.Name()))
+//			//}
+//			//if string(cand.RewardAddress()) == "io13q2am9nedrd3n746lsj6qan4pymcpgm94vvx2c" || string(cand.RewardAddress()) == "io1xj0u5n20tsqwxh5a3xdtmzuz9wasft0pqjrq8t" {
+//			//	fmt.Println(string(cand.RewardAddress()), string(cand.Name()))
+//			//}
+//			//fmt.Println(string(cand.OperatorAddress()), string(cand.Address()), string(cand.RewardAddress()), string(cand.Name()))
+//			fmt.Println(string(cand.OperatorAddress()), string(cand.Name()))
+//		}
+//	}
+//
+//}
+//func TestZz(t *testing.T) {
+//	require := require.New(t)
+//	ctx := context.Background()
+//	store := s.NewMySQL(connectStr, dbName)
+//	require.NoError(store.Start(ctx))
+//	defer func() {
+//		require.NoError(store.Stop(ctx))
+//	}()
+//	//cfg := indexprotocol.VoteWeightCalConsts{}
+//	//p, _ := NewProtocol(store, epochctx.NewEpochCtx(36, 24, 15, epochctx.FairbankHeight(100000)), indexprotocol.GravityChain{}, indexprotocol.Poll{
+//	//	VoteThreshold:        "0",
+//	//	ScoreThreshold:       "0",
+//	//	SelfStakingThreshold: "0",
+//	//}, cfg)
+//	getCandidatesRequest := &api.GetCandidatesRequest{
+//		Height: strconv.Itoa(int(10143100)),
+//		Offset: uint32(0),
+//		Limit:  math.MaxUint32,
+//	}
+//	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+//	defer cancel()
+//	conn1, err := grpc.DialContext(grpcCtx1, "35.185.52.92:8089", grpc.WithBlock(), grpc.WithInsecure())
+//	require.NoError(err)
+//	electionClient := api.NewAPIServiceClient(conn1)
+//	getCandidatesResponse, err := electionClient.GetCandidates(context.Background(), getCandidatesRequest)
+//	require.NoError(err)
+//
+//	//rewardAddrToName := make(map[string][]string)
+//	for _, cand := range getCandidatesResponse.GetCandidates() {
+//		//if string(cand.GetRewardAddress()) == "io13q2am9nedrd3n746lsj6qan4pymcpgm94vvx2c" || string(cand.GetRewardAddress()) == "io1xj0u5n20tsqwxh5a3xdtmzuz9wasft0pqjrq8t" {
+//		//	fmt.Println(cand.GetRewardAddress(), cand.GetName())
+//		//}
+//		//if _, ok := rewardAddrToName[candidate.GetRewardAddress()]; !ok {
+//		//	rewardAddrToName[candidate.GetRewardAddress()] = make([]string, 0)
+//		//}
+//		//rewardAddrToName[candidate.GetRewardAddress()] = append(p.RewardAddrToName[candidate.GetRewardAddress()], candidate.GetName())
+//		name, err := hex.DecodeString(cand.GetName())
+//		require.NoError(err)
+//		fmt.Println(cand.GetOperatorAddress(), string(name))
+//	}
+//}
