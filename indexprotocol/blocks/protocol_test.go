@@ -122,7 +122,7 @@ func TestProtocol(t *testing.T) {
 	readStateRequest = &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(indexprotocol.PollProtocolID),
 		MethodName: []byte("GetGravityChainStartHeight"),
-		Arguments:  [][]byte{[]byte(strconv.FormatUint(blk2.Height(), 10))},
+		Arguments:  [][]byte{[]byte(strconv.FormatUint(1, 10))},
 	}
 	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
 		Data: []byte(strconv.FormatUint(1100, 10)),
