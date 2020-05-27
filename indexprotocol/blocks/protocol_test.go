@@ -72,7 +72,7 @@ func TestProtocol(t *testing.T) {
 		MethodName: []byte("GetGravityChainStartHeight"),
 		Arguments:  [][]byte{[]byte(strconv.FormatUint(1, 10))},
 	}
-	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
+	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).AnyTimes().Return(&iotexapi.ReadStateResponse{
 		Data: []byte(strconv.FormatUint(1000, 10)),
 	}, nil)
 	electionClient.EXPECT().GetCandidates(gomock.Any(), gomock.Any()).Times(2).Return(
@@ -108,7 +108,7 @@ func TestProtocol(t *testing.T) {
 	}
 	data, err := candidateList.Serialize()
 	require.NoError(err)
-	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
+	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).AnyTimes().Return(&iotexapi.ReadStateResponse{
 		Data: data,
 	}, nil)
 
@@ -122,9 +122,9 @@ func TestProtocol(t *testing.T) {
 	readStateRequest = &iotexapi.ReadStateRequest{
 		ProtocolID: []byte(indexprotocol.PollProtocolID),
 		MethodName: []byte("GetGravityChainStartHeight"),
-		Arguments:  [][]byte{[]byte(strconv.FormatUint(2, 10))},
+		Arguments:  [][]byte{[]byte(strconv.FormatUint(1, 10))},
 	}
-	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).Times(1).Return(&iotexapi.ReadStateResponse{
+	chainClient.EXPECT().ReadState(gomock.Any(), readStateRequest).AnyTimes().Return(&iotexapi.ReadStateResponse{
 		Data: []byte(strconv.FormatUint(1100, 10)),
 	}, nil)
 
