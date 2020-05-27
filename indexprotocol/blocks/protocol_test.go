@@ -52,7 +52,7 @@ func TestProtocol(t *testing.T) {
 		require.NoError(store.Stop(ctx))
 	}()
 
-	p := NewProtocol(store, epochctx.NewEpochCtx(1, 1, 1, epochctx.FairbankHeight(100000)))
+	p := NewProtocol(store, epochctx.NewEpochCtx(1, 1, 1, epochctx.FairbankHeight(100000)), indexprotocol.GravityChain{})
 
 	require.NoError(p.CreateTables(ctx))
 
