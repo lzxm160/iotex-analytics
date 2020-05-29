@@ -1579,18 +1579,6 @@ func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int
 			return errors.Wrap(err, "failed to get hermes distribution by delegate name")
 		}
 		for _, ratioInfo := range res {
-			//blockRewardRatio, err := strconv.ParseFloat(ratioInfo.BlockRewardRatio, 64)
-			//if err != nil {
-			//	return errors.New("failed to convert blockRewardRatio to float64")
-			//}
-			//epochRewardRatio, err := strconv.ParseFloat(ratioInfo.EpochRewardRatio, 64)
-			//if err != nil {
-			//	return errors.New("failed to convert epochRewardRatio to float64")
-			//}
-			//foundationBonusRatio, err := strconv.ParseFloat(ratioInfo.FoundationBonusRatio, 64)
-			//if err != nil {
-			//	return errors.New("failed to convert foundationBonusRatio to float64")
-			//}
 			info := &Ratio{
 				BlockRewardRatio:     ratioInfo.BlockRewardRatio,
 				EpochRewardRatio:     ratioInfo.EpochRewardRatio,

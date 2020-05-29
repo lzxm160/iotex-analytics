@@ -94,9 +94,9 @@ type (
 		RewardAddress             string
 		TotalWeightedVotes        string
 		SelfStaking               string
-		BlockRewardPercentage     string
-		EpochRewardPercentage     string
-		FoundationBonusPercentage string
+		BlockRewardPercentage     float64
+		EpochRewardPercentage     float64
+		FoundationBonusPercentage float64
 		StakingAddress            string
 	}
 

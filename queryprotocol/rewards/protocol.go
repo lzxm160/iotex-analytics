@@ -10,7 +10,6 @@ import (
 	"database/sql"
 	"fmt"
 	"math/big"
-	"strconv"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -101,9 +100,9 @@ type EpochFoundationReward struct {
 type HermesDistributionPlan struct {
 	TotalWeightedVotes        *big.Int
 	StakingAddress            string
-	BlockRewardPercentage     string
-	EpochRewardPercentage     string
-	FoundationBonusPercentage string
+	BlockRewardPercentage     float64
+	EpochRewardPercentage     float64
+	FoundationBonusPercentage float64
 }
 
 // HermesDistributionSource defines the distribution source of delegates registering in Hermes
@@ -245,20 +244,8 @@ func (p *Protocol) GetHermesBookkeeping(startEpoch uint64, epochCount uint64, re
 			totalRewards := new(big.Int).Set(rewards.BlockReward)
 			totalRewards.Add(totalRewards, rewards.EpochReward).Add(totalRewards, rewards.FoundationBonus)
 			balanceAfterDistribution.Add(balanceAfterDistribution, totalRewards)
-			blockRewardPercentage, err := strconv.ParseFloat(distributePlan.BlockRewardPercentage, 64)
-			if err != nil {
-				return nil, errors.New("failed to convert string to float64")
-			}
-			epochRewardPercentage, err := strconv.ParseFloat(distributePlan.EpochRewardPercentage, 64)
-			if err != nil {
-				return nil, errors.New("failed to convert string to float64")
-			}
-			foundationBonusPercentage, err := strconv.ParseFloat(distributePlan.FoundationBonusPercentage, 64)
-			if err != nil {
-				return nil, errors.New("failed to convert string to float64")
-			}
 			waiverThresholdF := float64(waiverThreshold)
-			if blockRewardPercentage < waiverThresholdF || epochRewardPercentage < waiverThresholdF || foundationBonusPercentage < waiverThresholdF {
+			if distributePlan.BlockRewardPercentage < waiverThresholdF || distributePlan.EpochRewardPercentage < waiverThresholdF || distributePlan.FoundationBonusPercentage < waiverThresholdF {
 				feeWaiver = false
 			}
 			distrReward, err := calculateDistributeReward(distributePlan, rewards)
@@ -400,18 +387,9 @@ func (p *Protocol) GetRewardSources(startEpoch uint64, epochCount uint64, voterI
 }
 
 func calculateDistributeReward(distributePlan *HermesDistributionPlan, rewards *HermesDistributionSource) (*big.Int, error) {
-	blockRewardPercentage, err := strconv.ParseFloat(distributePlan.BlockRewardPercentage, 64)
-	if err != nil {
-		return nil, errors.New("failed to convert string to float64")
-	}
-	epochRewardPercentage, err := strconv.ParseFloat(distributePlan.EpochRewardPercentage, 64)
-	if err != nil {
-		return nil, errors.New("failed to convert string to float64")
-	}
-	foundationBonusPercentage, err := strconv.ParseFloat(distributePlan.FoundationBonusPercentage, 64)
-	if err != nil {
-		return nil, errors.New("failed to convert string to float64")
-	}
+	blockRewardPercentage := distributePlan.BlockRewardPercentage
+	epochRewardPercentage := distributePlan.EpochRewardPercentage
+	foundationBonusPercentage := distributePlan.FoundationBonusPercentage
 	distrReward := big.NewInt(0)
 	if blockRewardPercentage > 0 {
 		distrBlockReward := new(big.Int).Set(rewards.BlockReward)
