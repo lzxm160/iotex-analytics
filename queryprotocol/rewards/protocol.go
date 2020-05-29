@@ -690,7 +690,7 @@ func (p *Protocol) weightedVotesByVoterAddress(startEpoch uint64, endEpoch uint6
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-
+	fmt.Println(getQuery, startEpoch, endEpoch, voterEthAddress)
 	rows, err := stmt.Query(startEpoch, endEpoch, voterEthAddress)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
