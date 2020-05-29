@@ -735,7 +735,7 @@ func (p *Protocol) distributionPlanBySearchPairs(searchPairs []string) (map[stri
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-
+	fmt.Println(getQuery, searchPairs)
 	rows, err := stmt.Query()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
