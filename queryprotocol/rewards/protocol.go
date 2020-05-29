@@ -345,16 +345,13 @@ func (p *Protocol) GetRewardSources(startEpoch uint64, epochCount uint64, voterI
 	searchPairs := make([]string, 0)
 	for delegateName, epochMap := range weightedVotesMap {
 		for epochNumber := range epochMap {
-			fmt.Println("348", fmt.Sprintf("(%d, '%s')", epochNumber, delegateName))
 			searchPairs = append(searchPairs, fmt.Sprintf("(%d, '%s')", epochNumber, delegateName))
 		}
 	}
-	fmt.Println("hereeeeeeeeeeeeeeeeeeee")
 	accountRewardsMap, err := p.accountRewards(searchPairs)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get account rewards")
 	}
-	fmt.Println("after accountRewards")
 	distributePlanMap, err := p.distributionPlanBySearchPairs(searchPairs)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get reward distribution plan")
@@ -393,26 +390,20 @@ func calculateDistributeReward(distributePlan *HermesDistributionPlan, rewards *
 	blockRewardPercentage := distributePlan.BlockRewardPercentage
 	epochRewardPercentage := distributePlan.EpochRewardPercentage
 	foundationBonusPercentage := distributePlan.FoundationBonusPercentage
-	fmt.Println("calculateDistributeReward", blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage)
 	distrReward := big.NewInt(0)
 	if blockRewardPercentage > 0 {
 		distrBlockReward := new(big.Int).Set(rewards.BlockReward)
-		fmt.Println("distrBlockReward before split", distrBlockReward.String())
 		distrBlockReward.Mul(distrBlockReward, big.NewInt(int64(blockRewardPercentage*100))).Div(distrBlockReward, big.NewInt(10000))
-		fmt.Println("distrBlockReward", distrBlockReward.String())
 		distrReward.Add(distrReward, distrBlockReward)
 	}
 	if epochRewardPercentage > 0 {
 		distrEpochReward := new(big.Int).Set(rewards.EpochReward)
 		distrEpochReward.Mul(distrEpochReward, big.NewInt(int64(epochRewardPercentage*100))).Div(distrEpochReward, big.NewInt(10000))
-		fmt.Println("distrEpochReward", distrEpochReward.String())
 		distrReward.Add(distrReward, distrEpochReward)
 	}
 	if foundationBonusPercentage > 0 {
 		distrFoundationBonus := new(big.Int).Set(rewards.FoundationBonus)
-		fmt.Println("distrFoundationBonus before split", distrFoundationBonus.String())
 		distrFoundationBonus.Mul(distrFoundationBonus, big.NewInt(int64(foundationBonusPercentage*100))).Div(distrFoundationBonus, big.NewInt(10000))
-		fmt.Println("distrFoundationBonus", distrFoundationBonus.String())
 		distrReward.Add(distrReward, distrFoundationBonus)
 	}
 	return distrReward, nil
@@ -567,12 +558,12 @@ func (p *Protocol) accountRewards(searchPairs []string) (map[string]map[uint64]*
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-	fmt.Println(getQuery)
+
 	rows, err := stmt.Query()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
 	}
-	fmt.Println("568", err)
+
 	var accountReward rewards.AccountReward
 	parsedRows, err := s.ParseSQLRows(rows, &accountReward)
 	if err != nil {
@@ -699,7 +690,7 @@ func (p *Protocol) weightedVotesByVoterAddress(startEpoch uint64, endEpoch uint6
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-	fmt.Println(getQuery, startEpoch, endEpoch, voterEthAddress)
+
 	rows, err := stmt.Query(startEpoch, endEpoch, voterEthAddress)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
@@ -744,7 +735,7 @@ func (p *Protocol) distributionPlanBySearchPairs(searchPairs []string) (map[stri
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-	fmt.Println(getQuery, searchPairs)
+
 	rows, err := stmt.Query()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
