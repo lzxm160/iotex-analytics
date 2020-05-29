@@ -409,6 +409,7 @@ func calculateDistributeReward(distributePlan *HermesDistributionPlan, rewards *
 	}
 	if foundationBonusPercentage > 0 {
 		distrFoundationBonus := new(big.Int).Set(rewards.FoundationBonus)
+		fmt.Println("distrFoundationBonus before split", distrFoundationBonus.String())
 		distrFoundationBonus.Mul(distrFoundationBonus, big.NewInt(int64(foundationBonusPercentage*100))).Div(distrFoundationBonus, big.NewInt(10000))
 		fmt.Println("distrFoundationBonus", distrFoundationBonus.String())
 		distrReward.Add(distrReward, distrFoundationBonus)
