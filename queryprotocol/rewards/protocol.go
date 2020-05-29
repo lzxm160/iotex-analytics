@@ -348,10 +348,12 @@ func (p *Protocol) GetRewardSources(startEpoch uint64, epochCount uint64, voterI
 			searchPairs = append(searchPairs, fmt.Sprintf("(%d, '%s')", epochNumber, delegateName))
 		}
 	}
+	fmt.Println("hereeeeeeeeeeeeeeeeeeee")
 	accountRewardsMap, err := p.accountRewards(searchPairs)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get account rewards")
 	}
+	fmt.Println("after accountRewards")
 	distributePlanMap, err := p.distributionPlanBySearchPairs(searchPairs)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get reward distribution plan")
