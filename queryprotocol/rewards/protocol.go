@@ -565,7 +565,7 @@ func (p *Protocol) accountRewards(searchPairs []string) (map[string]map[uint64]*
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
 	}
-
+	fmt.Println("568", err)
 	var accountReward rewards.AccountReward
 	parsedRows, err := s.ParseSQLRows(rows, &accountReward)
 	if err != nil {
