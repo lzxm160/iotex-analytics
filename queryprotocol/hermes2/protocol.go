@@ -56,9 +56,9 @@ type VoterInfo struct {
 
 // Ratio defines delegate reward distribution ratio
 type Ratio struct {
-	BlockRewardRatio     int
-	EpochRewardRatio     int
-	FoundationBonusRatio int
+	BlockRewardRatio     string
+	EpochRewardRatio     string
+	FoundationBonusRatio string
 	EpochNumber          int
 }
 

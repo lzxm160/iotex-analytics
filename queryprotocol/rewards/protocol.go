@@ -10,6 +10,7 @@ import (
 	"database/sql"
 	"fmt"
 	"math/big"
+	"strconv"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -100,9 +101,9 @@ type EpochFoundationReward struct {
 type HermesDistributionPlan struct {
 	TotalWeightedVotes        *big.Int
 	StakingAddress            string
-	BlockRewardPercentage     uint64
-	EpochRewardPercentage     uint64
-	FoundationBonusPercentage uint64
+	BlockRewardPercentage     string
+	EpochRewardPercentage     string
+	FoundationBonusPercentage string
 }
 
 // HermesDistributionSource defines the distribution source of delegates registering in Hermes
@@ -244,29 +245,26 @@ func (p *Protocol) GetHermesBookkeeping(startEpoch uint64, epochCount uint64, re
 			totalRewards := new(big.Int).Set(rewards.BlockReward)
 			totalRewards.Add(totalRewards, rewards.EpochReward).Add(totalRewards, rewards.FoundationBonus)
 			balanceAfterDistribution.Add(balanceAfterDistribution, totalRewards)
-
-			distrReward := big.NewInt(0)
-			if distributePlan.BlockRewardPercentage > 0 {
-				distrBlockReward := new(big.Int).Set(rewards.BlockReward)
-				distrBlockReward.Mul(distrBlockReward, big.NewInt(int64(distributePlan.BlockRewardPercentage))).Div(distrBlockReward, big.NewInt(100))
-				distrReward.Add(distrReward, distrBlockReward)
+			blockRewardPercentage, err := strconv.ParseFloat(distributePlan.BlockRewardPercentage, 64)
+			if err != nil {
+				return nil, errors.New("failed to convert string to float64")
 			}
-			if distributePlan.EpochRewardPercentage > 0 {
-				distrEpochReward := new(big.Int).Set(rewards.EpochReward)
-				distrEpochReward.Mul(distrEpochReward, big.NewInt(int64(distributePlan.EpochRewardPercentage))).Div(distrEpochReward, big.NewInt(100))
-				distrReward.Add(distrReward, distrEpochReward)
+			epochRewardPercentage, err := strconv.ParseFloat(distributePlan.EpochRewardPercentage, 64)
+			if err != nil {
+				return nil, errors.New("failed to convert string to float64")
 			}
-			if distributePlan.FoundationBonusPercentage > 0 {
-				distrFoundationBonus := new(big.Int).Set(rewards.FoundationBonus)
-				distrFoundationBonus.Mul(distrFoundationBonus, big.NewInt(int64(distributePlan.FoundationBonusPercentage))).Div(distrFoundationBonus, big.NewInt(100))
-				distrReward.Add(distrReward, distrFoundationBonus)
+			foundationBonusPercentage, err := strconv.ParseFloat(distributePlan.FoundationBonusPercentage, 64)
+			if err != nil {
+				return nil, errors.New("failed to convert string to float64")
 			}
-
-			if distributePlan.BlockRewardPercentage < waiverThreshold || distributePlan.EpochRewardPercentage < waiverThreshold ||
-				distributePlan.FoundationBonusPercentage < waiverThreshold {
+			waiverThresholdF := float64(waiverThreshold)
+			if blockRewardPercentage < waiverThresholdF || epochRewardPercentage < waiverThresholdF || foundationBonusPercentage < waiverThresholdF {
 				feeWaiver = false
 			}
-
+			distrReward, err := calculateDistributeReward(distributePlan, rewards)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to calculate reward distribution plan")
+			}
 			for voterAddr, weightedVotes := range voterMap {
 				amount := new(big.Int).Set(distrReward)
 				amount = amount.Mul(amount, weightedVotes).Div(amount, distributePlan.TotalWeightedVotes)
@@ -324,21 +322,9 @@ func (p *Protocol) GetAverageHermesStats(startEpoch uint64, epochCount uint64, r
 		for epoch, rewards := range rewardsMap {
 			distributePlan := planMap[epoch]
 			totalWeightedVotesSum.Add(totalWeightedVotesSum, distributePlan.TotalWeightedVotes)
-
-			if distributePlan.BlockRewardPercentage > 0 {
-				distrBlockReward := new(big.Int).Set(rewards.BlockReward)
-				distrBlockReward.Mul(distrBlockReward, big.NewInt(int64(distributePlan.BlockRewardPercentage))).Div(distrBlockReward, big.NewInt(100))
-				distrRewardSum.Add(distrRewardSum, distrBlockReward)
-			}
-			if distributePlan.EpochRewardPercentage > 0 {
-				distrEpochReward := new(big.Int).Set(rewards.EpochReward)
-				distrEpochReward.Mul(distrEpochReward, big.NewInt(int64(distributePlan.EpochRewardPercentage))).Div(distrEpochReward, big.NewInt(100))
-				distrRewardSum.Add(distrRewardSum, distrEpochReward)
-			}
-			if distributePlan.FoundationBonusPercentage > 0 {
-				distrFoundationBonus := new(big.Int).Set(rewards.FoundationBonus)
-				distrFoundationBonus.Mul(distrFoundationBonus, big.NewInt(int64(distributePlan.FoundationBonusPercentage))).Div(distrFoundationBonus, big.NewInt(100))
-				distrRewardSum.Add(distrRewardSum, distrFoundationBonus)
+			distrRewardSum, err = calculateDistributeReward(distributePlan, rewards)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to calculate reward distribution plan")
 			}
 		}
 
@@ -392,24 +378,10 @@ func (p *Protocol) GetRewardSources(startEpoch uint64, epochCount uint64, voterI
 
 		for epoch, rewards := range rewardsMap {
 			distributePlan := planMap[epoch]
-
-			distrReward := big.NewInt(0)
-			if distributePlan.BlockRewardPercentage > 0 {
-				distrBlockReward := new(big.Int).Set(rewards.BlockReward)
-				distrBlockReward.Mul(distrBlockReward, big.NewInt(int64(distributePlan.BlockRewardPercentage))).Div(distrBlockReward, big.NewInt(100))
-				distrReward.Add(distrReward, distrBlockReward)
+			distrReward, err := calculateDistributeReward(distributePlan, rewards)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to calculate reward distribution plan")
 			}
-			if distributePlan.EpochRewardPercentage > 0 {
-				distrEpochReward := new(big.Int).Set(rewards.EpochReward)
-				distrEpochReward.Mul(distrEpochReward, big.NewInt(int64(distributePlan.EpochRewardPercentage))).Div(distrEpochReward, big.NewInt(100))
-				distrReward.Add(distrReward, distrEpochReward)
-			}
-			if distributePlan.FoundationBonusPercentage > 0 {
-				distrFoundationBonus := new(big.Int).Set(rewards.FoundationBonus)
-				distrFoundationBonus.Mul(distrFoundationBonus, big.NewInt(int64(distributePlan.FoundationBonusPercentage))).Div(distrFoundationBonus, big.NewInt(100))
-				distrReward.Add(distrReward, distrFoundationBonus)
-			}
-
 			weightedVotes := delegateMap[epoch]
 			amount := distrReward.Mul(distrReward, weightedVotes).Div(distrReward, distributePlan.TotalWeightedVotes)
 
@@ -425,6 +397,37 @@ func (p *Protocol) GetRewardSources(startEpoch uint64, epochCount uint64, voterI
 		})
 	}
 	return delegateDistributions, nil
+}
+func calculateDistributeReward(distributePlan *HermesDistributionPlan, rewards *HermesDistributionSource) (*big.Int, error) {
+	blockRewardPercentage, err := strconv.ParseFloat(distributePlan.BlockRewardPercentage, 64)
+	if err != nil {
+		return nil, errors.New("failed to convert string to float64")
+	}
+	epochRewardPercentage, err := strconv.ParseFloat(distributePlan.EpochRewardPercentage, 64)
+	if err != nil {
+		return nil, errors.New("failed to convert string to float64")
+	}
+	foundationBonusPercentage, err := strconv.ParseFloat(distributePlan.FoundationBonusPercentage, 64)
+	if err != nil {
+		return nil, errors.New("failed to convert string to float64")
+	}
+	distrReward := big.NewInt(0)
+	if blockRewardPercentage > 0 {
+		distrBlockReward := new(big.Int).Set(rewards.BlockReward)
+		distrBlockReward.Mul(distrBlockReward, big.NewInt(int64(blockRewardPercentage*100))).Div(distrBlockReward, big.NewInt(10000))
+		distrReward.Add(distrReward, distrBlockReward)
+	}
+	if epochRewardPercentage > 0 {
+		distrEpochReward := new(big.Int).Set(rewards.EpochReward)
+		distrEpochReward.Mul(distrEpochReward, big.NewInt(int64(epochRewardPercentage*100))).Div(distrEpochReward, big.NewInt(10000))
+		distrReward.Add(distrReward, distrEpochReward)
+	}
+	if foundationBonusPercentage > 0 {
+		distrFoundationBonus := new(big.Int).Set(rewards.FoundationBonus)
+		distrFoundationBonus.Mul(distrFoundationBonus, big.NewInt(int64(foundationBonusPercentage*100))).Div(distrFoundationBonus, big.NewInt(10000))
+		distrReward.Add(distrReward, distrFoundationBonus)
+	}
+	return distrReward, nil
 }
 
 // totalWeightedVotes gets the given delegate's total weighted votes from start epoch to end epoch
