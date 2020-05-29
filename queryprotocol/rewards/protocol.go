@@ -398,6 +398,7 @@ func (p *Protocol) GetRewardSources(startEpoch uint64, epochCount uint64, voterI
 	}
 	return delegateDistributions, nil
 }
+
 func calculateDistributeReward(distributePlan *HermesDistributionPlan, rewards *HermesDistributionSource) (*big.Int, error) {
 	blockRewardPercentage, err := strconv.ParseFloat(distributePlan.BlockRewardPercentage, 64)
 	if err != nil {

@@ -1592,9 +1592,9 @@ func (r *queryResolver) getHermes2ByDelegate(ctx context.Context, startEpoch int
 				return errors.New("failed to convert string to float64")
 			}
 			info := &Ratio{
-				BlockRewardRatio:     fmt.Sprintf("%0.2f", blockRewardRatio),
-				EpochRewardRatio:     ratioInfo.EpochRewardRatio,
-				FoundationBonusRatio: ratioInfo.FoundationBonusRatio,
+				BlockRewardRatio:     blockRewardRatio,
+				EpochRewardRatio:     epochRewardRatio,
+				FoundationBonusRatio: foundationBonusRatio,
 				EpochNumber:          startEpoch,
 			}
 			distributionRatioList = append(distributionRatioList, info)
