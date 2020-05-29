@@ -67,6 +67,7 @@ type Config struct {
 	FairbankHeight          uint64                            `yaml:"fairbankHeight"`
 	ConsensusScheme         string                            `yaml:"consensusScheme"`
 	RangeQueryLimit         uint64                            `yaml:"rangeQueryLimit"`
+	RewardPortionContract   string                            `yaml:"rewardPortionContract"`
 	Genesis                 indexprotocol.Genesis             `yaml:"genesis"`
 	GravityChain            indexprotocol.GravityChain        `yaml:"gravityChain"`
 	Rewarding               indexprotocol.Rewarding           `yaml:"rewarding"`

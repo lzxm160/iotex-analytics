@@ -150,10 +150,11 @@ type Protocol struct {
 	VoteThreshold                 *big.Int
 	ScoreThreshold                *big.Int
 	SelfStakingThreshold          *big.Int
+	rewardPortionContract         string
 }
 
 // NewProtocol creates a new protocol
-func NewProtocol(store s.Store, epochCtx *epochctx.EpochCtx, gravityChainCfg indexprotocol.GravityChain, pollCfg indexprotocol.Poll, voteCfg indexprotocol.VoteWeightCalConsts) (*Protocol, error) {
+func NewProtocol(store s.Store, epochCtx *epochctx.EpochCtx, gravityChainCfg indexprotocol.GravityChain, pollCfg indexprotocol.Poll, voteCfg indexprotocol.VoteWeightCalConsts, rewardPortionContract string) (*Protocol, error) {
 	bucketTableOperator, err := committee.NewBucketTableOperator("buckets", committee.MYSQL)
 	if err != nil {
 		return nil, err
@@ -201,6 +202,7 @@ func NewProtocol(store s.Store, epochCtx *epochctx.EpochCtx, gravityChainCfg ind
 		ScoreThreshold:                scoreThreshold,
 		SelfStakingThreshold:          selfStakingThreshold,
 		SkipManifiedCandidate:         pollCfg.SkipManifiedCandidate,
+		rewardPortionContract:         rewardPortionContract,
 	}, nil
 }
 
@@ -281,6 +283,11 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			return errors.Wrapf(err, "failed to put data into probation tables in epoch %d", epochNumber)
 		}
 
+		// process staking
+		if blkheight >= p.epochCtx.FairbankHeight() {
+			return p.processStaking(tx, chainClient, blkheight, epochNumber, probationList)
+		}
+
 		var gravityHeight uint64
 		if epochNumber == 1 {
 			gravityHeight = p.GravityChainCfg.GravityChainStartHeight
@@ -290,11 +297,6 @@ func (p *Protocol) HandleBlock(ctx context.Context, tx *sql.Tx, blk *block.Block
 			if err != nil {
 				return errors.Wrapf(err, "failed to get gravity height from chain service in epoch %d", epochNumber)
 			}
-		}
-
-		// process staking
-		if blkheight >= p.epochCtx.FairbankHeight() {
-			return p.processStaking(tx, chainClient, blkheight, epochNumber, probationList, gravityHeight)
 		}
 
 		if err := p.fetchAndStoreRawBuckets(tx, electionClient, chainClient, epochNumber, blkheight, gravityHeight); err != nil {

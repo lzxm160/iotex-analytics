@@ -7,16 +7,30 @@
 package votings
 
 import (
+	"context"
 	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"math"
 	"math/big"
 	"reflect"
+	"strconv"
+	"strings"
 	"time"
 
+	"github.com/iotexproject/iotex-antenna-go/v2/account"
+
+	"github.com/iotexproject/iotex-antenna-go/v2/iotex"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/iotexproject/iotex-address/address"
+	"github.com/iotexproject/iotex-core/pkg/log"
+	"go.uber.org/zap"
+
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
 
+	"github.com/iotexproject/iotex-analytics/contract"
 	"github.com/iotexproject/iotex-core/ioctl/util"
 	"github.com/iotexproject/iotex-election/db"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
@@ -25,7 +39,7 @@ import (
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
 )
 
-func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceClient, epochStartheight, epochNumber uint64, probationList *iotextypes.ProbationCandidateList, gravityHeight uint64) (err error) {
+func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceClient, epochStartheight, epochNumber uint64, probationList *iotextypes.ProbationCandidateList) (err error) {
 	voteBucketList, err := indexprotocol.GetAllStakingBuckets(chainClient, epochStartheight)
 	if err != nil {
 		return errors.Wrap(err, "failed to get buckets count")
@@ -50,7 +64,7 @@ func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceCli
 		}
 	}
 	// update voting_result table
-	if err = p.updateStakingResult(tx, candidateList, epochNumber, gravityHeight); err != nil {
+	if err = p.updateStakingResult(tx, candidateList, epochNumber, epochStartheight, chainClient); err != nil {
 		return
 	}
 	// update aggregate_voting and voting_meta table
@@ -60,7 +74,7 @@ func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceCli
 	return
 }
 
-func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.CandidateListV2, epochNumber, gravityHeight uint64) (err error) {
+func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.CandidateListV2, epochNumber, epochStartheight uint64, chainClient iotexapi.APIServiceClient) (err error) {
 	var voteResultStmt *sql.Stmt
 	insertQuery := fmt.Sprintf(insertVotingResult,
 		VotingResultTableName)
@@ -78,9 +92,9 @@ func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.Candid
 		if err != nil {
 			return errors.Wrap(err, "failed to convert IoTeX address to ETH address")
 		}
-		blockRewardPortion, epochRewardPortion, foundationBonusPortion, err := p.getDelegateRewardPortions(stakingAddress, gravityHeight)
+		blockRewardPortion, epochRewardPortion, foundationBonusPortion, err := p.getStakingDelegateRewardPortions(stakingAddress, epochStartheight, chainClient)
 		if err != nil {
-			return errors.Errorf("get delegate reward portions:%s,%d,%s", stakingAddress.String(), gravityHeight, err.Error())
+			return errors.Errorf("get delegate reward portions:%s,%d,%s", stakingAddress.String(), epochStartheight, err.Error())
 		}
 		encodedName, err := indexprotocol.EncodeDelegateName(candidate.Name)
 		if err != nil {
@@ -273,6 +287,82 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 		}
 	}
 	return votinginfoList, nil
+}
+
+func (p *Protocol) getStakingDelegateRewardPortions(stakingAddress common.Address, epochStartheight uint64, chainClient iotexapi.APIServiceClient) (blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage float64, err error) {
+	if p.rewardPortionContract == "" {
+		blockRewardPercentage = 100
+		epochRewardPercentage = 100
+		foundationBonusPercentage = 100
+		return
+	}
+	caddr, err := address.FromString(p.rewardPortionContract)
+	if err != nil {
+		err = errors.Wrap(err, "Failed to get contract address")
+		return
+	}
+	delegateABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
+	if err != nil {
+		err = errors.Wrap(err, "Failed to get parsed delegate profile ABI interface")
+		return
+	}
+	account, err := account.NewAccount()
+	if err != nil {
+		log.L().Fatal("Failed to create a new account", zap.Error(err))
+	}
+	c := iotex.NewAuthedClient(chainClient, account)
+	// read block reward
+	blockRewardPortion, err := c.Contract(caddr, delegateABI).Read("getProfileByField", stakingAddress, "blockRewardPortion").Call(context.Background())
+	if err != nil {
+		log.L().Fatal("Failed to get block reward portion", zap.Error(err))
+	}
+	var brp []byte
+	if err := blockRewardPortion.Unmarshal(&brp); err != nil {
+		log.L().Fatal("Failed to unmarshal block reward portion", zap.Error(err))
+	}
+	if len(brp) > 0 {
+		blockPortion, err := strconv.ParseInt(hex.EncodeToString(brp), 16, 64)
+		if err != nil {
+			log.L().Fatal("Failed to parse block reward portion", zap.Error(err))
+		}
+		blockRewardPercentage = float64(blockPortion) / 100
+	}
+	fmt.Println(blockRewardPercentage)
+
+	// read epoch reward
+	epochRewardPortion, err := c.Contract(caddr, delegateABI).Read("getProfileByField", stakingAddress, "epochRewardPortion").Call(context.Background())
+	if err != nil {
+		log.L().Fatal("Failed to get epoch reward portion", zap.Error(err))
+	}
+	var erp []byte
+	if err := epochRewardPortion.Unmarshal(&erp); err != nil {
+		log.L().Fatal("Failed to unmarshal epoch reward portion", zap.Error(err))
+	}
+	if len(erp) > 0 {
+		epochPortion, err := strconv.ParseInt(hex.EncodeToString(erp), 16, 64)
+		if err != nil {
+			log.L().Fatal("Failed to parse epoch reward portion", zap.Error(err))
+		}
+		epochRewardPercentage = float64(epochPortion) / 100
+	}
+
+	// read foundation bonus
+	foundationBonusPortion, err := c.Contract(caddr, delegateABI).Read("getProfileByField", stakingAddress, "foundationRewardPortion").Call(context.Background())
+	if err != nil {
+		log.L().Fatal("Failed to get foundation bonus portion", zap.Error(err))
+	}
+	var fbp []byte
+	if err := foundationBonusPortion.Unmarshal(&fbp); err != nil {
+		log.L().Fatal("Failed to unmarshal foundation bonus portion", zap.Error(err))
+	}
+	if len(fbp) > 0 {
+		foundationBonusPortion, err := strconv.ParseInt(hex.EncodeToString(fbp), 16, 64)
+		if err != nil {
+			log.L().Fatal("Failed to parse foundation bonus portion", zap.Error(err))
+		}
+		foundationBonusPercentage = float64(foundationBonusPortion) / 100
+	}
+	return
 }
 
 func calculateVoteWeight(cfg indexprotocol.VoteWeightCalConsts, v *iotextypes.VoteBucket, selfStake bool) (*big.Int, error) {
