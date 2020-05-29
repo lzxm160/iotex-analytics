@@ -397,6 +397,7 @@ func calculateDistributeReward(distributePlan *HermesDistributionPlan, rewards *
 	distrReward := big.NewInt(0)
 	if blockRewardPercentage > 0 {
 		distrBlockReward := new(big.Int).Set(rewards.BlockReward)
+		fmt.Println("distrBlockReward before split", distrBlockReward.String())
 		distrBlockReward.Mul(distrBlockReward, big.NewInt(int64(blockRewardPercentage*100))).Div(distrBlockReward, big.NewInt(10000))
 		fmt.Println("distrBlockReward", distrBlockReward.String())
 		distrReward.Add(distrReward, distrBlockReward)
