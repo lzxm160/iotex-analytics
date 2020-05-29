@@ -561,7 +561,7 @@ func (p *Protocol) accountRewards(searchPairs []string) (map[string]map[uint64]*
 		return nil, errors.Wrap(err, "failed to prepare get query")
 	}
 	defer stmt.Close()
-	fmt.Println(getQuery, strings.Join(searchPairs, ","))
+	fmt.Println(getQuery)
 	rows, err := stmt.Query()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute get query")
