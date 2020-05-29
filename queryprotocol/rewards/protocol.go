@@ -345,6 +345,7 @@ func (p *Protocol) GetRewardSources(startEpoch uint64, epochCount uint64, voterI
 	searchPairs := make([]string, 0)
 	for delegateName, epochMap := range weightedVotesMap {
 		for epochNumber := range epochMap {
+			fmt.Println("348", fmt.Sprintf("(%d, '%s')", epochNumber, delegateName))
 			searchPairs = append(searchPairs, fmt.Sprintf("(%d, '%s')", epochNumber, delegateName))
 		}
 	}
