@@ -11,8 +11,12 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/iotexproject/iotex-analytics/contract"
 
 	"google.golang.org/grpc"
 
@@ -301,7 +305,13 @@ func TestGetLog(t *testing.T) {
 	conn1, err := grpc.DialContext(grpcCtx1, "35.236.100.38:14014", grpc.WithBlock(), grpc.WithInsecure())
 	require.NoError(err)
 	chainClient := iotexapi.NewAPIServiceClient(conn1)
-	getlog("io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df", 3615690, 1000, chainClient)
+	delegateABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
+	require.NoError(err)
+	xx, err := getlog("io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df", "", 3615690, 1000, chainClient, delegateABI)
+	require.NoError(err)
+	for k, v := range xx {
+		fmt.Println(k, v)
+	}
 }
 
 func TestGetRawBlock(t *testing.T) {

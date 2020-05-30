@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -76,13 +77,13 @@ const (
 	createVotingMetaTable = "CREATE TABLE IF NOT EXISTS %s (epoch_number DECIMAL(65, 0) NOT NULL, " +
 		"voted_token DECIMAL(65,0) NOT NULL, delegate_count DECIMAL(65,0) NOT NULL, total_weighted DECIMAL(65, 0) NOT NULL, " +
 		"UNIQUE KEY %s (epoch_number))"
-	selectVotingResult = "SELECT * FROM %s WHERE epoch_number=? AND delegate_name=?"
-	insertVotingResult = "INSERT INTO %s (epoch_number, delegate_name, operator_address, reward_address, " +
+	selectVotingResult                   = "SELECT * FROM %s WHERE epoch_number=? AND delegate_name=?"
+	selectVotingResultFromStakingAddress = "SELECT * FROM %s WHERE epoch_number=? AND staking_address=?"
+	insertVotingResult                   = "INSERT INTO %s (epoch_number, delegate_name, operator_address, reward_address, " +
 		"total_weighted_votes, self_staking, block_reward_percentage, epoch_reward_percentage, foundation_bonus_percentage, staking_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	insertAggregateVoting = "INSERT IGNORE INTO %s (epoch_number, candidate_name, voter_address, native_flag, aggregate_votes) VALUES (?, ?, ?, ?, ?)"
 	insertVotingMeta      = "INSERT INTO %s (epoch_number, voted_token, delegate_count, total_weighted) VALUES (?, ?, ?, ?)"
 	selectBlockHistory    = "SELECT timestamp FROM %s WHERE block_height = (SELECT block_height FROM %s WHERE action_type = ? AND block_height < ? AND block_height >= ?)"
-	rowExists             = "SELECT * FROM %s WHERE epoch_number = ?"
 )
 
 type (
@@ -151,10 +152,12 @@ type Protocol struct {
 	ScoreThreshold                *big.Int
 	SelfStakingThreshold          *big.Int
 	rewardPortionContract         string
+	portionContractDeployHeight   uint64
+	abi                           abi.ABI
 }
 
 // NewProtocol creates a new protocol
-func NewProtocol(store s.Store, epochCtx *epochctx.EpochCtx, gravityChainCfg indexprotocol.GravityChain, pollCfg indexprotocol.Poll, voteCfg indexprotocol.VoteWeightCalConsts, rewardPortionContract string) (*Protocol, error) {
+func NewProtocol(store s.Store, epochCtx *epochctx.EpochCtx, gravityChainCfg indexprotocol.GravityChain, pollCfg indexprotocol.Poll, voteCfg indexprotocol.VoteWeightCalConsts, rewardPortionContract string, portionContractDeployHeight uint64) (*Protocol, error) {
 	bucketTableOperator, err := committee.NewBucketTableOperator("buckets", committee.MYSQL)
 	if err != nil {
 		return nil, err
@@ -187,6 +190,10 @@ func NewProtocol(store s.Store, epochCtx *epochctx.EpochCtx, gravityChainCfg ind
 	if !ok {
 		return nil, errors.New("Invalid self staking threshold")
 	}
+	delegateABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to get parsed delegate profile ABI interface")
+	}
 	return &Protocol{
 		Store:                         store,
 		bucketTableOperator:           bucketTableOperator,
@@ -203,6 +210,8 @@ func NewProtocol(store s.Store, epochCtx *epochctx.EpochCtx, gravityChainCfg ind
 		SelfStakingThreshold:          selfStakingThreshold,
 		SkipManifiedCandidate:         pollCfg.SkipManifiedCandidate,
 		rewardPortionContract:         rewardPortionContract,
+		portionContractDeployHeight:   portionContractDeployHeight,
+		abi:                           delegateABI,
 	}, nil
 }
 
