@@ -325,10 +325,10 @@ func (p *Protocol) getStakingDelegateRewardPortions(stakingAddress common.Addres
 		blockRewardPercentage = votingResult.BlockRewardPercentage
 		epochRewardPercentage = votingResult.EpochRewardPercentage
 		foundationBonusPercentage = votingResult.FoundationBonusPercentage
-
+		fmt.Println("32888888888888888888888888888")
 		//and then update from contract from last epochstartHeight to this epochStartheight-1
 		lastEpochStartHeight := p.epochCtx.GetEpochHeight(epochNumber - 1)
-		count := lastEpochStartHeight - epochStartheight
+		count := epochStartheight - lastEpochStartHeight
 		portion, err = getlog(p.rewardPortionContract, stakingAddress.String(), lastEpochStartHeight, count, chainClient, p.abi)
 		if err != nil {
 			err = errors.Wrap(err, "get log from chain error")
