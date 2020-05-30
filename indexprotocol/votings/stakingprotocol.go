@@ -320,6 +320,7 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartheight, epochNu
 			// todo make sure if ignore this error
 			//err = errors.Wrap(err, "get last epoch portion error")
 			//return
+			err = nil
 		}
 
 		//and then update from contract from last epochstartHeight to this epochStartheight-1
