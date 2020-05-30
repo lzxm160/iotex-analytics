@@ -9,9 +9,12 @@ package votings
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
+
+	"google.golang.org/grpc"
 
 	"github.com/golang/mock/gomock"
 	"github.com/golang/protobuf/proto"
@@ -19,15 +22,9 @@ import (
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/stretchr/testify/require"
 
-	"github.com/iotexproject/iotex-core/ioctl/util"
 	"github.com/iotexproject/iotex-core/test/mock/mock_apiserviceclient"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
-
-	"github.com/iotexproject/iotex-analytics/epochctx"
-	"github.com/iotexproject/iotex-analytics/indexprotocol"
-	s "github.com/iotexproject/iotex-analytics/sql"
-	"github.com/iotexproject/iotex-analytics/testutil"
 )
 
 var (
@@ -81,92 +78,92 @@ var (
 	delegateName = "xxxx"
 )
 
-func TestStaking(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	chainClient := mock_apiserviceclient.NewMockServiceClient(ctrl)
-	mock(chainClient, t)
-	height := uint64(110000)
-	epochNumber := uint64(68888)
-	require := require.New(t)
-	ctx := context.Background()
-	//use for remote database
-	testutil.CleanupDatabase(t, connectStr, dbName)
-	store := s.NewMySQL(connectStr, dbName)
-	require.NoError(store.Start(ctx))
-	defer func() {
-		//use for remote database
-		_, err := store.GetDB().Exec("DROP DATABASE " + dbName)
-		require.NoError(err)
-		require.NoError(store.Stop(ctx))
-	}()
-	require.NoError(store.Start(context.Background()))
-	cfg := indexprotocol.VoteWeightCalConsts{
-		DurationLg: 1.2,
-		AutoStake:  1,
-		SelfStake:  1.06,
-	}
-	p, err := NewProtocol(store, epochctx.NewEpochCtx(36, 24, 15, epochctx.FairbankHeight(100)), indexprotocol.GravityChain{}, indexprotocol.Poll{
-		VoteThreshold:        "100000000000000000000",
-		ScoreThreshold:       "0",
-		SelfStakingThreshold: "0",
-	}, cfg)
-	require.NoError(err)
-	require.NoError(p.CreateTables(context.Background()))
-	tx, err := p.Store.GetDB().Begin()
-	require.NoError(err)
-	require.NoError(p.processStaking(tx, chainClient, height, epochNumber, nil, 0))
-	require.NoError(tx.Commit())
-	// case I: checkout bucket if it's written right
-	require.NoError(err)
-	ret, err := p.stakingBucketTableOperator.Get(height, p.Store.GetDB(), nil)
-	require.NoError(err)
-	bucketList, ok := ret.(*iotextypes.VoteBucketList)
-	require.True(ok)
-	bucketsBytes, _ := proto.Marshal(&iotextypes.VoteBucketList{Buckets: buckets})
-	bucketListBytes, _ := proto.Marshal(bucketList)
-	require.EqualValues(bucketsBytes, bucketListBytes)
-
-	// case II: checkout candidate if it's written right
-	ret, err = p.stakingCandidateTableOperator.Get(height, p.Store.GetDB(), nil)
-	require.NoError(err)
-	candidateList, ok := ret.(*iotextypes.CandidateListV2)
-	require.True(ok)
-	require.Equal(delegateName, candidateList.Candidates[0].Name)
-	candidatesBytes, _ := proto.Marshal(&iotextypes.CandidateListV2{Candidates: candidates})
-	candidateListBytes, _ := proto.Marshal(candidateList)
-	require.EqualValues(candidatesBytes, candidateListBytes)
-
-	// case III: check getStakingBucketInfoByEpoch
-	encodedName, err := indexprotocol.EncodeDelegateName(delegateName)
-	require.NoError(err)
-	bucketInfo, err := p.getStakingBucketInfoByEpoch(height, epochNumber, encodedName)
-	require.NoError(err)
-
-	ethAddress1, err := util.IoAddrToEvmAddr("io1l9vaqmanwj47tlrpv6etf3pwq0s0snsq4vxke2")
-	require.NoError(err)
-	require.Equal(hex.EncodeToString(ethAddress1.Bytes()), bucketInfo[0].VoterAddress)
-
-	ethAddress2, err := util.IoAddrToEvmAddr("io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02")
-	require.NoError(err)
-	require.Equal(hex.EncodeToString(ethAddress2.Bytes()), bucketInfo[1].VoterAddress)
-
-	ethAddress3, err := util.IoAddrToEvmAddr("io1vdtfpzkwpyngzvx7u2mauepnzja7kd5rryp0sg")
-	require.NoError(err)
-	require.Equal(hex.EncodeToString(ethAddress3.Bytes()), bucketInfo[2].VoterAddress)
-	for _, b := range bucketInfo {
-		require.True(b.Decay)
-		require.Equal(epochNumber, b.EpochNumber)
-		require.True(b.IsNative)
-		dur, err := time.ParseDuration(b.RemainingDuration)
-		require.NoError(err)
-		require.True(dur.Seconds() <= float64(86400))
-		// 'now' need to format b/c b.StartTime's nano time is set to 0
-		require.Equal(now.Format("2006-01-02 15:04:05 -0700 MST"), b.StartTime)
-		require.Equal("30000", b.Votes)
-		require.Equal("30000", b.WeightedVotes)
-	}
-}
+//func TestStaking(t *testing.T) {
+//	ctrl := gomock.NewController(t)
+//	defer ctrl.Finish()
+//	chainClient := mock_apiserviceclient.NewMockServiceClient(ctrl)
+//	mock(chainClient, t)
+//	height := uint64(110000)
+//	epochNumber := uint64(68888)
+//	require := require.New(t)
+//	ctx := context.Background()
+//	//use for remote database
+//	testutil.CleanupDatabase(t, connectStr, dbName)
+//	store := s.NewMySQL(connectStr, dbName)
+//	require.NoError(store.Start(ctx))
+//	defer func() {
+//		//use for remote database
+//		_, err := store.GetDB().Exec("DROP DATABASE " + dbName)
+//		require.NoError(err)
+//		require.NoError(store.Stop(ctx))
+//	}()
+//	require.NoError(store.Start(context.Background()))
+//	cfg := indexprotocol.VoteWeightCalConsts{
+//		DurationLg: 1.2,
+//		AutoStake:  1,
+//		SelfStake:  1.06,
+//	}
+//	p, err := NewProtocol(store, epochctx.NewEpochCtx(36, 24, 15, epochctx.FairbankHeight(100)), indexprotocol.GravityChain{}, indexprotocol.Poll{
+//		VoteThreshold:        "100000000000000000000",
+//		ScoreThreshold:       "0",
+//		SelfStakingThreshold: "0",
+//	}, cfg)
+//	require.NoError(err)
+//	require.NoError(p.CreateTables(context.Background()))
+//	tx, err := p.Store.GetDB().Begin()
+//	require.NoError(err)
+//	require.NoError(p.processStaking(tx, chainClient, height, epochNumber, nil, 0))
+//	require.NoError(tx.Commit())
+//	// case I: checkout bucket if it's written right
+//	require.NoError(err)
+//	ret, err := p.stakingBucketTableOperator.Get(height, p.Store.GetDB(), nil)
+//	require.NoError(err)
+//	bucketList, ok := ret.(*iotextypes.VoteBucketList)
+//	require.True(ok)
+//	bucketsBytes, _ := proto.Marshal(&iotextypes.VoteBucketList{Buckets: buckets})
+//	bucketListBytes, _ := proto.Marshal(bucketList)
+//	require.EqualValues(bucketsBytes, bucketListBytes)
+//
+//	// case II: checkout candidate if it's written right
+//	ret, err = p.stakingCandidateTableOperator.Get(height, p.Store.GetDB(), nil)
+//	require.NoError(err)
+//	candidateList, ok := ret.(*iotextypes.CandidateListV2)
+//	require.True(ok)
+//	require.Equal(delegateName, candidateList.Candidates[0].Name)
+//	candidatesBytes, _ := proto.Marshal(&iotextypes.CandidateListV2{Candidates: candidates})
+//	candidateListBytes, _ := proto.Marshal(candidateList)
+//	require.EqualValues(candidatesBytes, candidateListBytes)
+//
+//	// case III: check getStakingBucketInfoByEpoch
+//	encodedName, err := indexprotocol.EncodeDelegateName(delegateName)
+//	require.NoError(err)
+//	bucketInfo, err := p.getStakingBucketInfoByEpoch(height, epochNumber, encodedName)
+//	require.NoError(err)
+//
+//	ethAddress1, err := util.IoAddrToEvmAddr("io1l9vaqmanwj47tlrpv6etf3pwq0s0snsq4vxke2")
+//	require.NoError(err)
+//	require.Equal(hex.EncodeToString(ethAddress1.Bytes()), bucketInfo[0].VoterAddress)
+//
+//	ethAddress2, err := util.IoAddrToEvmAddr("io1ph0u2psnd7muq5xv9623rmxdsxc4uapxhzpg02")
+//	require.NoError(err)
+//	require.Equal(hex.EncodeToString(ethAddress2.Bytes()), bucketInfo[1].VoterAddress)
+//
+//	ethAddress3, err := util.IoAddrToEvmAddr("io1vdtfpzkwpyngzvx7u2mauepnzja7kd5rryp0sg")
+//	require.NoError(err)
+//	require.Equal(hex.EncodeToString(ethAddress3.Bytes()), bucketInfo[2].VoterAddress)
+//	for _, b := range bucketInfo {
+//		require.True(b.Decay)
+//		require.Equal(epochNumber, b.EpochNumber)
+//		require.True(b.IsNative)
+//		dur, err := time.ParseDuration(b.RemainingDuration)
+//		require.NoError(err)
+//		require.True(dur.Seconds() <= float64(86400))
+//		// 'now' need to format b/c b.StartTime's nano time is set to 0
+//		require.Equal(now.Format("2006-01-02 15:04:05 -0700 MST"), b.StartTime)
+//		require.Equal("30000", b.Votes)
+//		require.Equal("30000", b.WeightedVotes)
+//	}
+//}
 
 func TestRemainingTime(t *testing.T) {
 	require := require.New(t)
@@ -295,4 +292,42 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 		second,
 		third,
 	)
+}
+
+func TestGetLog(t *testing.T) {
+	require := require.New(t)
+	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	conn1, err := grpc.DialContext(grpcCtx1, "35.236.100.38:14014", grpc.WithBlock(), grpc.WithInsecure())
+	require.NoError(err)
+	chainClient := iotexapi.NewAPIServiceClient(conn1)
+	getlog("io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df", 3615690, 1000, chainClient)
+}
+
+func TestGetRawBlock(t *testing.T) {
+	require := require.New(t)
+	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	conn1, err := grpc.DialContext(grpcCtx1, "35.236.100.38:14014", grpc.WithBlock(), grpc.WithInsecure())
+	require.NoError(err)
+	chainClient := iotexapi.NewAPIServiceClient(conn1)
+	request := &iotexapi.GetRawBlocksRequest{
+		StartHeight:  3615690,
+		Count:        1,
+		WithReceipts: true,
+	}
+	res, err := chainClient.GetRawBlocks(context.Background(), request)
+	require.NoError(err)
+	blkInfos := res.Blocks
+	fmt.Println(len(blkInfos))
+	for _, blkInfo := range blkInfos {
+		for _, receipt := range blkInfo.Receipts {
+			for _, log := range receipt.Logs {
+				fmt.Println(log.ContractAddress)
+				for _, top := range log.Topics {
+					fmt.Println(hex.EncodeToString(top))
+				}
+			}
+		}
+	}
 }

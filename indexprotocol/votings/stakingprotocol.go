@@ -14,18 +14,10 @@ import (
 	"math"
 	"math/big"
 	"reflect"
-	"strconv"
 	"strings"
 	"time"
 
-	"github.com/iotexproject/iotex-antenna-go/v2/account"
-
-	"github.com/iotexproject/iotex-antenna-go/v2/iotex"
-
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/iotexproject/iotex-address/address"
-	"github.com/iotexproject/iotex-core/pkg/log"
-	"go.uber.org/zap"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
@@ -37,6 +29,11 @@ import (
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
+)
+
+const (
+	topicProfileUpdated = "217aa5ef0b78f028d51fd573433bdbe2daf6f8505e6a71f3af1393c8440b341b"
+	topicnewField       = "53096991d49a1876b3be4d7f3d107f7f92043e0fceec1e81b5ba38841d78123b"
 )
 
 func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceClient, epochStartheight, epochNumber uint64, probationList *iotextypes.ProbationCandidateList) (err error) {
@@ -290,78 +287,85 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 }
 
 func (p *Protocol) getStakingDelegateRewardPortions(stakingAddress common.Address, epochStartheight uint64, chainClient iotexapi.APIServiceClient) (blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage float64, err error) {
-	if p.rewardPortionContract == "" {
-		blockRewardPercentage = 100
-		epochRewardPercentage = 100
-		foundationBonusPercentage = 100
-		return
-	}
-	caddr, err := address.FromString(p.rewardPortionContract)
-	if err != nil {
-		err = errors.Wrap(err, "Failed to get contract address")
-		return
-	}
-	delegateABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
-	if err != nil {
-		err = errors.Wrap(err, "Failed to get parsed delegate profile ABI interface")
-		return
-	}
-	account, err := account.NewAccount()
-	if err != nil {
-		log.L().Fatal("Failed to create a new account", zap.Error(err))
-	}
-	c := iotex.NewAuthedClient(chainClient, account)
-	// read block reward
-	blockRewardPortion, err := c.Contract(caddr, delegateABI).Read("getProfileByField", stakingAddress, "blockRewardPortion").Call(context.Background())
-	if err != nil {
-		log.L().Fatal("Failed to get block reward portion", zap.Error(err))
-	}
-	var brp []byte
-	if err := blockRewardPortion.Unmarshal(&brp); err != nil {
-		log.L().Fatal("Failed to unmarshal block reward portion", zap.Error(err))
-	}
-	if len(brp) > 0 {
-		blockPortion, err := strconv.ParseInt(hex.EncodeToString(brp), 16, 64)
-		if err != nil {
-			log.L().Fatal("Failed to parse block reward portion", zap.Error(err))
-		}
-		blockRewardPercentage = float64(blockPortion) / 100
-	}
-	fmt.Println(blockRewardPercentage)
+	// get from mysql first
+	if epochStartheight == p.epochCtx.FairbankHeight() {
+		// init from contract,from contract deployed height to epochStartheight,get latest portion
 
-	// read epoch reward
-	epochRewardPortion, err := c.Contract(caddr, delegateABI).Read("getProfileByField", stakingAddress, "epochRewardPortion").Call(context.Background())
-	if err != nil {
-		log.L().Fatal("Failed to get epoch reward portion", zap.Error(err))
+	} else {
+		// get from mysql first and then update from contract from last epochstartHeight+1 to this epochStartheight
 	}
-	var erp []byte
-	if err := epochRewardPortion.Unmarshal(&erp); err != nil {
-		log.L().Fatal("Failed to unmarshal epoch reward portion", zap.Error(err))
-	}
-	if len(erp) > 0 {
-		epochPortion, err := strconv.ParseInt(hex.EncodeToString(erp), 16, 64)
-		if err != nil {
-			log.L().Fatal("Failed to parse epoch reward portion", zap.Error(err))
-		}
-		epochRewardPercentage = float64(epochPortion) / 100
-	}
-
-	// read foundation bonus
-	foundationBonusPortion, err := c.Contract(caddr, delegateABI).Read("getProfileByField", stakingAddress, "foundationRewardPortion").Call(context.Background())
-	if err != nil {
-		log.L().Fatal("Failed to get foundation bonus portion", zap.Error(err))
-	}
-	var fbp []byte
-	if err := foundationBonusPortion.Unmarshal(&fbp); err != nil {
-		log.L().Fatal("Failed to unmarshal foundation bonus portion", zap.Error(err))
-	}
-	if len(fbp) > 0 {
-		foundationBonusPortion, err := strconv.ParseInt(hex.EncodeToString(fbp), 16, 64)
-		if err != nil {
-			log.L().Fatal("Failed to parse foundation bonus portion", zap.Error(err))
-		}
-		foundationBonusPercentage = float64(foundationBonusPortion) / 100
-	}
+	//if p.rewardPortionContract == "" {
+	//	blockRewardPercentage = 100
+	//	epochRewardPercentage = 100
+	//	foundationBonusPercentage = 100
+	//	return
+	//}
+	//caddr, err := address.FromString(p.rewardPortionContract)
+	//if err != nil {
+	//	err = errors.Wrap(err, "Failed to get contract address")
+	//	return
+	//}
+	//delegateABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
+	//if err != nil {
+	//	err = errors.Wrap(err, "Failed to get parsed delegate profile ABI interface")
+	//	return
+	//}
+	//account, err := account.NewAccount()
+	//if err != nil {
+	//	log.L().Fatal("Failed to create a new account", zap.Error(err))
+	//}
+	//c := iotex.NewAuthedClient(chainClient, account)
+	//// read block reward
+	//blockRewardPortion, err := c.Contract(caddr, delegateABI).Read("getProfileByField", stakingAddress, "blockRewardPortion").Call(context.Background())
+	//if err != nil {
+	//	log.L().Fatal("Failed to get block reward portion", zap.Error(err))
+	//}
+	//var brp []byte
+	//if err := blockRewardPortion.Unmarshal(&brp); err != nil {
+	//	log.L().Fatal("Failed to unmarshal block reward portion", zap.Error(err))
+	//}
+	//if len(brp) > 0 {
+	//	blockPortion, err := strconv.ParseInt(hex.EncodeToString(brp), 16, 64)
+	//	if err != nil {
+	//		log.L().Fatal("Failed to parse block reward portion", zap.Error(err))
+	//	}
+	//	blockRewardPercentage = float64(blockPortion) / 100
+	//}
+	//fmt.Println(blockRewardPercentage)
+	//
+	//// read epoch reward
+	//epochRewardPortion, err := c.Contract(caddr, delegateABI).Read("getProfileByField", stakingAddress, "epochRewardPortion").Call(context.Background())
+	//if err != nil {
+	//	log.L().Fatal("Failed to get epoch reward portion", zap.Error(err))
+	//}
+	//var erp []byte
+	//if err := epochRewardPortion.Unmarshal(&erp); err != nil {
+	//	log.L().Fatal("Failed to unmarshal epoch reward portion", zap.Error(err))
+	//}
+	//if len(erp) > 0 {
+	//	epochPortion, err := strconv.ParseInt(hex.EncodeToString(erp), 16, 64)
+	//	if err != nil {
+	//		log.L().Fatal("Failed to parse epoch reward portion", zap.Error(err))
+	//	}
+	//	epochRewardPercentage = float64(epochPortion) / 100
+	//}
+	//
+	//// read foundation bonus
+	//foundationBonusPortion, err := c.Contract(caddr, delegateABI).Read("getProfileByField", stakingAddress, "foundationRewardPortion").Call(context.Background())
+	//if err != nil {
+	//	log.L().Fatal("Failed to get foundation bonus portion", zap.Error(err))
+	//}
+	//var fbp []byte
+	//if err := foundationBonusPortion.Unmarshal(&fbp); err != nil {
+	//	log.L().Fatal("Failed to unmarshal foundation bonus portion", zap.Error(err))
+	//}
+	//if len(fbp) > 0 {
+	//	foundationBonusPortion, err := strconv.ParseInt(hex.EncodeToString(fbp), 16, 64)
+	//	if err != nil {
+	//		log.L().Fatal("Failed to parse foundation bonus portion", zap.Error(err))
+	//	}
+	//	foundationBonusPercentage = float64(foundationBonusPortion) / 100
+	//}
 	return
 }
 
@@ -423,6 +427,63 @@ func ownerAddressToNameMap(candidates *iotextypes.CandidateListV2) (ret map[stri
 			return
 		}
 		ret[can.OwnerAddress] = name
+	}
+	return
+}
+
+func getlog(address string, from, count uint64, chainClient iotexapi.APIServiceClient) (portion map[string]float64, err error) {
+	portion = make(map[string]float64)
+	delegateABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
+	if err != nil {
+		err = errors.Wrap(err, "Failed to get parsed delegate profile ABI interface")
+		return
+	}
+
+	topics := make([][]byte, 0)
+	tp, err := hex.DecodeString(topicProfileUpdated)
+	if err != nil {
+		return
+	}
+	topics = append(topics, tp)
+	nf, err := hex.DecodeString(topicnewField)
+	if err != nil {
+		return
+	}
+	topics = append(topics, nf)
+	response, err := chainClient.GetLogs(context.Background(), &iotexapi.GetLogsRequest{
+		Filter: &iotexapi.LogsFilter{
+			Address: []string{address},
+			Topics:  []*iotexapi.Topics{&iotexapi.Topics{Topic: topics}},
+		},
+		Lookup: &iotexapi.GetLogsRequest_ByRange{
+			ByRange: &iotexapi.GetLogsByRange{
+				FromBlock: from,
+				Count:     count,
+			},
+		},
+	})
+	if err != nil {
+		return
+	}
+	for _, l := range response.Logs {
+		for _, topic := range l.Topics {
+			switch hex.EncodeToString(topic) {
+			case topicProfileUpdated:
+				event := new(contract.DelegateProfileProfileUpdated)
+				if err := delegateABI.Unpack(event, "ProfileUpdated", l.Data); err != nil {
+					continue
+					fmt.Println(err)
+				}
+				fmt.Println(event.Name, big.NewInt(0).SetBytes(event.Value))
+			case topicnewField:
+				event := new(contract.DelegateProfileNewField)
+				if err := delegateABI.Unpack(event, "NewField", l.Data); err != nil {
+					fmt.Println(err)
+					continue
+				}
+				fmt.Println(event.Name)
+			}
+		}
 	}
 	return
 }
