@@ -97,6 +97,7 @@ func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.Candid
 		if err != nil {
 			return errors.Errorf("get delegate reward portions:%s,%d,%s", stakingAddress.String(), epochStartheight, err.Error())
 		}
+		fmt.Println(stakingAddress.String(), blockRewardPortion, epochRewardPortion, foundationBonusPortion, err)
 		encodedName, err := indexprotocol.EncodeDelegateName(candidate.Name)
 		if err != nil {
 			return errors.Wrap(err, "encode delegate name error")
