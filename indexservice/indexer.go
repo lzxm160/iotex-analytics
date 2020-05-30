@@ -260,6 +260,7 @@ func (idx *Indexer) IndexInBatch(ctx context.Context, tipHeight uint64) error {
 			}
 			// Update lastHeight tracker
 			idx.lastHeight = blk.Height()
+			fmt.Println("update:", idx.lastHeight)
 			blockHeightMtc.With(prometheus.Labels{}).Set(float64(idx.lastHeight))
 		}
 		startHeight += count
