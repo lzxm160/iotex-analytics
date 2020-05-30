@@ -10,10 +10,20 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+
+	"github.com/iotexproject/iotex-address/address"
+
+	"github.com/iotexproject/iotex-antenna-go/v2/account"
+	"github.com/iotexproject/iotex-antenna-go/v2/iotex"
+	"github.com/iotexproject/iotex-core/pkg/log"
+	"go.uber.org/zap"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/iotexproject/iotex-analytics/contract"
@@ -350,5 +360,56 @@ func TestGetRawBlock(t *testing.T) {
 				}
 			}
 		}
+	}
+}
+
+func TestInsertContract(t *testing.T) {
+	require := require.New(t)
+	portion := strconv.FormatInt(55, 16)
+	if len(portion)%2 == 1 {
+		portion = "0" + portion
+	}
+	portionBytes, err := hex.DecodeString(portion)
+	require.NoError(err)
+	account, err := account.HexStringToAccount("2394db684d2d14586e16ec597ce9222a2e552265a58da2a9218a09e3ccff8893")
+	require.NoError(err)
+	conn, err := iotex.NewDefaultGRPCConn("api.testnet.iotex.one:443")
+	if err != nil {
+		log.L().Fatal("Failed to establish grpc connection", zap.Error(err))
+	}
+	defer conn.Close()
+	c := iotex.NewAuthedClient(iotexapi.NewAPIServiceClient(conn), account)
+	caddr, err := address.FromString("io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df")
+	if err != nil {
+		log.L().Fatal("Failed to get contract address", zap.Error(err))
+	}
+	delegateProfileABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
+	require.NoError(err)
+	field := []string{blockRewardPortion, epochRewardPortion, foundationRewardPortion}
+	h1 := common.HexToAddress("2b7c5cc4dc19744380c306da66c2826c5da3630b")
+	h2 := common.HexToAddress("8ef5a73e525eeb49208525b0cdd84a72f804ee4c")
+	for _, f := range field {
+		hash, err := c.Contract(caddr, delegateProfileABI).Execute("updateProfileForDelegate", h1, f, portionBytes).
+			SetGasLimit(1000000).SetGasPrice(big.NewInt(1e12)).Call(context.Background())
+		require.NoError(err)
+		require.NotNil(hash)
+		fmt.Println(hex.EncodeToString(hash[:]))
+
+		time.Sleep(20 * time.Second)
+		receiptResponse, err := c.GetReceipt(hash).Call(context.Background())
+		s := receiptResponse.GetReceiptInfo().GetReceipt().GetStatus()
+		fmt.Println("status:", s)
+
+		/////////////////////////
+		hash, err = c.Contract(caddr, delegateProfileABI).Execute("updateProfileForDelegate", h2, f, portionBytes).
+			SetGasLimit(1000000).SetGasPrice(big.NewInt(1e12)).Call(context.Background())
+		require.NoError(err)
+		require.NotNil(hash)
+		fmt.Println(hex.EncodeToString(hash[:]))
+
+		time.Sleep(20 * time.Second)
+		receiptResponse, err = c.GetReceipt(hash).Call(context.Background())
+		s = receiptResponse.GetReceiptInfo().GetReceipt().GetStatus()
+		fmt.Println("status:", s)
 	}
 }

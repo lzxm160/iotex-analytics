@@ -123,7 +123,7 @@ func (idx *Indexer) Start(ctx context.Context) error {
 		return errors.Wrap(err, "failed to get current epoch and tip height")
 	}
 	idx.lastHeight = lastHeight
-	idx.lastHeight = uint64(3615790 - 1)
+	idx.lastHeight = uint64(3638925 - 100)
 	log.L().Info("Catching up via network")
 	getChainMetaRes, err := chainClient.GetChainMeta(ctx, &iotexapi.GetChainMetaRequest{})
 	if err != nil {
