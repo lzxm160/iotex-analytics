@@ -74,6 +74,7 @@ func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceCli
 }
 
 func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.CandidateListV2, epochNumber, epochStartheight uint64, chainClient iotexapi.APIServiceClient) (err error) {
+	fmt.Println("/////////updateStakingResult////////////////////")
 	var voteResultStmt *sql.Stmt
 	insertQuery := fmt.Sprintf(insertVotingResult,
 		VotingResultTableName)
