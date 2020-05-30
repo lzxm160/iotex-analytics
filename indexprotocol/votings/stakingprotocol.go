@@ -297,6 +297,7 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartHeight, epochNu
 	epochRewardPercentage = make(map[string]float64)
 	foundationBonusPercentage = make(map[string]float64)
 	if epochStartHeight == p.epochCtx.FairbankHeight() {
+		fmt.Println("epochStartHeight == p.epochCtx.FairbankHeight()")
 		// init from contract,from contract deployed height to epochStartheight-1,get latest portion
 		if p.rewardPortionContract == "" {
 			// todo make sure if ignore this error
@@ -304,6 +305,7 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartHeight, epochNu
 			return
 		}
 		if p.rewardPortionContractDeployHeight > epochStartHeight {
+			fmt.Println("p.rewardPortionContractDeployHeight > epochStartHeight")
 			// todo make sure if ignore this error
 			//err = errors.New("portion contract deploy height should less than fairbank height")
 			return
