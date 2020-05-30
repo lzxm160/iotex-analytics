@@ -362,7 +362,7 @@ func TestGetRawBlock(t *testing.T) {
 
 func TestInsertContract(t *testing.T) {
 	require := require.New(t)
-	portion := strconv.FormatInt(5500, 16)
+	portion := strconv.FormatInt(6677, 16)
 	if len(portion)%2 == 1 {
 		portion = "0" + portion
 	}

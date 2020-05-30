@@ -18,18 +18,16 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
-
-	s "github.com/iotexproject/iotex-analytics/sql"
-
 	"github.com/pkg/errors"
 
-	"github.com/iotexproject/iotex-analytics/contract"
 	"github.com/iotexproject/iotex-core/ioctl/util"
 	"github.com/iotexproject/iotex-election/db"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 
+	"github.com/iotexproject/iotex-analytics/contract"
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
+	s "github.com/iotexproject/iotex-analytics/sql"
 )
 
 const (
@@ -91,15 +89,7 @@ func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.Candid
 	if err != nil {
 		return errors.Errorf("get delegate reward portions:%d,%s", epochStartheight, err.Error())
 	}
-	for k, v := range blockRewardPortionMap {
-		fmt.Println("blockRewardPortionMap", k, v)
-	}
-	for k, v := range epochRewardPortionMap {
-		fmt.Println("epochRewardPortionMap", k, v)
-	}
-	for k, v := range foundationBonusPortionMap {
-		fmt.Println("foundationBonusPortionMap", k, v)
-	}
+
 	blockRewardPortion, epochRewardPortion, foundationBonusPortion := 0.0, 0.0, 0.0
 	for _, candidate := range candidates.Candidates {
 		stakingAddress, err := util.IoAddrToEvmAddr(candidate.OwnerAddress)
@@ -109,8 +99,6 @@ func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.Candid
 		blockRewardPortion = blockRewardPortionMap[strings.ToLower(stakingAddress.String()[2:])]
 		epochRewardPortion = epochRewardPortionMap[strings.ToLower(stakingAddress.String()[2:])]
 		foundationBonusPortion = foundationBonusPortionMap[strings.ToLower(stakingAddress.String()[2:])]
-
-		fmt.Println(strings.ToLower(stakingAddress.String()[2:]), blockRewardPortion, epochRewardPortion, foundationBonusPortion, err)
 		encodedName, err := indexprotocol.EncodeDelegateName(candidate.Name)
 		if err != nil {
 			return errors.Wrap(err, "encode delegate name error")
@@ -314,13 +302,13 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartheight, epochNu
 			err = errors.New("portion contract address is empty")
 			return
 		}
-		if p.portionContractDeployHeight > epochStartheight {
+		if p.rewardPortionContractDeployHeight > epochStartheight {
 			// todo make sure if ignore this error
 			//err = errors.New("portion contract deploy height should less than fairbank height")
 			return
 		}
-		count := epochStartheight - p.portionContractDeployHeight
-		blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage, err = getlog(p.rewardPortionContract, p.portionContractDeployHeight, count, chainClient, p.abi)
+		count := epochStartheight - p.rewardPortionContractDeployHeight
+		blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage, err = getlog(p.rewardPortionContract, p.rewardPortionContractDeployHeight, count, chainClient, p.abi)
 		if err != nil {
 			err = errors.Wrap(err, "get log from chain error")
 			return
@@ -332,7 +320,6 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartheight, epochNu
 			// todo make sure if ignore this error
 			//err = errors.Wrap(err, "get last epoch portion error")
 			//return
-			fmt.Println("last epoch is not exist,ignore this for test")
 		}
 
 		//and then update from contract from last epochstartHeight to this epochStartheight-1
