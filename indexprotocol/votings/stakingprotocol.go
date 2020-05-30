@@ -334,6 +334,7 @@ func (p *Protocol) getStakingDelegateRewardPortions(stakingAddress common.Addres
 			err = errors.Wrap(err, "get log from chain error")
 			return
 		}
+		fmt.Println("portion, err = getlog(", portion, err)
 		if brp, exist := portion[blockRewardPortion]; exist {
 			blockRewardPercentage = brp
 		}
@@ -411,6 +412,7 @@ func ownerAddressToNameMap(candidates *iotextypes.CandidateListV2) (ret map[stri
 }
 
 func getlog(contractAddress, delegateName string, from, count uint64, chainClient iotexapi.APIServiceClient, delegateABI abi.ABI) (portion map[string]float64, err error) {
+	fmt.Println("getlog")
 	portion = make(map[string]float64)
 
 	topics := make([][]byte, 0)
