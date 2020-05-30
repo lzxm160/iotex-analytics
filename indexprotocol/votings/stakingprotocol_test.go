@@ -307,10 +307,20 @@ func TestGetLog(t *testing.T) {
 	chainClient := iotexapi.NewAPIServiceClient(conn1)
 	delegateABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
 	require.NoError(err)
-	xx, err := getlog("io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df", "0x36b7D196fF4d8cBC12FD8f8a907bBf6Bec1daDEd", 3615690, 10000, chainClient, delegateABI)
+	startHeight := uint64(3615690)
+	lastHeight := uint64(3637746)
+	block, epoch, foundation, err := getlog("io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df", startHeight, lastHeight-startHeight, chainClient, delegateABI)
 	require.NoError(err)
-	fmt.Println("len", len(xx))
-	for k, v := range xx {
+	fmt.Println("len", len(block))
+	fmt.Println("len", len(epoch))
+	fmt.Println("len", len(foundation))
+	for k, v := range block {
+		fmt.Println(k, v)
+	}
+	for k, v := range epoch {
+		fmt.Println(k, v)
+	}
+	for k, v := range foundation {
 		fmt.Println(k, v)
 	}
 }

@@ -78,7 +78,7 @@ const (
 		"voted_token DECIMAL(65,0) NOT NULL, delegate_count DECIMAL(65,0) NOT NULL, total_weighted DECIMAL(65, 0) NOT NULL, " +
 		"UNIQUE KEY %s (epoch_number))"
 	selectVotingResult                   = "SELECT * FROM %s WHERE epoch_number=? AND delegate_name=?"
-	selectVotingResultFromStakingAddress = "SELECT * FROM %s WHERE epoch_number=? AND staking_address=?"
+	selectVotingResultFromStakingAddress = "SELECT * FROM %s WHERE epoch_number=?"
 	insertVotingResult                   = "INSERT INTO %s (epoch_number, delegate_name, operator_address, reward_address, " +
 		"total_weighted_votes, self_staking, block_reward_percentage, epoch_reward_percentage, foundation_bonus_percentage, staking_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	insertAggregateVoting = "INSERT IGNORE INTO %s (epoch_number, candidate_name, voter_address, native_flag, aggregate_votes) VALUES (?, ?, ?, ?, ?)"
