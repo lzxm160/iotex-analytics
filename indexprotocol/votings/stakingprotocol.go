@@ -329,6 +329,7 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartHeight, epochNu
 		fmt.Println("329")
 		//and then update from contract from last epochstartHeight to this epochStartheight-1
 		lastEpochStartHeight := p.epochCtx.GetEpochHeight(epochNumber - 1)
+		fmt.Println(epochStartHeight, lastEpochStartHeight)
 		if epochStartHeight < lastEpochStartHeight {
 			err = errors.Wrap(err, "epoch start height less than last epoch start height")
 			return
