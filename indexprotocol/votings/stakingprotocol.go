@@ -320,11 +320,11 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartheight, epochNu
 	} else {
 		// get from mysql first
 		blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage, err = getLastEpochPortion(p.Store.GetDB(), epochNumber-1)
-		if err != nil {
+		if err != nil && errors.Cause(err) != indexprotocol.ErrNotExist {
 			// todo make sure if ignore this error
-			//err = errors.Wrap(err, "get last epoch portion error")
-			//return
-			err = nil
+			fmt.Println("328")
+			err = errors.Wrap(err, "get last epoch portion error")
+			return
 		}
 		fmt.Println("329")
 		//and then update from contract from last epochstartHeight to this epochStartheight-1
@@ -462,6 +462,7 @@ func getlog(contractAddress string, from, count uint64, chainClient iotexapi.API
 }
 
 func getLastEpochPortion(db *sql.DB, epochNumber uint64) (blockReward, epochReward, foundationReward map[string]float64, err error) {
+	fmt.Println("xxxgetLastEpochPortion")
 	blockReward = make(map[string]float64)
 	epochReward = make(map[string]float64)
 	foundationReward = make(map[string]float64)
