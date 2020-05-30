@@ -110,7 +110,7 @@ func TestStaking(t *testing.T) {
 		VoteThreshold:        "100000000000000000000",
 		ScoreThreshold:       "0",
 		SelfStakingThreshold: "0",
-	}, cfg, "", 50)
+	}, cfg, "io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df", 50)
 	require.NoError(err)
 	require.NoError(p.CreateTables(context.Background()))
 	tx, err := p.Store.GetDB().Begin()
