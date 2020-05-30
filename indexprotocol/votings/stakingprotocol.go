@@ -302,6 +302,7 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartHeight, epochNu
 	if epochStartHeight == p.epochCtx.FairbankHeight() {
 		// init from contract,from contract deployed height to epochStartheight-1,get latest portion
 		if p.rewardPortionContract == "" {
+			fmt.Println("rewardPortionContract is empty")
 			// todo make sure if ignore this error
 			//err = errors.New("portion contract address is empty")
 			return
