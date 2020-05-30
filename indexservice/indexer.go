@@ -58,23 +58,22 @@ type Indexer struct {
 
 // Config contains indexer configs
 type Config struct {
-	NumDelegates                      uint64                            `yaml:"numDelegates"`
-	NumCandidateDelegates             uint64                            `yaml:"numCandidateDelegates"`
-	NumSubEpochs                      uint64                            `yaml:"numSubEpochs"`
-	NumSubEpochsDardanelles           uint64                            `yaml:"numSubEpochsDardanelles"`
-	DardanellesHeight                 uint64                            `yaml:"dardanellesHeight"`
-	DardanellesOn                     bool                              `yaml:"dardanellesOn"`
-	FairbankHeight                    uint64                            `yaml:"fairbankHeight"`
-	ConsensusScheme                   string                            `yaml:"consensusScheme"`
-	RangeQueryLimit                   uint64                            `yaml:"rangeQueryLimit"`
-	RewardPortionContract             string                            `yaml:"rewardPortionContract"`
-	RewardPortionContractDeployHeight uint64                            `yaml:"rewardportionContractDeployHeight"`
-	Genesis                           indexprotocol.Genesis             `yaml:"genesis"`
-	GravityChain                      indexprotocol.GravityChain        `yaml:"gravityChain"`
-	Rewarding                         indexprotocol.Rewarding           `yaml:"rewarding"`
-	Poll                              indexprotocol.Poll                `yaml:"poll"`
-	HermesConfig                      indexprotocol.HermesConfig        `yaml:"hermesConfig"`
-	VoteWeightCalConsts               indexprotocol.VoteWeightCalConsts `yaml:"voteWeightCalConsts"`
+	NumDelegates            uint64                            `yaml:"numDelegates"`
+	NumCandidateDelegates   uint64                            `yaml:"numCandidateDelegates"`
+	NumSubEpochs            uint64                            `yaml:"numSubEpochs"`
+	NumSubEpochsDardanelles uint64                            `yaml:"numSubEpochsDardanelles"`
+	DardanellesHeight       uint64                            `yaml:"dardanellesHeight"`
+	DardanellesOn           bool                              `yaml:"dardanellesOn"`
+	FairbankHeight          uint64                            `yaml:"fairbankHeight"`
+	ConsensusScheme         string                            `yaml:"consensusScheme"`
+	RangeQueryLimit         uint64                            `yaml:"rangeQueryLimit"`
+	Genesis                 indexprotocol.Genesis             `yaml:"genesis"`
+	GravityChain            indexprotocol.GravityChain        `yaml:"gravityChain"`
+	Rewarding               indexprotocol.Rewarding           `yaml:"rewarding"`
+	Poll                    indexprotocol.Poll                `yaml:"poll"`
+	HermesConfig            indexprotocol.HermesConfig        `yaml:"hermesConfig"`
+	VoteWeightCalConsts     indexprotocol.VoteWeightCalConsts `yaml:"voteWeightCalConsts"`
+	RewardPortionCfg        indexprotocol.RewardPortionCfg    `yaml:"rewardPortionCfg"`
 }
 
 // NewIndexer creates a new indexer
@@ -123,7 +122,7 @@ func (idx *Indexer) Start(ctx context.Context) error {
 		return errors.Wrap(err, "failed to get current epoch and tip height")
 	}
 	idx.lastHeight = lastHeight
-	idx.lastHeight = uint64(3638925 - 720)
+	idx.lastHeight = uint64(3638880)
 	log.L().Info("Catching up via network")
 	getChainMetaRes, err := chainClient.GetChainMeta(ctx, &iotexapi.GetChainMetaRequest{})
 	if err != nil {
@@ -205,7 +204,7 @@ func (idx *Indexer) RegisterDefaultProtocols() error {
 	blocksProtocol := blocks.NewProtocol(idx.Store, idx.epochCtx, idx.Config.GravityChain)
 	rewardsProtocol := rewards.NewProtocol(idx.Store, idx.epochCtx, idx.Config.Rewarding, idx.Config.GravityChain)
 	accountsProtocol := accounts.NewProtocol(idx.Store, idx.epochCtx)
-	votingsProtocol, err := votings.NewProtocol(idx.Store, idx.epochCtx, idx.Config.GravityChain, idx.Config.Poll, idx.Config.VoteWeightCalConsts, idx.Config.RewardPortionContract, idx.Config.RewardPortionContractDeployHeight)
+	votingsProtocol, err := votings.NewProtocol(idx.Store, idx.epochCtx, idx.Config.GravityChain, idx.Config.Poll, idx.Config.VoteWeightCalConsts, idx.Config.RewardPortionCfg)
 	if err != nil {
 		log.L().Error("failed to make new voting protocol", zap.Error(err))
 	}

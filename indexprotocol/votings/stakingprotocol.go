@@ -299,17 +299,17 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartHeight, epochNu
 	if epochStartHeight == p.epochCtx.FairbankHeight() {
 		fmt.Println("epochStartHeight == p.epochCtx.FairbankHeight()")
 		// init from contract,from contract deployed height to epochStartheight-1,get latest portion
-		if p.rewardPortionContract == "" {
+		if p.rewardPortionCfg.RewardPortionContract == "" {
 			err = errors.New("portion contract address is empty")
 			return
 		}
-		if p.rewardPortionContractDeployHeight >= epochStartHeight {
+		if p.rewardPortionCfg.RewardPortionContractDeployHeight >= epochStartHeight {
 			fmt.Println("p.rewardPortionContractDeployHeight > epochStartHeight")
 			err = errors.New("portion contract deploy height should less than fairbank height")
 			return
 		}
-		count := epochStartHeight - p.rewardPortionContractDeployHeight
-		blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage, err = getlog(p.rewardPortionContract, p.rewardPortionContractDeployHeight, count, chainClient, p.abi)
+		count := epochStartHeight - p.rewardPortionCfg.RewardPortionContractDeployHeight
+		blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage, err = getlog(p.rewardPortionCfg.RewardPortionContract, p.rewardPortionCfg.RewardPortionContractDeployHeight, count, chainClient, p.abi)
 		if err != nil {
 			err = errors.Wrap(err, "get log from chain error")
 			return
@@ -319,7 +319,8 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartHeight, epochNu
 		// get from mysql first
 		blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage, err = getLastEpochPortion(p.Store.GetDB(), epochNumber-1)
 		if err != nil {
-			err = errors.Wrap(err, "get last epoch portion error")
+			fmt.Println("ignore getLastEpochPortion for testnet")
+			//err = errors.Wrap(err, "get last epoch portion error")
 			return
 		}
 
@@ -331,7 +332,7 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartHeight, epochNu
 		}
 		count := epochStartHeight - lastEpochStartHeight
 		var blockRewardFromLog, epochRewardFromLog, foundationBonusFromLog map[string]float64
-		blockRewardFromLog, epochRewardFromLog, foundationBonusFromLog, err = getlog(p.rewardPortionContract, lastEpochStartHeight, count, chainClient, p.abi)
+		blockRewardFromLog, epochRewardFromLog, foundationBonusFromLog, err = getlog(p.rewardPortionCfg.RewardPortionContract, lastEpochStartHeight, count, chainClient, p.abi)
 		if err != nil {
 			err = errors.Wrap(err, "get log from chain error")
 			return

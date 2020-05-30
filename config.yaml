@@ -4,11 +4,12 @@ numSubEpochs: 15
 numSubEpochsDardanelles: 30
 dardanellesHeight: 100081
 dardanellesOn: true
-fairbankHeight: 3615790
+fairbankHeight: 3638881
 consensusScheme: "ROLLDPOS"
 rangeQueryLimit: 100
-rewardPortionContract: "io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df"
-rewardportionContractDeployHeight: 3615690
+rewardPortionCfg:
+  rewardPortionContract: "io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df"
+  rewardportionContractDeployHeight: 3615690
 genesis:
   account:
     initBalances:
