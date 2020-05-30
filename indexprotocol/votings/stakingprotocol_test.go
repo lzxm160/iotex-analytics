@@ -20,13 +20,10 @@ import (
 
 	"github.com/iotexproject/iotex-address/address"
 
-	"github.com/iotexproject/iotex-antenna-go/v2/account"
-	"github.com/iotexproject/iotex-antenna-go/v2/iotex"
-	"github.com/iotexproject/iotex-core/pkg/log"
-	"go.uber.org/zap"
-
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/iotexproject/iotex-analytics/contract"
+	"github.com/iotexproject/iotex-antenna-go/v2/account"
+	"github.com/iotexproject/iotex-antenna-go/v2/iotex"
 
 	"google.golang.org/grpc"
 
@@ -365,7 +362,7 @@ func TestGetRawBlock(t *testing.T) {
 
 func TestInsertContract(t *testing.T) {
 	require := require.New(t)
-	portion := strconv.FormatInt(55, 16)
+	portion := strconv.FormatInt(5500, 16)
 	if len(portion)%2 == 1 {
 		portion = "0" + portion
 	}
@@ -374,15 +371,11 @@ func TestInsertContract(t *testing.T) {
 	account, err := account.HexStringToAccount("2394db684d2d14586e16ec597ce9222a2e552265a58da2a9218a09e3ccff8893")
 	require.NoError(err)
 	conn, err := iotex.NewDefaultGRPCConn("api.testnet.iotex.one:443")
-	if err != nil {
-		log.L().Fatal("Failed to establish grpc connection", zap.Error(err))
-	}
+	require.NoError(err)
 	defer conn.Close()
 	c := iotex.NewAuthedClient(iotexapi.NewAPIServiceClient(conn), account)
 	caddr, err := address.FromString("io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df")
-	if err != nil {
-		log.L().Fatal("Failed to get contract address", zap.Error(err))
-	}
+	require.NoError(err)
 	delegateProfileABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
 	require.NoError(err)
 	field := []string{blockRewardPortion, epochRewardPortion, foundationRewardPortion}
