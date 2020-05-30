@@ -413,10 +413,8 @@ func ownerAddressToNameMap(candidates *iotextypes.CandidateListV2) (ret map[stri
 	return
 }
 
-func getlog(contractAddress, delegateName string, from, count uint64, chainClient iotexapi.APIServiceClient, delegateABI abi.ABI) (portion map[string]float64, err error) {
-	fmt.Println("getlog")
+func getlog(contractAddress, stakingAddress string, from, count uint64, chainClient iotexapi.APIServiceClient, delegateABI abi.ABI) (portion map[string]float64, err error) {
 	portion = make(map[string]float64)
-
 	topics := make([][]byte, 0)
 	tp, err := hex.DecodeString(topicProfileUpdated)
 	if err != nil {
@@ -447,8 +445,8 @@ func getlog(contractAddress, delegateName string, from, count uint64, chainClien
 				if err := delegateABI.Unpack(event, "ProfileUpdated", l.Data); err != nil {
 					continue
 				}
-				fmt.Println(event.Delegate.String(), delegateName)
-				if event.Delegate.String() == delegateName {
+				fmt.Println("compare staking address", event.Delegate.String(), stakingAddress)
+				if event.Delegate.String() == stakingAddress {
 					portion[event.Name] = float64(big.NewInt(0).SetBytes(event.Value).Uint64()) / 100
 				}
 
