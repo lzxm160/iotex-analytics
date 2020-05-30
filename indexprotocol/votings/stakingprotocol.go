@@ -311,7 +311,7 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartHeight, epochNu
 		count := epochStartHeight - p.rewardPortionCfg.RewardPortionContractDeployHeight
 		blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage, err = getlog(p.rewardPortionCfg.RewardPortionContract, p.rewardPortionCfg.RewardPortionContractDeployHeight, count, chainClient, p.abi)
 		if err != nil {
-			err = errors.Wrap(err, "get log from chain error")
+			err = errors.Wrap(err, "failed to get log from chain")
 			return
 		}
 	} else {
@@ -320,7 +320,7 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartHeight, epochNu
 		blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage, err = getLastEpochPortion(p.Store.GetDB(), epochNumber-1)
 		if err != nil {
 			fmt.Println("ignore getLastEpochPortion for testnet")
-			//err = errors.Wrap(err, "get last epoch portion error")
+			//err = errors.Wrap(err, "failed to get last epoch portion")
 			return
 		}
 
@@ -334,7 +334,7 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartHeight, epochNu
 		var blockRewardFromLog, epochRewardFromLog, foundationBonusFromLog map[string]float64
 		blockRewardFromLog, epochRewardFromLog, foundationBonusFromLog, err = getlog(p.rewardPortionCfg.RewardPortionContract, lastEpochStartHeight, count, chainClient, p.abi)
 		if err != nil {
-			err = errors.Wrap(err, "get log from chain error")
+			err = errors.Wrap(err, "failed to get log from chain")
 			return
 		}
 		// update to mysql's portion
@@ -413,16 +413,15 @@ func ownerAddressToNameMap(candidates *iotextypes.CandidateListV2) (ret map[stri
 	return
 }
 
-func getlog(contractAddress string, from, count uint64, chainClient iotexapi.APIServiceClient, delegateABI abi.ABI) (blockReward, epochReward, foundationReward map[string]float64, err error) {
+func getlog(contractAddress string, from, count uint64, chainClient iotexapi.APIServiceClient, delegateProfileABI abi.ABI) (blockReward, epochReward, foundationReward map[string]float64, err error) {
 	blockReward = make(map[string]float64)
 	epochReward = make(map[string]float64)
 	foundationReward = make(map[string]float64)
-	topics := make([][]byte, 0)
 	tp, err := hex.DecodeString(topicProfileUpdated)
 	if err != nil {
 		return
 	}
-	topics = append(topics, tp)
+	topics := [][]byte{tp}
 
 	response, err := chainClient.GetLogs(context.Background(), &iotexapi.GetLogsRequest{
 		Filter: &iotexapi.LogsFilter{
@@ -444,7 +443,7 @@ func getlog(contractAddress string, from, count uint64, chainClient iotexapi.API
 			switch hex.EncodeToString(topic) {
 			case topicProfileUpdated:
 				event := new(contract.DelegateProfileProfileUpdated)
-				if err := delegateABI.Unpack(event, "ProfileUpdated", l.Data); err != nil {
+				if err := delegateProfileABI.Unpack(event, "ProfileUpdated", l.Data); err != nil {
 					continue
 				}
 				switch event.Name {
@@ -465,7 +464,7 @@ func getLastEpochPortion(db *sql.DB, epochNumber uint64) (blockReward, epochRewa
 	blockReward = make(map[string]float64)
 	epochReward = make(map[string]float64)
 	foundationReward = make(map[string]float64)
-	getQuery := fmt.Sprintf(selectVotingResultFromStakingAddress,
+	getQuery := fmt.Sprintf(selectVotingResultForAllDelegates,
 		VotingResultTableName)
 	stmt, err := db.Prepare(getQuery)
 	if err != nil {
