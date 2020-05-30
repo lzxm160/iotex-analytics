@@ -110,9 +110,9 @@ func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.Candid
 			candidate.RewardAddress,
 			candidate.TotalWeightedVotes,
 			candidate.SelfStakingTokens,
-			blockRewardPortion,
-			epochRewardPortion,
-			foundationBonusPortion,
+			fmt.Sprintf("%0.2f", blockRewardPortion),
+			fmt.Sprintf("%0.2f", epochRewardPortion),
+			fmt.Sprintf("%0.2f", foundationBonusPortion),
 			hex.EncodeToString(stakingAddress.Bytes()),
 		); err != nil {
 			return err
@@ -299,7 +299,8 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartheight, epochNu
 	if epochStartheight == p.epochCtx.FairbankHeight() {
 		// init from contract,from contract deployed height to epochStartheight-1,get latest portion
 		if p.rewardPortionContract == "" {
-			err = errors.New("portion contract address is empty")
+			// todo make sure if ignore this error
+			//err = errors.New("portion contract address is empty")
 			return
 		}
 		if p.rewardPortionContractDeployHeight > epochStartheight {
