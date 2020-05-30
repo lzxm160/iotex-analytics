@@ -51,7 +51,6 @@ func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceCli
 	if err = p.stakingBucketTableOperator.Put(epochStartheight, voteBucketList, tx); err != nil {
 		return
 	}
-	fmt.Println(voteBucketList.Buckets)
 	// update staking_candidate and height_to_staking_candidate table
 	if err = p.stakingCandidateTableOperator.Put(epochStartheight, candidateList, tx); err != nil {
 		return
@@ -74,7 +73,6 @@ func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceCli
 }
 
 func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.CandidateListV2, epochNumber, epochStartheight uint64, chainClient iotexapi.APIServiceClient) (err error) {
-	fmt.Println("/////////updateStakingResult////////////////////")
 	var voteResultStmt *sql.Stmt
 	insertQuery := fmt.Sprintf(insertVotingResult,
 		VotingResultTableName)
@@ -91,7 +89,7 @@ func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.Candid
 	if err != nil {
 		return errors.Errorf("get delegate reward portions:%d,%s", epochStartheight, err.Error())
 	}
-	fmt.Println(candidates.Candidates)
+
 	blockRewardPortion, epochRewardPortion, foundationBonusPortion := 0.0, 0.0, 0.0
 	for _, candidate := range candidates.Candidates {
 		stakingAddress, err := util.IoAddrToEvmAddr(candidate.OwnerAddress)
@@ -295,14 +293,12 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 }
 
 func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartHeight, epochNumber uint64, chainClient iotexapi.APIServiceClient) (blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage map[string]float64, err error) {
-	fmt.Println("getAllStakingDelegateRewardPortions")
 	blockRewardPercentage = make(map[string]float64)
 	epochRewardPercentage = make(map[string]float64)
 	foundationBonusPercentage = make(map[string]float64)
 	if epochStartHeight == p.epochCtx.FairbankHeight() {
 		// init from contract,from contract deployed height to epochStartheight-1,get latest portion
 		if p.rewardPortionContract == "" {
-			fmt.Println("rewardPortionContract is empty")
 			// todo make sure if ignore this error
 			//err = errors.New("portion contract address is empty")
 			return
@@ -323,14 +319,12 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartHeight, epochNu
 		blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage, err = getLastEpochPortion(p.Store.GetDB(), epochNumber-1)
 		if err != nil && errors.Cause(err) != indexprotocol.ErrNotExist {
 			// todo make sure if ignore this error
-			fmt.Println("328")
 			err = errors.Wrap(err, "get last epoch portion error")
 			return
 		}
-		fmt.Println("329")
+
 		//and then update from contract from last epochstartHeight to this epochStartheight-1
 		lastEpochStartHeight := p.epochCtx.GetEpochHeight(epochNumber - 1)
-		fmt.Println(epochStartHeight, lastEpochStartHeight)
 		if epochStartHeight < lastEpochStartHeight {
 			err = errors.Wrap(err, "epoch start height less than last epoch start height")
 			return
@@ -419,7 +413,6 @@ func ownerAddressToNameMap(candidates *iotextypes.CandidateListV2) (ret map[stri
 }
 
 func getlog(contractAddress string, from, count uint64, chainClient iotexapi.APIServiceClient, delegateABI abi.ABI) (blockReward, epochReward, foundationReward map[string]float64, err error) {
-	fmt.Println("getlog")
 	blockReward = make(map[string]float64)
 	epochReward = make(map[string]float64)
 	foundationReward = make(map[string]float64)
@@ -468,7 +461,6 @@ func getlog(contractAddress string, from, count uint64, chainClient iotexapi.API
 }
 
 func getLastEpochPortion(db *sql.DB, epochNumber uint64) (blockReward, epochReward, foundationReward map[string]float64, err error) {
-	fmt.Println("xxxgetLastEpochPortion")
 	blockReward = make(map[string]float64)
 	epochReward = make(map[string]float64)
 	foundationReward = make(map[string]float64)

@@ -123,14 +123,14 @@ func (idx *Indexer) Start(ctx context.Context) error {
 		return errors.Wrap(err, "failed to get current epoch and tip height")
 	}
 	idx.lastHeight = lastHeight
-
+	idx.lastHeight = uint64(3638925 - 720)
 	log.L().Info("Catching up via network")
 	getChainMetaRes, err := chainClient.GetChainMeta(ctx, &iotexapi.GetChainMetaRequest{})
 	if err != nil {
 		return errors.Wrap(err, "failed to get chain metadata")
 	}
 	tipHeight := getChainMetaRes.GetChainMeta().GetHeight()
-
+	log.S().Infof("tip height:%d", tipHeight)
 	if err := idx.IndexInBatch(ctx, tipHeight); err != nil {
 		return errors.Wrap(err, "failed to index blocks in batch")
 	}
@@ -260,6 +260,7 @@ func (idx *Indexer) IndexInBatch(ctx context.Context, tipHeight uint64) error {
 			}
 			// Update lastHeight tracker
 			idx.lastHeight = blk.Height()
+			fmt.Println("update:", idx.lastHeight)
 			blockHeightMtc.With(prometheus.Labels{}).Set(float64(idx.lastHeight))
 		}
 		startHeight += count
