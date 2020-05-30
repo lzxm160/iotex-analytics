@@ -9,21 +9,32 @@ package votings
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
+	"math/big"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
+	"google.golang.org/grpc"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/golang/mock/gomock"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/stretchr/testify/require"
 
+	"github.com/iotexproject/iotex-address/address"
+	"github.com/iotexproject/iotex-antenna-go/v2/account"
+	"github.com/iotexproject/iotex-antenna-go/v2/iotex"
 	"github.com/iotexproject/iotex-core/ioctl/util"
 	"github.com/iotexproject/iotex-core/test/mock/mock_apiserviceclient"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 
+	"github.com/iotexproject/iotex-analytics/contract"
 	"github.com/iotexproject/iotex-analytics/epochctx"
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
 	s "github.com/iotexproject/iotex-analytics/sql"
@@ -297,104 +308,104 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 	)
 }
 
-//func TestGetLog(t *testing.T) {
-//	require := require.New(t)
-//	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-//	defer cancel()
-//	conn1, err := grpc.DialContext(grpcCtx1, "35.236.100.38:14014", grpc.WithBlock(), grpc.WithInsecure())
-//	require.NoError(err)
-//	chainClient := iotexapi.NewAPIServiceClient(conn1)
-//	delegateABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
-//	require.NoError(err)
-//	startHeight := uint64(3615690)
-//	lastHeight := uint64(3637746)
-//	block, epoch, foundation, err := getlog("io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df", startHeight, lastHeight-startHeight, chainClient, delegateABI)
-//	require.NoError(err)
-//	fmt.Println("len", len(block))
-//	fmt.Println("len", len(epoch))
-//	fmt.Println("len", len(foundation))
-//	for k, v := range block {
-//		fmt.Println(k, v)
-//	}
-//	for k, v := range epoch {
-//		fmt.Println(k, v)
-//	}
-//	for k, v := range foundation {
-//		fmt.Println(k, v)
-//	}
-//}
-//
-//func TestGetRawBlock(t *testing.T) {
-//	require := require.New(t)
-//	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-//	defer cancel()
-//	conn1, err := grpc.DialContext(grpcCtx1, "35.236.100.38:14014", grpc.WithBlock(), grpc.WithInsecure())
-//	require.NoError(err)
-//	chainClient := iotexapi.NewAPIServiceClient(conn1)
-//	request := &iotexapi.GetRawBlocksRequest{
-//		StartHeight:  3615690,
-//		Count:        1,
-//		WithReceipts: true,
-//	}
-//	res, err := chainClient.GetRawBlocks(context.Background(), request)
-//	require.NoError(err)
-//	blkInfos := res.Blocks
-//	fmt.Println(len(blkInfos))
-//	for _, blkInfo := range blkInfos {
-//		for _, receipt := range blkInfo.Receipts {
-//			for _, log := range receipt.Logs {
-//				fmt.Println(log.ContractAddress)
-//				for _, top := range log.Topics {
-//					fmt.Println(hex.EncodeToString(top))
-//				}
-//			}
-//		}
-//	}
-//}
-//
-//func TestInsertContract(t *testing.T) {
-//	require := require.New(t)
-//	portion := strconv.FormatInt(6677, 16)
-//	if len(portion)%2 == 1 {
-//		portion = "0" + portion
-//	}
-//	portionBytes, err := hex.DecodeString(portion)
-//	require.NoError(err)
-//	account, err := account.HexStringToAccount("2394db684d2d14586e16ec597ce9222a2e552265a58da2a9218a09e3ccff8893")
-//	require.NoError(err)
-//	conn, err := iotex.NewDefaultGRPCConn("api.testnet.iotex.one:443")
-//	require.NoError(err)
-//	defer conn.Close()
-//	c := iotex.NewAuthedClient(iotexapi.NewAPIServiceClient(conn), account)
-//	caddr, err := address.FromString("io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df")
-//	require.NoError(err)
-//	delegateProfileABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
-//	require.NoError(err)
-//	field := []string{blockRewardPortion, epochRewardPortion, foundationRewardPortion}
-//	h1 := common.HexToAddress("2b7c5cc4dc19744380c306da66c2826c5da3630b")
-//	h2 := common.HexToAddress("8ef5a73e525eeb49208525b0cdd84a72f804ee4c")
-//	for _, f := range field {
-//		hash, err := c.Contract(caddr, delegateProfileABI).Execute("updateProfileForDelegate", h1, f, portionBytes).
-//			SetGasLimit(1000000).SetGasPrice(big.NewInt(1e12)).Call(context.Background())
-//		require.NoError(err)
-//		require.NotNil(hash)
-//		fmt.Println(hex.EncodeToString(hash[:]))
-//
-//		time.Sleep(20 * time.Second)
-//		receiptResponse, err := c.GetReceipt(hash).Call(context.Background())
-//		s := receiptResponse.GetReceiptInfo().GetReceipt().GetStatus()
-//		fmt.Println("status:", s)
-//
-//		/////////////////////////
-//		hash, err = c.Contract(caddr, delegateProfileABI).Execute("updateProfileForDelegate", h2, f, portionBytes).
-//			SetGasLimit(1000000).SetGasPrice(big.NewInt(1e12)).Call(context.Background())
-//		require.NoError(err)
-//		require.NotNil(hash)
-//		fmt.Println(hex.EncodeToString(hash[:]))
-//
-//		time.Sleep(20 * time.Second)
-//		receiptResponse, err = c.GetReceipt(hash).Call(context.Background())
-//		s = receiptResponse.GetReceiptInfo().GetReceipt().GetStatus()
-//		fmt.Println("status:", s)
-//	}
-//}
+func TestGetLog(t *testing.T) {
+	require := require.New(t)
+	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	conn1, err := grpc.DialContext(grpcCtx1, "35.236.100.38:14014", grpc.WithBlock(), grpc.WithInsecure())
+	require.NoError(err)
+	chainClient := iotexapi.NewAPIServiceClient(conn1)
+	delegateABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
+	require.NoError(err)
+	startHeight := uint64(3615690)
+	lastHeight := uint64(13637746)
+	block, epoch, foundation, err := getlog("io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df", startHeight, lastHeight-startHeight, chainClient, delegateABI)
+	require.NoError(err)
+	fmt.Println("len", len(block))
+	fmt.Println("len", len(epoch))
+	fmt.Println("len", len(foundation))
+	for k, v := range block {
+		fmt.Println(k, v)
+	}
+	for k, v := range epoch {
+		fmt.Println(k, v)
+	}
+	for k, v := range foundation {
+		fmt.Println(k, v)
+	}
+}
+
+func TestGetRawBlock(t *testing.T) {
+	require := require.New(t)
+	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	conn1, err := grpc.DialContext(grpcCtx1, "35.236.100.38:14014", grpc.WithBlock(), grpc.WithInsecure())
+	require.NoError(err)
+	chainClient := iotexapi.NewAPIServiceClient(conn1)
+	request := &iotexapi.GetRawBlocksRequest{
+		StartHeight:  3615690,
+		Count:        1,
+		WithReceipts: true,
+	}
+	res, err := chainClient.GetRawBlocks(context.Background(), request)
+	require.NoError(err)
+	blkInfos := res.Blocks
+	fmt.Println(len(blkInfos))
+	for _, blkInfo := range blkInfos {
+		for _, receipt := range blkInfo.Receipts {
+			for _, log := range receipt.Logs {
+				fmt.Println(log.ContractAddress)
+				for _, top := range log.Topics {
+					fmt.Println(hex.EncodeToString(top))
+				}
+			}
+		}
+	}
+}
+
+func TestInsertContract(t *testing.T) {
+	require := require.New(t)
+	portion := strconv.FormatInt(6677, 16)
+	if len(portion)%2 == 1 {
+		portion = "0" + portion
+	}
+	portionBytes, err := hex.DecodeString(portion)
+	require.NoError(err)
+	account, err := account.HexStringToAccount("2394db684d2d14586e16ec597ce9222a2e552265a58da2a9218a09e3ccff8893")
+	require.NoError(err)
+	conn, err := iotex.NewDefaultGRPCConn("api.testnet.iotex.one:443")
+	require.NoError(err)
+	defer conn.Close()
+	c := iotex.NewAuthedClient(iotexapi.NewAPIServiceClient(conn), account)
+	caddr, err := address.FromString("io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df")
+	require.NoError(err)
+	delegateProfileABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
+	require.NoError(err)
+	field := []string{blockRewardPortion, epochRewardPortion, foundationRewardPortion}
+	h1 := common.HexToAddress("2b7c5cc4dc19744380c306da66c2826c5da3630b")
+	h2 := common.HexToAddress("8ef5a73e525eeb49208525b0cdd84a72f804ee4c")
+	for _, f := range field {
+		hash, err := c.Contract(caddr, delegateProfileABI).Execute("updateProfileForDelegate", h1, f, portionBytes).
+			SetGasLimit(1000000).SetGasPrice(big.NewInt(1e12)).Call(context.Background())
+		require.NoError(err)
+		require.NotNil(hash)
+		fmt.Println(hex.EncodeToString(hash[:]))
+
+		time.Sleep(20 * time.Second)
+		receiptResponse, err := c.GetReceipt(hash).Call(context.Background())
+		s := receiptResponse.GetReceiptInfo().GetReceipt().GetStatus()
+		fmt.Println("status:", s)
+
+		/////////////////////////
+		hash, err = c.Contract(caddr, delegateProfileABI).Execute("updateProfileForDelegate", h2, f, portionBytes).
+			SetGasLimit(1000000).SetGasPrice(big.NewInt(1e12)).Call(context.Background())
+		require.NoError(err)
+		require.NotNil(hash)
+		fmt.Println(hex.EncodeToString(hash[:]))
+
+		time.Sleep(20 * time.Second)
+		receiptResponse, err = c.GetReceipt(hash).Call(context.Background())
+		s = receiptResponse.GetReceiptInfo().GetReceipt().GetStatus()
+		fmt.Println("status:", s)
+	}
+}
