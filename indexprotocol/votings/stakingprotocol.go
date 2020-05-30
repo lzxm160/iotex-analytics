@@ -51,6 +51,7 @@ func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceCli
 	if err = p.stakingBucketTableOperator.Put(epochStartheight, voteBucketList, tx); err != nil {
 		return
 	}
+	fmt.Println(voteBucketList.Buckets)
 	// update staking_candidate and height_to_staking_candidate table
 	if err = p.stakingCandidateTableOperator.Put(epochStartheight, candidateList, tx); err != nil {
 		return
