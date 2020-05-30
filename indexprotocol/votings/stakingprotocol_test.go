@@ -115,7 +115,7 @@ func TestStaking(t *testing.T) {
 	require.NoError(p.CreateTables(context.Background()))
 	tx, err := p.Store.GetDB().Begin()
 	require.NoError(err)
-	chainClient.EXPECT().ReadState(gomock.Any(), gomock.Any()).AnyTimes().Return(&iotexapi.GetLogsResponse{}, nil)
+	chainClient.EXPECT().ReadState(gomock.Any(), gomock.Any()).AnyTimes().Return(&iotexapi.GetLogsResponse{Logs: []*iotextypes.Log{&iotextypes.Log{}}}, nil)
 	require.NoError(p.processStaking(tx, chainClient, height, epochNumber, nil))
 	require.NoError(tx.Commit())
 
