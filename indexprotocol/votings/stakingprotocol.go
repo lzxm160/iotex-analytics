@@ -89,7 +89,7 @@ func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.Candid
 	if err != nil {
 		return errors.Errorf("get delegate reward portions:%d,%s", epochStartheight, err.Error())
 	}
-
+	fmt.Println(candidates.Candidates)
 	blockRewardPortion, epochRewardPortion, foundationBonusPortion := 0.0, 0.0, 0.0
 	for _, candidate := range candidates.Candidates {
 		stakingAddress, err := util.IoAddrToEvmAddr(candidate.OwnerAddress)

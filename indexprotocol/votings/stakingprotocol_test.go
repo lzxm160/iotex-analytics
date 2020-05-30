@@ -118,8 +118,8 @@ func TestStaking(t *testing.T) {
 	chainClient.EXPECT().GetLogs(gomock.Any(), gomock.Any()).Times(1).Return(&iotexapi.GetLogsResponse{}, nil)
 	require.NoError(p.processStaking(tx, chainClient, height, epochNumber, nil))
 	require.NoError(tx.Commit())
+
 	// case I: checkout bucket if it's written right
-	require.NoError(err)
 	ret, err := p.stakingBucketTableOperator.Get(height, p.Store.GetDB(), nil)
 	require.NoError(err)
 	bucketList, ok := ret.(*iotextypes.VoteBucketList)
