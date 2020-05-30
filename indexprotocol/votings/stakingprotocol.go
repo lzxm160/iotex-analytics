@@ -321,10 +321,12 @@ func (p *Protocol) getStakingDelegateRewardPortions(stakingAddress common.Addres
 			//err = errors.Wrap(err, "get last epoch portion error")
 			//return
 			fmt.Println("last epoch is not exist,ignore this for test")
+		} else {
+			blockRewardPercentage = votingResult.BlockRewardPercentage
+			epochRewardPercentage = votingResult.EpochRewardPercentage
+			foundationBonusPercentage = votingResult.FoundationBonusPercentage
 		}
-		blockRewardPercentage = votingResult.BlockRewardPercentage
-		epochRewardPercentage = votingResult.EpochRewardPercentage
-		foundationBonusPercentage = votingResult.FoundationBonusPercentage
+
 		fmt.Println("32888888888888888888888888888")
 		//and then update from contract from last epochstartHeight to this epochStartheight-1
 		lastEpochStartHeight := p.epochCtx.GetEpochHeight(epochNumber - 1)
