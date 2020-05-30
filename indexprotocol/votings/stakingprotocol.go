@@ -326,7 +326,7 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartheight, epochNu
 			//return
 			err = nil
 		}
-
+		fmt.Println("329")
 		//and then update from contract from last epochstartHeight to this epochStartheight-1
 		lastEpochStartHeight := p.epochCtx.GetEpochHeight(epochNumber - 1)
 		count := epochStartheight - lastEpochStartHeight
@@ -413,6 +413,7 @@ func ownerAddressToNameMap(candidates *iotextypes.CandidateListV2) (ret map[stri
 }
 
 func getlog(contractAddress string, from, count uint64, chainClient iotexapi.APIServiceClient, delegateABI abi.ABI) (blockReward, epochReward, foundationReward map[string]float64, err error) {
+	fmt.Println("getlog")
 	blockReward = make(map[string]float64)
 	epochReward = make(map[string]float64)
 	foundationReward = make(map[string]float64)
