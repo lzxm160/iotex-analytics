@@ -307,8 +307,9 @@ func TestGetLog(t *testing.T) {
 	chainClient := iotexapi.NewAPIServiceClient(conn1)
 	delegateABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
 	require.NoError(err)
-	xx, err := getlog("io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df", "", 3615690, 1000, chainClient, delegateABI)
+	xx, err := getlog("io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df", "0x36b7D196fF4d8cBC12FD8f8a907bBf6Bec1daDEd", 3615690, 10000, chainClient, delegateABI)
 	require.NoError(err)
+	fmt.Println("len", len(xx))
 	for k, v := range xx {
 		fmt.Println(k, v)
 	}

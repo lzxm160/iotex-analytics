@@ -292,6 +292,7 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 }
 
 func (p *Protocol) getStakingDelegateRewardPortions(stakingAddress common.Address, epochStartheight, epochNumber uint64, chainClient iotexapi.APIServiceClient) (blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage float64, err error) {
+	blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage = 100, 100, 100
 	var portion map[string]float64
 	if epochStartheight == p.epochCtx.FairbankHeight() {
 		// init from contract,from contract deployed height to epochStartheight-1,get latest portion
@@ -336,7 +337,7 @@ func (p *Protocol) getStakingDelegateRewardPortions(stakingAddress common.Addres
 			err = errors.Wrap(err, "get log from chain error")
 			return
 		}
-		fmt.Println("portion, err = getlog(", portion, err)
+		fmt.Println("portion, err = getlog", len(portion), err)
 		if brp, exist := portion[blockRewardPortion]; exist {
 			blockRewardPercentage = brp
 		}
