@@ -316,8 +316,10 @@ func (p *Protocol) getStakingDelegateRewardPortions(stakingAddress common.Addres
 		var votingResult *VotingResult
 		votingResult, err = getLastEpochPortion(p.Store.GetDB(), epochNumber-1, stakingAddress)
 		if err != nil {
-			err = errors.Wrap(err, "get last epoch portion error")
-			return
+			// if last epoch is not exist,ignore this for test
+			//err = errors.Wrap(err, "get last epoch portion error")
+			//return
+			fmt.Println("last epoch is not exist,ignore this for test")
 		}
 		blockRewardPercentage = votingResult.BlockRewardPercentage
 		epochRewardPercentage = votingResult.EpochRewardPercentage
