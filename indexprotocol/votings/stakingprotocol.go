@@ -294,24 +294,24 @@ func (p *Protocol) getStakingBucketInfoByEpoch(height, epochNum uint64, delegate
 	return votinginfoList, nil
 }
 
-func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartheight, epochNumber uint64, chainClient iotexapi.APIServiceClient) (blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage map[string]float64, err error) {
+func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartHeight, epochNumber uint64, chainClient iotexapi.APIServiceClient) (blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage map[string]float64, err error) {
 	fmt.Println("getAllStakingDelegateRewardPortions")
 	blockRewardPercentage = make(map[string]float64)
 	epochRewardPercentage = make(map[string]float64)
 	foundationBonusPercentage = make(map[string]float64)
-	if epochStartheight == p.epochCtx.FairbankHeight() {
+	if epochStartHeight == p.epochCtx.FairbankHeight() {
 		// init from contract,from contract deployed height to epochStartheight-1,get latest portion
 		if p.rewardPortionContract == "" {
 			// todo make sure if ignore this error
 			//err = errors.New("portion contract address is empty")
 			return
 		}
-		if p.rewardPortionContractDeployHeight > epochStartheight {
+		if p.rewardPortionContractDeployHeight > epochStartHeight {
 			// todo make sure if ignore this error
 			//err = errors.New("portion contract deploy height should less than fairbank height")
 			return
 		}
-		count := epochStartheight - p.rewardPortionContractDeployHeight
+		count := epochStartHeight - p.rewardPortionContractDeployHeight
 		blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage, err = getlog(p.rewardPortionContract, p.rewardPortionContractDeployHeight, count, chainClient, p.abi)
 		if err != nil {
 			err = errors.Wrap(err, "get log from chain error")
@@ -329,7 +329,11 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartheight, epochNu
 		fmt.Println("329")
 		//and then update from contract from last epochstartHeight to this epochStartheight-1
 		lastEpochStartHeight := p.epochCtx.GetEpochHeight(epochNumber - 1)
-		count := epochStartheight - lastEpochStartHeight
+		if epochStartHeight < lastEpochStartHeight {
+			err = errors.Wrap(err, "epoch start height less than last epoch start height")
+			return
+		}
+		count := epochStartHeight - lastEpochStartHeight
 		var blockRewardFromLog, epochRewardFromLog, foundationBonusFromLog map[string]float64
 		blockRewardFromLog, epochRewardFromLog, foundationBonusFromLog, err = getlog(p.rewardPortionContract, lastEpochStartHeight, count, chainClient, p.abi)
 		if err != nil {
