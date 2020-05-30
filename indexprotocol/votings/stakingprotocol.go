@@ -110,9 +110,9 @@ func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.Candid
 			candidate.RewardAddress,
 			candidate.TotalWeightedVotes,
 			candidate.SelfStakingTokens,
-			blockRewardPortion,
-			epochRewardPortion,
-			foundationBonusPortion,
+			fmt.Sprintf("%0.2f", blockRewardPortion),
+			fmt.Sprintf("%0.2f", epochRewardPortion),
+			fmt.Sprintf("%0.2f", foundationBonusPortion),
 			hex.EncodeToString(stakingAddress.Bytes()),
 		); err != nil {
 			return err
