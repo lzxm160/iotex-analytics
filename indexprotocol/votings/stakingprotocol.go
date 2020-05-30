@@ -89,15 +89,14 @@ func (p *Protocol) updateStakingResult(tx *sql.Tx, candidates *iotextypes.Candid
 		return errors.Errorf("get delegate reward portions:%d,%s", epochStartheight, err.Error())
 	}
 
-	blockRewardPortion, epochRewardPortion, foundationBonusPortion := 0.0, 0.0, 0.0
 	for _, candidate := range candidates.Candidates {
 		stakingAddress, err := util.IoAddrToEvmAddr(candidate.OwnerAddress)
 		if err != nil {
 			return errors.Wrap(err, "failed to convert IoTeX address to ETH address")
 		}
-		blockRewardPortion = blockRewardPortionMap[hex.EncodeToString(stakingAddress.Bytes())]
-		epochRewardPortion = epochRewardPortionMap[hex.EncodeToString(stakingAddress.Bytes())]
-		foundationBonusPortion = foundationBonusPortionMap[hex.EncodeToString(stakingAddress.Bytes())]
+		blockRewardPortion := blockRewardPortionMap[hex.EncodeToString(stakingAddress.Bytes())]
+		epochRewardPortion := epochRewardPortionMap[hex.EncodeToString(stakingAddress.Bytes())]
+		foundationBonusPortion := foundationBonusPortionMap[hex.EncodeToString(stakingAddress.Bytes())]
 		encodedName, err := indexprotocol.EncodeDelegateName(candidate.Name)
 		if err != nil {
 			return errors.Wrap(err, "encode delegate name error")
