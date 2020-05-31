@@ -9,21 +9,30 @@ package votings
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
+	"math/big"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/golang/mock/gomock"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/stretchr/testify/require"
 
+	"github.com/iotexproject/iotex-address/address"
+	"github.com/iotexproject/iotex-antenna-go/v2/account"
+	"github.com/iotexproject/iotex-antenna-go/v2/iotex"
 	"github.com/iotexproject/iotex-core/ioctl/util"
 	"github.com/iotexproject/iotex-core/test/mock/mock_apiserviceclient"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 
+	"github.com/iotexproject/iotex-analytics/contract"
 	"github.com/iotexproject/iotex-analytics/epochctx"
 	"github.com/iotexproject/iotex-analytics/indexprotocol"
 	s "github.com/iotexproject/iotex-analytics/sql"
@@ -353,49 +362,88 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 //	}
 //}
 //
-//func TestInsertContract(t *testing.T) {
-//	require := require.New(t)
-//	portion := strconv.FormatInt(6677, 16)
-//	if len(portion)%2 == 1 {
-//		portion = "0" + portion
-//	}
-//	portionBytes, err := hex.DecodeString(portion)
-//	require.NoError(err)
-//	account, err := account.HexStringToAccount("2394db684d2d14586e16ec597ce9222a2e552265a58da2a9218a09e3ccff8893")
-//	require.NoError(err)
-//	conn, err := iotex.NewDefaultGRPCConn("api.testnet.iotex.one:443")
-//	require.NoError(err)
-//	defer conn.Close()
-//	c := iotex.NewAuthedClient(iotexapi.NewAPIServiceClient(conn), account)
-//	caddr, err := address.FromString("io16dxewjaec7ddxuk8n6g2dpezthzjlfuqu4w9df")
-//	require.NoError(err)
-//	delegateProfileABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
-//	require.NoError(err)
-//	field := []string{blockRewardPortion, epochRewardPortion, foundationRewardPortion}
-//	h1 := common.HexToAddress("2b7c5cc4dc19744380c306da66c2826c5da3630b")
-//	h2 := common.HexToAddress("8ef5a73e525eeb49208525b0cdd84a72f804ee4c")
-//	for _, f := range field {
-//		hash, err := c.Contract(caddr, delegateProfileABI).Execute("updateProfileForDelegate", h1, f, portionBytes).
-//			SetGasLimit(1000000).SetGasPrice(big.NewInt(1e12)).Call(context.Background())
-//		require.NoError(err)
-//		require.NotNil(hash)
-//		fmt.Println(hex.EncodeToString(hash[:]))
-//
-//		time.Sleep(20 * time.Second)
-//		receiptResponse, err := c.GetReceipt(hash).Call(context.Background())
-//		s := receiptResponse.GetReceiptInfo().GetReceipt().GetStatus()
-//		fmt.Println("status:", s)
-//
-//		/////////////////////////
-//		hash, err = c.Contract(caddr, delegateProfileABI).Execute("updateProfileForDelegate", h2, f, portionBytes).
-//			SetGasLimit(1000000).SetGasPrice(big.NewInt(1e12)).Call(context.Background())
-//		require.NoError(err)
-//		require.NotNil(hash)
-//		fmt.Println(hex.EncodeToString(hash[:]))
-//
-//		time.Sleep(20 * time.Second)
-//		receiptResponse, err = c.GetReceipt(hash).Call(context.Background())
-//		s = receiptResponse.GetReceiptInfo().GetReceipt().GetStatus()
-//		fmt.Println("status:", s)
-//	}
-//}
+func TestInsertContract(t *testing.T) {
+	require := require.New(t)
+	account, err := account.HexStringToAccount("bace9b2435db45b119e1570b4ea9c57993b2311e0c408d743d87cd22838ae892")
+	require.NoError(err)
+	conn, err := iotex.NewDefaultGRPCConn("api.testnet.iotex.one:443")
+	require.NoError(err)
+	defer conn.Close()
+	c := iotex.NewAuthedClient(iotexapi.NewAPIServiceClient(conn), account)
+	caddr, err := address.FromString("io1ktrmwyqcu6d6l403ag6gkjtmlq60nv9qp72zpe")
+	require.NoError(err)
+	delegateProfileABI, err := abi.JSON(strings.NewReader(contract.DelegateProfileABI))
+	require.NoError(err)
+	field := []string{blockRewardPortion, epochRewardPortion, foundationRewardPortion}
+	stakingAddress := []string{
+		"53fbc28faf9a52dfe5f591948a23189e900381b5",
+		"10c7f115eb6efcf55483d63e6fb78fa39b5f02de",
+		"029d72237b106e352937a79f1fbeb2152d72aef2",
+		"0524b9826c6127a8b2702d782c720771860e075e",
+		"58d1d787c6846f973c499dc09ed39937461d39cf",
+		"d502ea61d570301c22133c1018ff8379179cafd3",
+		"38f558bb09ab2e364763b030f369b6691c65c577",
+		"bb897aa2cbed13e539beccf7efc4dd932184c3e1",
+		"22a8a691599704a58a2360f7680ad650d75983dd",
+		"51745cd1670878c2e06c5385cfd2177eed63e433",
+		"6d449655286b3449dcf787c79097e8addbbc316c",
+		"c30ee17f6f71c1266ee7d8fbf832b6d3687e40e1",
+		"516f5a2fb2da79201304bd74b779403062648045",
+		"800e135750dc4dfe6a2f38ba0312575db174a64c",
+		"2b7c5cc4dc19744380c306da66c2826c5da3630b",
+		"c24c4a42c88c213264fc706b65bdbc62f0a18ab4",
+		"8ef5a73e525eeb49208525b0cdd84a72f804ee4c",
+		"13f8ebd57488019a9652120a5b2be7554aa31fba",
+		"34d0cf40f647c1eb11d8e5dbe526a4e47ac5bad9",
+		"fd5edc5405a261268477c23b400c2d84aba045c1",
+		"8d6a4fae6d134c55aaaf2553887c226235421098",
+		"38d9e60d6e1e3f0a1b42f0ca9ab5793de234f292",
+		"5d34b7115124b80863f20cb07d16e403a280c1ce",
+		"6a1036fb5623cc6dd0bf2d5a3e69ee89517c573e",
+		"29aa546d82754dfaf2d4a8759ec1164ee80f7ba5",
+	}
+	var stakingAddressEthereum []common.Address
+	for _, s := range stakingAddress {
+		h := common.HexToAddress(s)
+		stakingAddressEthereum = append(stakingAddressEthereum, h)
+	}
+	var portionSlice [][]byte
+	for i := int64(0); i < int64(len(stakingAddressEthereum)); i++ {
+		portion := strconv.FormatInt((i+1)*400, 16)
+		if len(portion)%2 == 1 {
+			portion = "0" + portion
+		}
+		portionBytes, err := hex.DecodeString(portion)
+		require.NoError(err)
+		portionSlice = append(portionSlice, portionBytes)
+	}
+	for i, addr := range stakingAddressEthereum {
+		fmt.Println(portionSlice[i])
+		for _, f := range field {
+			hash, err := c.Contract(caddr, delegateProfileABI).Execute("updateProfileForDelegate", addr, f, portionSlice[i]).
+				SetGasLimit(1000000).SetGasPrice(big.NewInt(1e12)).Call(context.Background())
+			require.NoError(err)
+			require.NotNil(hash)
+			fmt.Println(hex.EncodeToString(hash[:]))
+
+			time.Sleep(10 * time.Second)
+			receiptResponse, err := c.GetReceipt(hash).Call(context.Background())
+			s := receiptResponse.GetReceiptInfo().GetReceipt().GetStatus()
+			fmt.Println("status:", s)
+		}
+	}
+}
+func TestXxxxx(t *testing.T) {
+	//require := require.New(t)
+	for i := int64(0); i < 25; i++ {
+		fmt.Println(i * 400)
+		portion := strconv.FormatInt(i*400, 16)
+		if len(portion)%2 == 1 {
+			portion = "0" + portion
+		}
+		fmt.Println(portion)
+		//portionBytes, err := hex.DecodeString(portion)
+		//require.NoError(err)
+
+	}
+}
