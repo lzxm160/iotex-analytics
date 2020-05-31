@@ -168,7 +168,6 @@ func TestStaking(t *testing.T) {
 		require.Equal("30000", b.WeightedVotes)
 	}
 }
-
 func TestRemainingTime(t *testing.T) {
 	require := require.New(t)
 	// case I: now is before start time
