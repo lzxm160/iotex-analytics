@@ -325,8 +325,8 @@ func (p *Protocol) getAllStakingDelegateRewardPortions(epochStartHeight, epochNu
 		blockRewardPercentage, epochRewardPercentage, foundationBonusPercentage, err = getLastEpochPortion(p.Store.GetDB(), epochNumber-1)
 		if err != nil {
 			fmt.Println("ignore getLastEpochPortion for testnet")
-			err = errors.Wrap(err, "failed to get last epoch portion")
-			return
+			//err = errors.Wrap(err, "failed to get last epoch portion")
+			//return
 		}
 
 		//and then update from contract from last epochstartHeight to this epochStartheight-1
