@@ -9,9 +9,13 @@ package votings
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
+	"math/big"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/iotexproject/iotex-election/committee"
 
 	"github.com/golang/mock/gomock"
 	"github.com/golang/protobuf/proto"
@@ -19,6 +23,7 @@ import (
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/stretchr/testify/require"
 
+	"github.com/iotexproject/iotex-analytics/sql"
 	"github.com/iotexproject/iotex-core/ioctl/util"
 	"github.com/iotexproject/iotex-core/test/mock/mock_apiserviceclient"
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
@@ -296,4 +301,42 @@ func mock(chainClient *mock_apiserviceclient.MockServiceClient, t *testing.T) {
 		second,
 		third,
 	)
+}
+
+func TestDiff(t *testing.T) {
+	require := require.New(t)
+	//bucketsql := `SELECT staked_amount FROM analytics.staking_buckets`
+	actionsql := `SELECT sum(analytics.action_history.amount) as stakeamount FROM analytics.
+action_history where action_type = "stakeCreate" or action_type = "stakeAddDeposit" or action_type = "candidateRegister"`
+	//or action_type	= "candidateRegister"
+	connect := "admin:IOTX4689@tcp(analytics-mainnet.cldnxsvm9cgi.us-east-1.rds.amazonaws.com:3306)/"
+	store := sql.NewMySQL(connect, "analytics")
+	ctx := context.Background()
+	store.Start(ctx)
+	defer store.Stop(ctx)
+	stakingBucketTableOperator, err := NewBucketTableOperator("staking_buckets", committee.MYSQL)
+	require.NoError(err)
+	ret, err := stakingBucketTableOperator.Get(5756761, store.GetDB(), nil)
+	require.NoError(err)
+	bucketList, ok := ret.(*iotextypes.VoteBucketList)
+	require.True(ok)
+	total := big.NewInt(0)
+	for _, b := range bucketList.GetBuckets() {
+		fmt.Println(b.StakedAmount)
+		s, ok := new(big.Int).SetString(b.StakedAmount, 10)
+		require.True(ok)
+		total = total.Add(total, s)
+	}
+
+	tx, err := store.GetDB().Begin()
+	require.NoError(err)
+	fmt.Println("bucket total:", total)
+
+	actionTotal := ""
+	err = tx.QueryRow(actionsql).Scan(&actionTotal)
+	require.NoError(err)
+	fmt.Println("action total", actionTotal)
+	actionTotals, ok := new(big.Int).SetString(actionTotal, 10)
+	require.True(ok)
+	fmt.Println(total.Sub(total, actionTotals))
 }

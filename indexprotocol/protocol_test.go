@@ -7,7 +7,13 @@
 package indexprotocol
 
 import (
+	"context"
+	"fmt"
 	"testing"
+	"time"
+
+	"github.com/iotexproject/iotex-proto/golang/iotexapi"
+	"google.golang.org/grpc"
 
 	"github.com/stretchr/testify/require"
 )
@@ -22,4 +28,23 @@ func TestEnDecodeName(t *testing.T) {
 	encoded, err := EncodeDelegateName(decoded)
 	require.NoError(err)
 	require.Equal(candidateName, encoded)
+}
+
+func TestStaking(t *testing.T) {
+	require := require.New(t)
+	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	conn1, err := grpc.DialContext(grpcCtx1, "127.0.0.1:14014", grpc.WithBlock(), grpc.WithInsecure())
+	require.NoError(err)
+	chainClient := iotexapi.NewAPIServiceClient(conn1)
+	bs, err := GetAllStakingBuckets(chainClient, 10)
+	require.NoError(err)
+	for _, b := range bs.Buckets {
+		fmt.Print(b)
+	}
+	cs, err := GetAllStakingCandidates(chainClient, 10)
+	require.NoError(err)
+	for _, c := range cs.Candidates {
+		fmt.Print(c)
+	}
 }
