@@ -12,6 +12,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/iotexproject/iotex-address/address"
+
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"google.golang.org/grpc"
 
@@ -47,4 +50,14 @@ func TestStaking(t *testing.T) {
 	for _, c := range cs.Candidates {
 		fmt.Print(c)
 	}
+}
+
+func TestXx(t *testing.T) {
+	require := require.New(t)
+
+	ethAddress := common.HexToAddress("0000000000000000000000000000000000000000")
+
+	ioAddress, err := address.FromBytes(ethAddress.Bytes())
+	require.NoError(err)
+	fmt.Println(ioAddress.String())
 }
