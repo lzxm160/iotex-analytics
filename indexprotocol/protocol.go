@@ -137,6 +137,9 @@ func GetAllStakingBuckets(chainClient iotexapi.APIServiceClient, height uint64) 
 			break
 		}
 	}
+	for _, b := range voteBucketListAll.Buckets {
+		fmt.Println("GetAllStakingBuckets", b)
+	}
 	return
 }
 
@@ -192,6 +195,9 @@ func GetAllStakingCandidates(chainClient iotexapi.APIServiceClient, height uint6
 		if len(candidateList.Candidates) < readCandidatesLimit {
 			break
 		}
+	}
+	for _, c := range candidateListAll.Candidates {
+		fmt.Println("GetAllStakingCandidates", c)
 	}
 	return
 }
