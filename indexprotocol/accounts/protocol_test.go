@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"testing"
 
+	"github.com/iotexproject/iotex-proto/golang/iotexapi"
+
 	"github.com/iotexproject/iotex-analytics/indexcontext"
 	"github.com/iotexproject/iotex-core/test/mock/mock_apiserviceclient"
 
@@ -49,7 +51,7 @@ func TestProtocol(t *testing.T) {
 		ChainClient:     chainClient,
 		ConsensusScheme: "ROLLDPOS",
 	})
-	chainClient.EXPECT().GetTransactionLogByBlockHeight(gomock.Any(), gomock.Any()).Times(2).Return(nil, nil)
+	chainClient.EXPECT().GetTransactionLogByBlockHeight(gomock.Any(), gomock.Any()).Times(2).Return(&iotexapi.GetTransactionLogByBlockHeightResponse{}, nil)
 
 	require.NoError(store.Transact(func(tx *sql.Tx) error {
 		return p.HandleBlock(ctx, tx, blk)
