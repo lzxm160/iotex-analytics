@@ -49,7 +49,7 @@ func TestProtocol(t *testing.T) {
 		ChainClient:     chainClient,
 		ConsensusScheme: "ROLLDPOS",
 	})
-	chainClient.EXPECT().GetTransactionLogByBlockHeight(gomock.Any(), gomock.Any()).Times(1).Return(nil, nil)
+	chainClient.EXPECT().GetTransactionLogByBlockHeight(gomock.Any(), gomock.Any()).Times(2).Return(nil, nil)
 
 	require.NoError(store.Transact(func(tx *sql.Tx) error {
 		return p.HandleBlock(ctx, tx, blk)
