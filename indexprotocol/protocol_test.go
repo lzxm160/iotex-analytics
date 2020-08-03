@@ -37,15 +37,15 @@ func TestStaking(t *testing.T) {
 	require := require.New(t)
 	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	conn1, err := grpc.DialContext(grpcCtx1, "127.0.0.1:14014", grpc.WithBlock(), grpc.WithInsecure())
+	conn1, err := grpc.DialContext(grpcCtx1, "34.70.180.73:14014", grpc.WithBlock(), grpc.WithInsecure())
 	require.NoError(err)
 	chainClient := iotexapi.NewAPIServiceClient(conn1)
-	bs, err := GetAllStakingBuckets(chainClient, 10)
+	bs, err := GetAllStakingBuckets(chainClient, 5166361)
 	require.NoError(err)
 	for _, b := range bs.Buckets {
 		fmt.Print(b)
 	}
-	cs, err := GetAllStakingCandidates(chainClient, 10)
+	cs, err := GetAllStakingCandidates(chainClient, 5166361)
 	require.NoError(err)
 	for _, c := range cs.Candidates {
 		fmt.Print(c)

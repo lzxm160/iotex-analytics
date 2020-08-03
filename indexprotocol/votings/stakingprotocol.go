@@ -38,6 +38,7 @@ const (
 )
 
 func (p *Protocol) processStaking(tx *sql.Tx, chainClient iotexapi.APIServiceClient, epochStartheight, prevEpochHeight, epochNumber uint64, probationList *iotextypes.ProbationCandidateList) (err error) {
+	fmt.Println("epochStartheight, prevEpochHeight, epochNumber", epochStartheight, prevEpochHeight, epochNumber)
 	voteBucketList, err := indexprotocol.GetAllStakingBuckets(chainClient, prevEpochHeight)
 	if err != nil {
 		return errors.Wrap(err, "failed to get buckets count")

@@ -88,3 +88,8 @@ func (e *EpochCtx) NumCandidateDelegates() uint64 {
 func (e *EpochCtx) FairbankEffectiveHeight() uint64 {
 	return e.fairbankHeight + e.numDelegates*e.numSubEpochsDardanelles
 }
+
+// HaveStakingIndexerHeight returns the height of have staking indexer
+func (e *EpochCtx) HaveStakingIndexerHeight() uint64 {
+	return e.fairbankHeight + 2*(e.numDelegates*e.numSubEpochsDardanelles)
+}
