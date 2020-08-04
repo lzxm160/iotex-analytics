@@ -53,7 +53,7 @@ func TestProtocol(t *testing.T) {
 		ChainClient:     chainClient,
 		ConsensusScheme: "ROLLDPOS",
 	})
-	chainClient.EXPECT().GetTransactionLogByBlockHeight(gomock.Any(), gomock.Any()).Times(2).Return(&iotexapi.GetTransactionLogByBlockHeightResponse{
+	chainClient.EXPECT().GetTransactionLogByBlockHeight(gomock.Any(), gomock.Any()).Times(1).Return(&iotexapi.GetTransactionLogByBlockHeightResponse{
 		TransactionLogs: &iotextypes.TransactionLogs{
 			Logs: []*iotextypes.TransactionLog{
 				{
@@ -67,6 +67,12 @@ func TestProtocol(t *testing.T) {
 						Type:      iotextypes.TransactionLogType_NATIVE_TRANSFER,
 					}},
 				},
+			},
+		},
+	}, nil)
+	chainClient.EXPECT().GetTransactionLogByBlockHeight(gomock.Any(), gomock.Any()).Times(1).Return(&iotexapi.GetTransactionLogByBlockHeightResponse{
+		TransactionLogs: &iotextypes.TransactionLogs{
+			Logs: []*iotextypes.TransactionLog{
 				{
 					ActionHash:      []byte("2"),
 					NumTransactions: uint64(1),
@@ -81,7 +87,6 @@ func TestProtocol(t *testing.T) {
 			},
 		},
 	}, nil)
-
 	require.NoError(store.Transact(func(tx *sql.Tx) error {
 		return p.HandleBlock(ctx, tx, blk)
 	}))
