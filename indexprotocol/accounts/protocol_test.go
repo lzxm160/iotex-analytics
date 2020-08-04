@@ -67,12 +67,6 @@ func TestProtocol(t *testing.T) {
 						Type:      iotextypes.TransactionLogType_NATIVE_TRANSFER,
 					}},
 				},
-			},
-		},
-	}, nil)
-	chainClient.EXPECT().GetTransactionLogByBlockHeight(gomock.Any(), gomock.Any()).Times(1).Return(&iotexapi.GetTransactionLogByBlockHeightResponse{
-		TransactionLogs: &iotextypes.TransactionLogs{
-			Logs: []*iotextypes.TransactionLog{
 				{
 					ActionHash:      []byte("2"),
 					NumTransactions: uint64(1),
@@ -85,6 +79,11 @@ func TestProtocol(t *testing.T) {
 					}},
 				},
 			},
+		},
+	}, nil)
+	chainClient.EXPECT().GetTransactionLogByBlockHeight(gomock.Any(), gomock.Any()).Times(1).Return(&iotexapi.GetTransactionLogByBlockHeightResponse{
+		TransactionLogs: &iotextypes.TransactionLogs{
+			Logs: []*iotextypes.TransactionLog{},
 		},
 	}, nil)
 	require.NoError(store.Transact(func(tx *sql.Tx) error {
