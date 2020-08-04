@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"testing"
 
+	"github.com/iotexproject/iotex-proto/golang/iotextypes"
+
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 
 	"github.com/iotexproject/iotex-analytics/indexcontext"
@@ -51,7 +53,34 @@ func TestProtocol(t *testing.T) {
 		ChainClient:     chainClient,
 		ConsensusScheme: "ROLLDPOS",
 	})
-	chainClient.EXPECT().GetTransactionLogByBlockHeight(gomock.Any(), gomock.Any()).Times(2).Return(&iotexapi.GetTransactionLogByBlockHeightResponse{}, nil)
+	chainClient.EXPECT().GetTransactionLogByBlockHeight(gomock.Any(), gomock.Any()).Times(2).Return(&iotexapi.GetTransactionLogByBlockHeightResponse{
+		TransactionLogs: &iotextypes.TransactionLogs{
+			Logs: []*iotextypes.TransactionLog{
+				{
+					ActionHash:      []byte("1"),
+					NumTransactions: uint64(1),
+					Transactions: []*iotextypes.TransactionLog_Transaction{{
+						Topic:     []byte(""),
+						Amount:    "1",
+						Sender:    testutil.Addr1,
+						Recipient: testutil.Addr1,
+						Type:      iotextypes.TransactionLogType_NATIVE_TRANSFER,
+					}},
+				},
+				{
+					ActionHash:      []byte("2"),
+					NumTransactions: uint64(1),
+					Transactions: []*iotextypes.TransactionLog_Transaction{{
+						Topic:     []byte(""),
+						Amount:    "2",
+						Sender:    testutil.Addr1,
+						Recipient: testutil.Addr2,
+						Type:      iotextypes.TransactionLogType_NATIVE_TRANSFER,
+					}},
+				},
+			},
+		},
+	}, nil)
 
 	require.NoError(store.Transact(func(tx *sql.Tx) error {
 		return p.HandleBlock(ctx, tx, blk)
