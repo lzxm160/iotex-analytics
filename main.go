@@ -11,6 +11,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -54,7 +55,7 @@ func main() {
 	if chainEndpoint == "" {
 		chainEndpoint = "127.0.0.1:14014"
 	}
-
+	fmt.Println("chainEndpoint", chainEndpoint)
 	electionEndpoint := os.Getenv("ELECTION_ENDPOINT")
 	if electionEndpoint == "" {
 		electionEndpoint = "127.0.0.1:8090"
