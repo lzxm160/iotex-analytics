@@ -184,8 +184,10 @@ func GetAllStakingCandidates(chainClient iotexapi.APIServiceClient, height uint6
 	for i := uint32(0); ; i++ {
 		offset := i * readCandidatesLimit
 		size := uint32(readCandidatesLimit)
+		fmt.Println("GetAllStakingCandidates", offset, size, height)
 		candidateList, err := getStakingCandidates(chainClient, offset, size, height)
 		if err != nil {
+			fmt.Println("GetAllStakingCandidates err", err)
 			return nil, errors.Wrap(err, "failed to get candidates")
 		}
 		candidateListAll.Candidates = append(candidateListAll.Candidates, candidateList.Candidates...)
