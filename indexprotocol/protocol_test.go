@@ -9,8 +9,11 @@ package indexprotocol
 import (
 	"context"
 	"fmt"
+	"sort"
 	"testing"
 	"time"
+
+	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 
 	"github.com/iotexproject/iotex-proto/golang/iotexapi"
 	"google.golang.org/grpc"
@@ -30,6 +33,12 @@ func TestEnDecodeName(t *testing.T) {
 	require.Equal(candidateName, encoded)
 }
 
+type cands []*iotextypes.CandidateV2
+
+func (p cands) Len() int           { return len(p) }
+func (p cands) Less(i, j int) bool { return p[i].Name < p[j].Name }
+func (p cands) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
 func TestGetAllStakingCandidates(t *testing.T) {
 	require := require.New(t)
 	grpcCtx1, cancel := context.WithTimeout(context.Background(), 20*time.Second)
@@ -39,10 +48,14 @@ func TestGetAllStakingCandidates(t *testing.T) {
 	chainClient := iotexapi.NewAPIServiceClient(conn1)
 	resp, err := GetAllStakingCandidates(chainClient, 6360841)
 	require.NoError(err)
-	for _, r := range resp.GetCandidates() {
+	var c cands
+	c = resp.GetCandidates()
+	sort.Sort(c)
+	for _, r := range c {
 		fmt.Println(r)
 	}
 }
+
 func TestGetAllStakingBuckets(t *testing.T) {
 	require := require.New(t)
 	grpcCtx1, cancel := context.WithTimeout(context.Background(), 20*time.Second)
