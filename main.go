@@ -106,11 +106,13 @@ func main() {
 		}
 	}()
 
-	grpcCtx1, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	grpcCtx1, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 	conn1, err := grpc.DialContext(grpcCtx1, chainEndpoint, grpc.WithBlock(), grpc.WithInsecure())
 	if err != nil {
 		log.L().Error("Failed to connect to chain's API server.")
+		fmt.Println("grpc.DialContext", err)
+		return
 	}
 	chainClient := iotexapi.NewAPIServiceClient(conn1)
 
