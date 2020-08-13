@@ -3,19 +3,21 @@ package accounts
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"testing"
+	"time"
 
-	"github.com/iotexproject/iotex-proto/golang/iotextypes"
-
-	"github.com/iotexproject/iotex-proto/golang/iotexapi"
-
-	"github.com/iotexproject/iotex-analytics/indexcontext"
-	"github.com/iotexproject/iotex-core/test/mock/mock_apiserviceclient"
+	"google.golang.org/grpc"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/iotexproject/iotex-core/test/mock/mock_apiserviceclient"
+	"github.com/iotexproject/iotex-proto/golang/iotexapi"
+	"github.com/iotexproject/iotex-proto/golang/iotextypes"
+
 	"github.com/iotexproject/iotex-analytics/epochctx"
+	"github.com/iotexproject/iotex-analytics/indexcontext"
 	s "github.com/iotexproject/iotex-analytics/sql"
 	"github.com/iotexproject/iotex-analytics/testutil"
 )
@@ -107,4 +109,20 @@ func TestProtocol(t *testing.T) {
 	accountIncome, err := p.getAccountIncome(uint64(1), testutil.Addr1)
 	require.NoError(err)
 	require.Equal("-2", accountIncome.Income)
+}
+
+func TestGetAllStakingBuckets(t *testing.T) {
+	require := require.New(t)
+	grpcCtx1, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	conn1, err := grpc.DialContext(grpcCtx1, "api.iotex.one:80", grpc.WithBlock(), grpc.WithInsecure())
+	require.NoError(err)
+	chainClient := iotexapi.NewAPIServiceClient(conn1)
+	resp, err := getTransactionLog(context.Background(), 6362349, chainClient)
+	require.NoError(err)
+	for k, v := range resp {
+		for _, i := range v {
+			fmt.Println(k, i)
+		}
+	}
 }
