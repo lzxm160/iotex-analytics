@@ -412,6 +412,7 @@ func calculatedDistributedReward(distributePlan *HermesDistributionPlan, rewards
 		distrReward.Add(distrReward, distrFoundationBonus)
 		fmt.Println("distrFoundationBonus", distrFoundationBonus)
 	}
+	fmt.Println("//////////////////////////////////////////////////////")
 	return distrReward, nil
 }
 

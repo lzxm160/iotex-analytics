@@ -297,7 +297,7 @@ func (idx *Indexer) SubscribeNewBlock(
 func (idx *Indexer) buildIndex(ctx context.Context, blk *block.Block) error {
 	if err := idx.Store.Transact(func(tx *sql.Tx) error {
 		//for _, p := range idx.IndexProtocols {
-		fmt.Println("HandleBlock", blk.Height())
+		//fmt.Println("HandleBlock", blk.Height())
 		//if err := p.HandleBlock(ctx, tx, blk); err != nil {
 		//	return errors.Wrapf(err, "failed to build index for block on height %d", blk.Height())
 		//}
