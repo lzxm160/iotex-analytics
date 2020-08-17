@@ -314,7 +314,7 @@ func (p *Protocol) GetAverageHermesStats(startEpoch uint64, epochCount uint64, r
 				return nil, errors.Wrap(err, "failed to calculate reward distribution plan")
 			}
 			if epoch == 11358 && delegate == "00746865626f74746f6b656e" {
-				fmt.Println(epoch, delegate, totalWeightedVotesSum.String())
+				fmt.Println(epoch, delegate, distrRewardSum.String())
 			}
 		}
 
