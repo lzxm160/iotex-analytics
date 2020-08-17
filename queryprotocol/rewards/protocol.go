@@ -305,7 +305,11 @@ func (p *Protocol) GetAverageHermesStats(startEpoch uint64, epochCount uint64, r
 		planMap := distributePlanMap[delegate]
 		distrRewardSum := big.NewInt(0)
 		totalWeightedVotesSum := big.NewInt(0)
-
+		type xx struct {
+			delegate  string
+			rewardsum string
+		}
+		testarray := make([]xx, 0)
 		for epoch, rewards := range rewardsMap {
 			distributePlan := planMap[epoch]
 			totalWeightedVotesSum.Add(totalWeightedVotesSum, distributePlan.TotalWeightedVotes)
@@ -313,8 +317,12 @@ func (p *Protocol) GetAverageHermesStats(startEpoch uint64, epochCount uint64, r
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to calculate reward distribution plan")
 			}
+			testarray = append(testarray, xx{delegate, distrRewardSum.String()})
 		}
-		fmt.Println(delegate, distrRewardSum.String())
+		for _, i := range testarray {
+			fmt.Println(i.delegate, i.rewardsum)
+		}
+
 		avgRewardDistribution := distrRewardSum.Div(distrRewardSum, big.NewInt(int64(len(rewardsMap))))
 		avgTotalWeightedVotes := totalWeightedVotesSum.Div(totalWeightedVotesSum, big.NewInt(int64(len(rewardsMap))))
 
