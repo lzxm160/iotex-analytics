@@ -390,21 +390,27 @@ func calculatedDistributedReward(distributePlan *HermesDistributionPlan, rewards
 	blockRewardPercentage := distributePlan.BlockRewardPercentage
 	epochRewardPercentage := distributePlan.EpochRewardPercentage
 	foundationBonusPercentage := distributePlan.FoundationBonusPercentage
+	fmt.Println("blockRewardPercentage", blockRewardPercentage)
+	fmt.Println("epochRewardPercentage", epochRewardPercentage)
+	fmt.Println("foundationBonusPercentage", foundationBonusPercentage)
 	distrReward := big.NewInt(0)
 	if blockRewardPercentage > 0 {
 		distrBlockReward := new(big.Int).Set(rewards.BlockReward)
 		distrBlockReward.Mul(distrBlockReward, big.NewInt(int64(blockRewardPercentage*100))).Div(distrBlockReward, big.NewInt(10000))
 		distrReward.Add(distrReward, distrBlockReward)
+		fmt.Println("distrBlockReward", distrBlockReward)
 	}
 	if epochRewardPercentage > 0 {
 		distrEpochReward := new(big.Int).Set(rewards.EpochReward)
 		distrEpochReward.Mul(distrEpochReward, big.NewInt(int64(epochRewardPercentage*100))).Div(distrEpochReward, big.NewInt(10000))
 		distrReward.Add(distrReward, distrEpochReward)
+		fmt.Println("distrEpochReward", distrEpochReward)
 	}
 	if foundationBonusPercentage > 0 {
 		distrFoundationBonus := new(big.Int).Set(rewards.FoundationBonus)
 		distrFoundationBonus.Mul(distrFoundationBonus, big.NewInt(int64(foundationBonusPercentage*100))).Div(distrFoundationBonus, big.NewInt(10000))
 		distrReward.Add(distrReward, distrFoundationBonus)
+		fmt.Println("distrFoundationBonus", distrFoundationBonus)
 	}
 	return distrReward, nil
 }
