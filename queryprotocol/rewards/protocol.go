@@ -309,12 +309,13 @@ func (p *Protocol) GetAverageHermesStats(startEpoch uint64, epochCount uint64, r
 		for epoch, rewards := range rewardsMap {
 			distributePlan := planMap[epoch]
 			totalWeightedVotesSum.Add(totalWeightedVotesSum, distributePlan.TotalWeightedVotes)
-			distrRewardSum, err = calculatedDistributedReward(distributePlan, rewards)
+			distrReward, err := calculatedDistributedReward(distributePlan, rewards)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to calculate reward distribution plan")
 			}
+			distrRewardSum = distrRewardSum.Add(distrRewardSum, distrReward)
 			if delegate == "00746865626f74746f6b656e" {
-				fmt.Println(delegate, distrRewardSum.String())
+				fmt.Println(delegate, distrReward.String())
 			}
 		}
 		if delegate == "00746865626f74746f6b656e" {
