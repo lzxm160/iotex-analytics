@@ -324,6 +324,7 @@ func (p *Protocol) GetAverageHermesStats(startEpoch uint64, epochCount uint64, r
 			TotalWeightedVotes: avgTotalWeightedVotes.String(),
 		})
 	}
+	fmt.Println("//////////////////////////////////////////////////////")
 	return delegateAverages, nil
 }
 
@@ -412,7 +413,7 @@ func calculatedDistributedReward(distributePlan *HermesDistributionPlan, rewards
 		distrReward.Add(distrReward, distrFoundationBonus)
 		fmt.Println("distrFoundationBonus", distrFoundationBonus)
 	}
-	fmt.Println("//////////////////////////////////////////////////////")
+
 	return distrReward, nil
 }
 
